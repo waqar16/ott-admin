@@ -69,19 +69,9 @@ export async function login(credentials: {
   token_2fa?: string;
 }): Promise<LoginResponse> {
   // Mock mode fallback
-  if (USE_MOCK_DATA) {
-    console.log('[authApi] Mock mode: login successful');
-    await new Promise(resolve => setTimeout(resolve, 500)); // Simulate network delay
-    
-    return {
-      access_token: 'mock_access_token_' + Date.now(),
-      refresh_token: 'mock_refresh_token_' + Date.now(),
-      two_factor_required: false,
-    };
-  }
-
+   
   try {
-    const response = await fetch(`${API_BASE}/api/v1/login/`, {
+    const response = await fetch(`${API_BASE}api/v1/login/`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -94,13 +84,13 @@ export async function login(credentials: {
         ...(credentials.token_2fa && { token_2fa: credentials.token_2fa }),
       }),
     });
-
+console.log('response',response)
     const data = await response.json();
 
     if (!response.ok) {
       throw new ApiError(
         response.status,
-        data.message || data.detail || 'Login failed',
+        data.message || data.detail || data.non_field_errors || 'Login failed',
         data
       );
     }
@@ -115,7 +105,7 @@ export async function login(credentials: {
   } catch (error) {
     if (error instanceof ApiError) throw error;
     
-    console.error('[authApi] Login error:', error);
+    console.log('error')
     throw new ApiError(
       0,
       error instanceof Error ? error.message : 'Network error during login'
@@ -145,7 +135,7 @@ export async function signup(userData: {
   }
 
   try {
-    const response = await fetch(`${API_BASE}/api/v1/signup/`, {
+    const response = await fetch(`${API_BASE}api/v1/signup/`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -164,7 +154,7 @@ export async function signup(userData: {
     if (!response.ok) {
       throw new ApiError(
         response.status,
-        data.message || data.detail || 'Signup failed',
+        data.message || data.detail || data.email || data.password || 'Signup failed',
         data
       );
     }
@@ -214,7 +204,7 @@ export async function refreshToken(refreshToken: string): Promise<LoginResponse>
   }
 
   try {
-    const response = await fetch(`${API_BASE}/api/v1/token/refresh/`, {
+    const response = await fetch(`${API_BASE}api/v1/token/refresh/`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -272,7 +262,7 @@ export async function me(accessToken: string): Promise<User> {
   }
 
   try {
-    const response = await fetch(`${API_BASE}/api/v1/me/`, {
+    const response = await fetch(`${API_BASE}api/v1/me/`, {
       method: 'GET',
       headers: {
         'Authorization': `Bearer ${accessToken}`,

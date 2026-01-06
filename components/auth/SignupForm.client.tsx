@@ -11,6 +11,7 @@ import { useState } from 'react';
 import { useAuth } from '@/lib/useAuth';
 import { USE_MOCK_DATA } from '@/lib/config';
 import { useRouter } from 'next/navigation';
+import FullScreenLoader from '../Loader/FullScreenLoader';
 interface SignupFormProps {
  
 }
@@ -25,6 +26,7 @@ export function SignupForm({ }: SignupFormProps) {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [loginLoading,setLoginLoading] = useState(false)
 
   const validateForm = (): boolean => {
     if (!name.trim()) {
@@ -51,6 +53,7 @@ export function SignupForm({ }: SignupFormProps) {
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
+    setLoginLoading(true)
     e.preventDefault();
     setError(null);
 
@@ -72,15 +75,21 @@ export function SignupForm({ }: SignupFormProps) {
         setError('An Error Occurred');
 
        }
-    } catch (err: any) {
-      console.error('[SignupForm] Signup error:', err);
-      
- 
-        setError('An account with this email already exists');
-    
-      
+    }  catch (err: any) {
+       console.log(err);
+
+  // Default fallback
+  let message = "Unable to Signup";
+
+  // ApiError or normal Error
+  if (err?.message) {
+    message = err.message;
+  }
+
+  setError(message);
       setIsSubmitting(false);
     }
+    setLoginLoading(false)
   };
 
   return (
@@ -219,6 +228,8 @@ export function SignupForm({ }: SignupFormProps) {
           </a>
         </div>
       </form>
+      {loginLoading && <FullScreenLoader msg={'Signing you in'}/>}
+
     </div>
   );
 }

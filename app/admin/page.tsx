@@ -13,7 +13,7 @@ export default function AdminHome() {
     try {
       const token = Cookies.get('access_token')
       console.log(token,"token")
-      const res = await fetch(`${API_BASE}/api/v1/admin-dashboard/overview/`, {
+      const res = await fetch(`${API_BASE}api/v1/admin-dashboard/overview/`, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
@@ -53,15 +53,15 @@ export default function AdminHome() {
 
   return (<> 
  {loading?
- <div className="p-6 space-y-8 bg-gray-900 flex flex-col items-start w-fll">
-  <SkeletonLoader className="h-[30px] w-[300px] bg-white"/>
-  <SkeletonLoader className="h-[20px] w-[300px] bg-gray-600 mt-4"/>
+ <div className="p-6 space-y-8 bg-black flex flex-col items-start w-fll">
+  <SkeletonLoader className="h-[30px] w-[300px] bg-neutral-950"/>
+  <SkeletonLoader className="h-[20px] w-[300px] bg-neutral-950 mt-4"/>
   <div className="grid grid-cols-4 w-full gap-6">
-{Array.from({length:8}).map(()=>(
-  <div className="w-full    bg-gray-800 flex flex-col items-start rounded-lg p-6 border border-gray-700">
-      <SkeletonLoader className="h-[20px] w-5/12 bg-gray-600  "/>
-      <SkeletonLoader className="h-[20px] w-3/12 bg-white mt-2 "/>
-      <SkeletonLoader className="h-[20px] w-3/12 bg-gray-600 mt-4  "/>
+{Array.from({length:8}).map((_, index)=>(
+  <div key={index} className="w-full    bg-black flex flex-col items-start rounded-lg p-6 border border-gray-700">
+      <SkeletonLoader className="h-[20px] w-5/12 bg-neutral-950  "/>
+      <SkeletonLoader className="h-[20px] w-3/12 bg-neutral-950 mt-2 "/>
+      <SkeletonLoader className="h-[20px] w-3/12 bg-neutral-950 mt-4  "/>
 
      </div>
 ))
@@ -69,11 +69,11 @@ export default function AdminHome() {
 
   </div>
  <div className="grid grid-cols-3 w-full gap-6">
-    {Array.from({length:3}).map(()=>(
-  <div className="w-full    bg-gray-800 flex flex-col items-start rounded-lg p-6 border border-gray-700">
-      <SkeletonLoader className="h-[20px] w-5/12 bg-gray-600  "/>
-      <SkeletonLoader className="h-[20px] w-3/12 bg-white mt-2 "/>
-      <SkeletonLoader className="h-[20px] w-3/12 bg-gray-600 mt-4  "/>
+    {Array.from({length:3}).map((_, index)=>(
+  <div key={index} className="w-full    bg-black flex flex-col items-start rounded-lg p-6 border border-gray-700">
+      <SkeletonLoader className="h-[20px] w-5/12 bg-neutral-950  "/>
+      <SkeletonLoader className="h-[20px] w-3/12 bg-neutral-950 mt-2 "/>
+      <SkeletonLoader className="h-[20px] w-3/12 bg-neutral-950 mt-4  "/>
 
      </div>
 ))
@@ -81,7 +81,7 @@ export default function AdminHome() {
   </div>
  </div>
   :     
-    <div className="p-6 space-y-4 bg-gray-900 text-white">
+    <div className="p-6 space-y-4 bg-black text-white">
       {/* Header */}
       <h1 className="text-3xl font-bold">Admin Dashboard</h1>
       <p className="text-gray-400">Analytics overview of your OTT Platform</p>
@@ -137,7 +137,7 @@ export default function AdminHome() {
 
 function StatCard({ title, value, growth }: any) {
   return (
-    <div className="bg-gray-800 p-5 rounded-xl shadow-lg border border-gray-700">
+    <div className="bg-neutral-900 p-5 rounded-xl shadow-lg border border-neutral-800">
       <p className="text-gray-400 text-sm">{title}</p>
       <h3 className="text-2xl font-bold text-white mt-1">{value}</h3>
       <p className="text-green-400 text-sm mt-2">{growth} this month</p>

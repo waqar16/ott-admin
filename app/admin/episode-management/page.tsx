@@ -7,12 +7,15 @@ import { listContent, getContent, getRenditions, getStreamingUrl } from '@/lib/c
 import ContentEditor from '@/components/admin/content/ContentEditor.client';
 import RoundLoader from '@/components/Loader/RoundLoader';
 import SkeletonLoader from '@/components/Loader/SkeletonLoader';
+import ContentHeaderComponent from '@/components/Content/ContentHeader';
+import ContentLoading from '@/components/Content/ContentLoading';
+import ContentFilter from '@/components/Content/ContentFilter';
 
 export default function ContentManagementPage() {
   // TODO: Add proper authentication check when NextAuth is ready
   // For now, allow access to admin pages
   const pathname = usePathname()
-  console.log("pathname",pathname)
+  console.log("pathname", pathname)
   const router = useRouter();
   const [content, setContent] = useState<Content[]>([]);
   const [loading, setLoading] = useState(true);
@@ -22,14 +25,14 @@ export default function ContentManagementPage() {
   const [detailContent, setDetailContent] = useState<Content | null>(null);
   const [showDetails, setShowDetails] = useState(false);
   const [renditions, setRenditions] = useState<Rendition[]>([]);
-  const [videoUrl ,  setVideoUrl] = useState<string | null>(null);
-  const [videoUrlLoading ,  setVideoUrlLoading] = useState<boolean>(false);
+  const [videoUrl, setVideoUrl] = useState<string | null>(null);
+  const [videoUrlLoading, setVideoUrlLoading] = useState<boolean>(false);
   const [loadingRenditions, setLoadingRenditions] = useState(false);
 
   // Filter state
   const [filters, setFilters] = useState<ContentFilters>({
     status: undefined,
-    content_type: undefined, 
+    content_type: undefined,
     is_kid_safe: undefined,
     is_ppv: undefined,
     media_type: "episodes"
@@ -76,11 +79,11 @@ export default function ContentManagementPage() {
       const details = await getContent(item.id);
       setDetailContent(details);
       setShowDetails(true);
-      
+
       // Fetch renditions
       try {
         const urlPayload = await getStreamingUrl(item.id);
-      setVideoUrlLoading(false);
+        setVideoUrlLoading(false);
 
         setVideoUrl(urlPayload.playback_url);
       } catch (rendErr) {
@@ -155,29 +158,11 @@ export default function ContentManagementPage() {
   return (
     <div className="min-h-screen bg-gray-900 text-white">
       {/* Header */}
-       <div className="bg-gray-800 border-b border-gray-700">
-        <div className="max-w-7xl mx-auto px-4 py-6">
-          <div className="flex items-center justify-between">
-            <div className='m-4'>
-              <h1 className="text-3xl font-bold">
-            {pathname.includes("movie-management") ? "Movie" : pathname.includes("show-management") ? "Show" : pathname.includes("trailer-management") ? "Trailer" : pathname.includes("documentary-management") ? "Documentary" : "Content"}  Management</h1>
-              <p className="text-gray-400 mt-1">
-                Create, upload, and manage video content {pathname}
-              </p>
-            </div>
-            <button
-              onClick={handleCreateNew}
-              className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-semibold"
-            >
-              + Create New {pathname.includes("movie-management") ? "Movie" : pathname.includes("show-management") ? "Show" : pathname.includes("trailer-management") ? "Trailer" : pathname.includes("documentary-management") ? "Documentary" : "Content"}
-            </button>
-          </div>
-        </div>
-      </div>
+      <ContentHeaderComponent handleCreateNew={handleCreateNew} />
 
       <div className="max-w-7xl mx-auto px-4 py-8">
         {/* Loading Spinner */}
-        
+
 
         {/* Error Message */}
         {error && (
@@ -185,192 +170,95 @@ export default function ContentManagementPage() {
             {error}
           </div>
         )}
-{loading ? (
-          <div className="  rounded-lg  w-full flex flex-col items-start ">
-           <div className="mb-4 bg-gray-800 rounded-lg p-4 w-full">
-            
-          <SkeletonLoader className='w-[70px] h-[20px] bg-gray-400 mb-4 mt-2'/>
-          <div className="grid grid-cols-1 md:grid-cols-5 gap-4 w-full">
-             {Array.from({ length: 5 }).map((_, index) => (
-                            <SkeletonLoader key={index} className='w-full col-span-1 h-[40px] bg-gray-400 '/>
-      
-            ))}
-          </div>
+        {loading ? 
+        
+          <ContentLoading/>
 
-        </div>
-        {Array.from({ length: 2 }).map((_, index) => ( 
-             
-                           <div className='p-4 py-6 bg-gray-800 w-full h-auto rounded-md mt-2 flex flex-col items-start w-full'> 
-                           <div className='flex flex-row items-center justify-between w-full'>
-                             <div className='flex flex-row items-center w-6/12'>
-                             <SkeletonLoader key={index} className='w-[300px] mx-1 h-[25px] bg-gray-400 '/>
-                             <SkeletonLoader key={index} className='w-[50px] mx-1 h-[20px] bg-gray-400 rounded-full '/>
-</div>
-  <div className='flex flex-row items-center justify-end w-6/12'>
-                             <SkeletonLoader key={index} className='w-[100px] mx-1 h-[35px] bg-gray-400 '/>
-                             <SkeletonLoader key={index} className='w-[100px] mx-1 h-[35px] bg-gray-400 '/>
-</div>
-                           </div>
-                            <div className='flex flex-row items-center w-full justify-start'>
-                            <SkeletonLoader key={index} className='ml-1 w-3/12 mt-2 h-[20px] bg-gray-500 '/>
+          :
+          <>
+                     <ContentFilter filters={filters} setFilters={setFilters}/>
 
-                            </div>
-                            <div className='flex flex-row items-center w-full justify-start mt-4'>
-                            <SkeletonLoader key={index} className='ml-1 w-2/12 h-[15px] bg-gray-500 '/>
-                            <SkeletonLoader key={index} className='ml-4 w-2/12 h-[15px] bg-gray-500 '/>
-                            <SkeletonLoader key={index} className='ml-4 w-3/12 h-[15px] bg-gray-500 '/>
 
-                            </div>
-                           </div>
-          
-            ))}
-          </div>
-
-        ) 
-        :
-        <><div className="mb-6 bg-gray-800 rounded-lg p-4">
-          <h2 className="text-lg font-semibold mb-4">Filters</h2>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <select
-              value={filters.status || ''}
-              onChange={(e) => setFilters({ ...filters, status: e.target.value as any || undefined })}
-              className="px-4 py-2 bg-gray-700 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="">All Statuses</option>
-              <option value="draft">Draft</option>
-              <option value="processing">Processing</option>
-              <option value="published">Published</option>
-              <option value="inactive">Inactive</option>
-            </select>
-
-            {/* <select
-              value={filters.content_type || ''}
-              onChange={(e) => setFilters({ ...filters, content_type: e.target.value as any || undefined })}
-              className="px-4 py-2 bg-gray-700 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="">All Content Types</option>
-              <option value="movie">movie</option>
-              <option value="series">series</option>
-              <option value="episode">episode</option>
-              <option value="trailer">trailer</option>
-              <option value="documentary">documentary</option>
-            </select> */}
-
-            <select
-              value={filters.media_type || ''}
-              onChange={(e) => setFilters({ ...filters, media_type: e.target.value as any || undefined })}
-              className="px-4 py-2 bg-gray-700 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="">All Media Types</option>
-              <option value="flat">flat</option>
-              <option value="vr_360_mono">vr_360_mono</option>
-              <option value="vr_360_sbs">vr_360_sbs</option>
-              <option value="vr_360_tb">vr_360_tb</option>
-              <option value="vr_180_mono">vr_180_mono</option>
-              <option value="vr_180_sbs">vr_180_sbs</option>
-              <option value="vr_180_tb">vr_180_tb</option>
-            </select>
-
-            <select
-              value={filters.is_kid_safe === undefined ? '' : filters.is_kid_safe.toString()}
-              onChange={(e) => setFilters({ ...filters, is_kid_safe: e.target.value === '' ? undefined : e.target.value === 'true' })}
-              className="px-4 py-2 bg-gray-700 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="">All Content</option>
-              <option value="true">Kid Safe Only</option>
-              <option value="false">Not Kid Safe</option>
-            </select>
-
-            <select
-              value={filters.is_ppv === undefined ? '' : filters.is_ppv.toString()}
-              onChange={(e) => setFilters({ ...filters, is_ppv: e.target.value === '' ? undefined : e.target.value === 'true' })}
-              className="px-4 py-2 bg-gray-700 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="">All Content</option>
-              <option value="true">PPV Only</option>
-              <option value="false">Non-PPV</option>
-            </select>
-          </div>
-        </div>
-
-        {/* Content List */}
-        {!loading && (!content || content.length === 0) ? (
-          <div className="bg-gray-800 rounded-lg p-12 text-center">
-            <p className="text-gray-400 text-lg mb-4">No content found</p>
-            <button
-              onClick={handleCreateNew}
-              className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-            >
-              Create Your First Content
-            </button>
-          </div>
-        ) : (
-          <div className="grid gap-4">
-            {content && content.map((item) => (
-              <div
-                key={item.id}
-                className="bg-gray-800 rounded-lg p-6 hover:bg-gray-750 transition-colors"
-              >
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-3 mb-2">
-                      <h3 className="text-xl font-semibold">{item.title}</h3>
-                      <div className={`flex flex-row items-center ${getStatusBadge(item.status)} rounded-full px-2 py-[2px]`}>
-                        <span
-                        className={` py-1 rounded-full text-xs font-bold text-white capitalize`}
-                      >
-                        {item.ingest_status as string}
-                      </span> 
-                       {/* <span
-                        className={` py-1 rounded-full text-xs font-bold text-white capitalize`}
-                      >
-                        {item.transcoding_progress  != null && item.status === 'processing'
-                          ? ` - ${item.transcoding_progress}%`
-                          : ''}
-                      </span> */}
-                      </div>
-                      {item.is_kid_safe && (
-                        <span className="px-2 py-1 bg-green-900/50 text-green-300 rounded text-xs">
-                          Kid Safe
-                        </span>
-                      )}
-                      {item.is_ppv && (
-                        <span className="px-2 py-1 bg-purple-900/50 text-purple-300 rounded text-xs">
-                          PPV ${(item.price_cents / 100).toFixed(2)}
-                        </span>
-                      )}
-                    </div>
-
-                    <p className="text-gray-400 mb-3 line-clamp-2">{item.description}</p>
-
-                    <div className="flex items-center gap-4 text-sm text-gray-500">
-                      <span>Type: {item.content_type}</span>
-                      <span>•</span>
-                      <span>Media: {item.media_type}</span>
-                      <span>•</span>
-                      <span>ID: {item.id}</span>
-                    </div>
-                  </div>
-
-                  <div className="flex gap-2 ml-4">
-                    <button
-                      onClick={() => handleViewDetails(item)}
-                      className="px-4 py-2 bg-gray-700 text-white rounded-lg hover:bg-gray-600 transition-colors"
-                    >
-                      Details
-                    </button>
-                    <button
-                      onClick={() => handleEdit(item)}
-                      className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-                    >
-                      Edit
-                    </button>
-                  </div>
-                </div>
+            {/* Content List */}
+            {!loading && (!content || content.length === 0) ? (
+              <div className="bg-gray-800 rounded-lg p-12 text-center">
+                <p className="text-gray-400 text-lg mb-4">No content found</p>
+                <button
+                  onClick={handleCreateNew}
+                  className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                >
+                  Create Your First Content
+                </button>
               </div>
-            ))}
-          </div>
-        )}</>
+            ) : (
+              <div className="grid gap-4">
+                {content && content.map((item) => (
+                  <div
+                    key={item.id}
+                    className="bg-gray-800 rounded-lg p-6 hover:bg-gray-750 transition-colors"
+                  >
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-3 mb-2">
+                          <h3 className="text-xl font-semibold">{item.title}</h3>
+                          {item.status!='published' &&  <div className={`flex flex-row items-center ${getStatusBadge(item.ingest_status)} rounded-full px-2 py-[2px]`}>
+                           <span
+                              className={` py-1 rounded-full text-xs font-bold text-white capitalize`}
+                            >
+                              video status: {item.ingest_status as string}
+                            </span>
+                             
+                          </div>}
+                          <div className={`flex flex-row items-center ${getStatusBadge(item.status)} rounded-full px-2 py-[2px]`}>
+                            <span
+                              className={` py-1 rounded-full text-xs font-bold text-white capitalize`}
+                            >
+                              {item.status as string}
+                            </span>
+                             
+                          </div>
+                          {item.is_kid_safe && (
+                            <span className="px-2 py-1 bg-green-900/50 text-green-300 rounded text-xs">
+                              Kid Safe
+                            </span>
+                          )}
+                          {item.is_ppv && (
+                            <span className="px-2 py-1 bg-purple-900/50 text-purple-300 rounded text-xs">
+                              PPV ${(item.price_cents / 100).toFixed(2)}
+                            </span>
+                          )}
+                        </div>
+
+                        <p className="text-gray-400 mb-3 line-clamp-2">{item.description}</p>
+
+                        <div className="flex items-center gap-4 text-sm text-gray-500">
+                          <span>Type: {item.content_type}</span>
+                          <span>•</span>
+                          <span>Media: {item.media_type}</span>
+                          <span>•</span>
+                          <span>ID: {item.id}</span>
+                        </div>
+                      </div>
+
+                      <div className="flex gap-2 ml-4">
+                        <button
+                          onClick={() => handleViewDetails(item)}
+                          className="px-4 py-2 bg-gray-700 text-white rounded-lg hover:bg-gray-600 transition-colors"
+                        >
+                          Details
+                        </button>
+                        <button
+                          onClick={() => handleEdit(item)}
+                          className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                        >
+                          Edit
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}</>
         }
       </div>
 
@@ -434,19 +322,19 @@ export default function ContentManagementPage() {
                   )}
                 </div>
               )}
- {videoUrlLoading && <RoundLoader className=''/> }
- {videoUrl && (
-                    <div>
-                      <h4 className="text-sm font-semibold text-gray-400 mb-2">Video</h4>
-                      <video
-                        src={videoUrl}
-                        controls
-                        className="w-full rounded-lg"
-                      >
-                        Your browser does not support the video tag.
-                      </video>
-                    </div>
-                  )}
+              {videoUrlLoading && <RoundLoader className='' />}
+              {videoUrl && (
+                <div>
+                  <h4 className="text-sm font-semibold text-gray-400 mb-2">Video</h4>
+                  <video
+                    src={videoUrl}
+                    controls
+                    className="w-full rounded-lg"
+                  >
+                    Your browser does not support the video tag.
+                  </video>
+                </div>
+              )}
               {/* Renditions */}
               <div>
                 <h3 className="text-xl font-bold text-white mb-4">
@@ -467,26 +355,25 @@ export default function ContentManagementPage() {
                 ) : (
                   <div className="grid gap-4">
                     {renditions.map((rendition) => (
-                      <div 
-                        key={rendition.id} 
+                      <div
+                        key={rendition.id}
                         className="bg-gray-800 rounded-lg p-4 hover:bg-gray-750 transition-colors"
                       >
                         <div className="flex items-start justify-between mb-3">
                           <div className="flex items-center gap-3">
-                            <span 
+                            <span
                               className={`px-3 py-1 rounded-full text-xs font-bold text-white ${getQualityBadgeColor(rendition.quality_label)}`}
                             >
                               {rendition.quality_label}
                             </span>
-                            
-                            <span 
-                              className={`px-2 py-1 rounded text-xs font-medium ${
-                                rendition.status === 'ready' 
-                                  ? 'bg-green-900/50 text-green-300' 
+
+                            <span
+                              className={`px-2 py-1 rounded text-xs font-medium ${rendition.status === 'ready'
+                                  ? 'bg-green-900/50 text-green-300'
                                   : rendition.status === 'processing'
-                                  ? 'bg-yellow-900/50 text-yellow-300'
-                                  : 'bg-gray-700 text-gray-300'
-                              }`}
+                                    ? 'bg-yellow-900/50 text-yellow-300'
+                                    : 'bg-gray-700 text-gray-300'
+                                }`}
                             >
                               {rendition.status}
                             </span>

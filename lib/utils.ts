@@ -32,3 +32,30 @@ export function truncateText(text: string, maxLength: number): string {
   if (text.length <= maxLength) return text
   return text.slice(0, maxLength) + '...'
 }
+export function formatBitrate(bitrate: number): string {
+    if (bitrate >= 1000000) {
+      return `${(bitrate / 1000000).toFixed(1)} Mbps`;
+    } else if (bitrate >= 1000) {
+      return `${(bitrate / 1000).toFixed(0)} Kbps`;
+    }
+    return `${bitrate} bps`;
+  }
+
+ export function getQualityBadgeColor(quality: string): string {
+    switch (quality.toLowerCase()) {
+      case '4k':
+      case 'uhd':
+        return 'bg-purple-600';
+      case '1080p':
+      case 'fhd':
+        return 'bg-blue-600';
+      case '720p':
+      case 'hd':
+        return 'bg-green-600';
+      case '480p':
+      case 'sd':
+        return 'bg-yellow-600';
+      default:
+        return 'bg-gray-600';
+    }
+  }

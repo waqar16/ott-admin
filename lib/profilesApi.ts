@@ -199,7 +199,7 @@ export async function listProfiles({
   }
   
   try {
-    const url = `${API_BASE}/api/v1/profiles/?page=${page}&page_size=${pageSize}`;
+    const url = `${API_BASE}api/v1/profiles/?page=${page}&page_size=${pageSize}`;
     const response = await fetch(url, {
       method: 'GET',
       headers: getAuthHeaders(),
@@ -265,7 +265,7 @@ export async function createProfile(payload: CreateProfilePayload): Promise<Prof
   }
   
   try {
-    const url = `${API_BASE}/api/v1/profiles/`;
+    const url = `${API_BASE}api/v1/profiles/`;
     const response = await fetch(url, {
       method: 'POST',
       headers: getAuthHeaders(),
@@ -318,7 +318,7 @@ export async function getProfile(profileId: string): Promise<Profile> {
   }
   
   try {
-    const url = `${API_BASE}/api/v1/profiles/${profileId}/`;
+    const url = `${API_BASE}api/v1/profiles/${profileId}/`;
     const response = await fetch(url, {
       method: 'GET',
       headers: getAuthHeaders(),
@@ -379,7 +379,7 @@ export async function updateProfile(
   }
   
   try {
-    const url = `${API_BASE}/api/v1/profiles/${profileId}/`;
+    const url = `${API_BASE}api/v1/profiles/${profileId}/`;
     const response = await fetch(url, {
       method: 'PATCH',
       headers: getAuthHeaders(),
@@ -433,7 +433,7 @@ export async function deleteProfile(profileId: string): Promise<boolean> {
   }
   
   try {
-    const url = `${API_BASE}/api/v1/profiles/${profileId}/`;
+    const url = `${API_BASE}api/v1/profiles/${profileId}/`;
     const response = await fetch(url, {
       method: 'DELETE',
       headers: getAuthHeaders(),
@@ -497,7 +497,7 @@ export async function verifyPin(profileId: string, pin: string): Promise<VerifyP
   }
   
   try {
-    const url = `${API_BASE}/api/v1/profiles/${profileId}/verify-pin/`;
+    const url = `${API_BASE}api/v1/profiles/${profileId}/verify-pin/`;
     const response = await fetch(url, {
       method: 'POST',
       headers: getAuthHeaders(),

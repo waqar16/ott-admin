@@ -6,11 +6,11 @@
  */
 
 'use client';
-import Cookies from 'js-cookie';
-import { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useAuth } from '@/lib/useAuth';
 import { USE_MOCK_DATA } from '@/lib/config';
 import { useRouter } from 'next/navigation';
+import FullScreenLoader from '../Loader/FullScreenLoader';
 
 interface LoginFormProps {
  
@@ -19,18 +19,22 @@ interface LoginFormProps {
 export function LoginForm({   }: LoginFormProps) {
   const { login, loading } = useAuth();
   const router  = useRouter()
+  const [mounted, setMounted] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [token2fa, setToken2fa] = useState('');
   const [show2FA, setShow2FA] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-
+  const [loginLoading,setLoginLoading] = React.useState(false)
+  useEffect(() => {
+    setMounted(true);
+  }, []);
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
     setIsSubmitting(true);
-
+setLoginLoading(true)
     try {
       const result = await login(email, password, token2fa || undefined);
        
@@ -52,25 +56,26 @@ export function LoginForm({   }: LoginFormProps) {
  
       
     } catch (err: any) {
-      console.error('[LoginForm] Login error:', err);
-      
-     setError("Unable to login")
-      
+       console.log(err);
+
+  // Default fallback
+  let message = "Unable to login";
+
+  // ApiError or normal Error
+  if (err?.message) {
+    message = err.message;
+  }
+
+  setError(message);
       setIsSubmitting(false);
     }
+setLoginLoading(false)
+
   };
 
   return (
     <div className="w-full max-w-md">
-      {USE_MOCK_DATA && (
-        <div className="mb-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-          <p className="text-sm text-yellow-800">
-            <strong>🧪 Mock Mode Active</strong>
-            <br />
-            Any email and password will work in development mode.
-          </p>
-        </div>
-      )}
+       
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
@@ -83,7 +88,7 @@ export function LoginForm({   }: LoginFormProps) {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
-            disabled={(isSubmitting || loading) && (Cookies.get('access_token'))}
+            disabled={Boolean(isSubmitting || loading)}
             className="text-gray-800 w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
             placeholder="you@example.com"
             autoComplete="email"
@@ -100,7 +105,7 @@ export function LoginForm({   }: LoginFormProps) {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
-            disabled={(isSubmitting || loading) && (Cookies.get('access_token'))}
+            disabled={Boolean(isSubmitting || loading)}
             className="text-gray-800 w-full   px-4 py-2 border  border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
             placeholder="Enter your password"
             autoComplete="current-password"
@@ -118,7 +123,7 @@ export function LoginForm({   }: LoginFormProps) {
               value={token2fa}
               onChange={(e) => setToken2fa(e.target.value)}
               required
-              disabled={isSubmitting || loading}
+              disabled={Boolean(isSubmitting || loading)}
               className="w-full px-4 py-2 border border-blue-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
               placeholder="Enter 6-digit code"
               maxLength={6}
@@ -138,10 +143,10 @@ export function LoginForm({   }: LoginFormProps) {
 
         <button
           type="submit"
-          disabled={(isSubmitting || loading) && (Cookies.get('access_token'))}
+          disabled={Boolean(isSubmitting || loading)}
           className="w-full py-3 px-4 bg-gradient-to-r from-purple-600 to-pink-600 text-white font-semibold rounded-lg hover:from-purple-700 hover:to-pink-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
         >
-          {(isSubmitting || loading) && Cookies.get('access_token') ? (
+          {(isSubmitting || loading) ? (
             <span className="flex items-center justify-center gap-2">
               <svg
                 className="animate-spin h-5 w-5"
@@ -178,6 +183,7 @@ export function LoginForm({   }: LoginFormProps) {
           </a>
         </div>
       </form>
+      {loginLoading && <FullScreenLoader msg={'Signing you in'}/>}
     </div>
   );
 }

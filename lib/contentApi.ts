@@ -159,9 +159,17 @@ async function handleApiError(response: Response): Promise<ApiError> {
     body = null;
   }
   
+  // Handle array-based error messages (e.g., from validation)
+  let message = response.statusText || 'An error occurred';
+  if (Array.isArray(body)) {
+    message = typeof body[0] === 'string' ? body[0] : message;
+  } else {
+    message = body?.message || body?.detail || message;
+  }
+  
   const error: ApiError = {
     status: response.status,
-    message: body?.message || body?.detail || response.statusText || 'An error occurred',
+    message,
     body,
   };
   
@@ -209,7 +217,7 @@ export async function createContent(payload: CreateContentPayload): Promise<Cont
   }
   
   try {
-    const url = `${API_BASE}/api/v1/content/contents/`;
+    const url = `${API_BASE}api/v1/content/contents/`;
     const response = await fetch(url, {
       method: 'POST',
       headers: getAuthHeaders(),
@@ -271,7 +279,7 @@ export async function updateContent(
   }
   
   try {
-    const url = `${API_BASE}/api/v1/content/contents/${contentId}/`;
+    const url = `${API_BASE}api/v1/content/contents/${contentId}/`;
     const response = await fetch(url, {
       method: 'PATCH',
       headers: getAuthHeaders(),
@@ -294,7 +302,43 @@ export async function updateContent(
     } as ApiError;
   }
 }
-
+export async function deleteContent(
+  contentId: string
+): Promise<number|string> {
+   
+  
+  const token = getAccessToken();
+  if (!token) {
+    throw {
+      status: 401,
+      message: 'Not authenticated — please login',
+      needAuth: true,
+    } as ApiError;
+  }
+  
+  try {
+    const url = `${API_BASE}api/v1/content/contents/${contentId}/`;
+    const response = await fetch(url, {
+      method: 'DELETE',
+      headers: getAuthHeaders(), 
+    });
+    
+    if (!response.ok) {
+      throw await handleApiError(response);
+    }
+    
+    return response.status
+  } catch (error) {
+    if ((error as ApiError).status) {
+      throw error;
+    }
+    throw {
+      status: 0,
+      message: 'Network error - please check your connection',
+      body: error,
+    } as ApiError;
+  }
+}
 /**
  * Get a single content record by ID
  * GET /api/v1/content/contents/{contentId}/
@@ -324,7 +368,7 @@ export async function getContent(contentId: string): Promise<Content> {
   }
   
   try {
-    const url = `${API_BASE}/api/v1/content/contents/${contentId}/`;
+    const url = `${API_BASE}api/v1/content/contents/${contentId}/`;
     const response = await fetch(url, {
       method: 'GET',
       headers: getAuthHeaders(),
@@ -372,7 +416,8 @@ export async function listContent({
 } = {}): Promise<ContentListResponse> {
   if (USE_MOCK_DATA) {
     logMockDataUsage('listContent');
-    
+        console.log(typeof Boolean(is_kid_safe),"typeof typeof Boolean(is_kid_safe) == boolean")
+    console.log(typeof Boolean(is_ppv),"typeof Boolean(is_ppv) == boolean")
     let filtered = [...mockContentStore];
     
     if (status) {
@@ -384,10 +429,11 @@ export async function listContent({
     if (content_type) {
       filtered = filtered.filter(c => c.content_type === content_type);
     }
-    if (typeof is_kid_safe === 'boolean') {
+    if (typeof Boolean(is_kid_safe) == 'boolean') {
       filtered = filtered.filter(c => c.is_kid_safe === is_kid_safe);
     }
-    if (typeof is_ppv === 'boolean') {
+
+    if (typeof Boolean(is_ppv) == 'boolean') {
       filtered = filtered.filter(c => c.is_ppv === is_ppv);
     }
     if (search) {
@@ -428,13 +474,12 @@ export async function listContent({
     if (status) params.append('status', status);
     if (media_type) params.append('media_type', media_type);
     if (content_type) params.append('content_type', content_type);
-    if (typeof is_kid_safe === 'boolean') params.append('is_kid_safe', String(is_kid_safe));
-    if (typeof is_ppv === 'boolean') params.append('is_ppv', String(is_ppv));
+    if (typeof Boolean(is_kid_safe) === 'boolean') params.append('is_kid_safe', String(is_kid_safe));
+    if (typeof Boolean(is_ppv) === 'boolean') params.append('is_ppv', String(is_ppv));
     if (search) params.append('search', search);
     
-    const url = media_type=='series'?
-    `${API_BASE}/api/v1/content/${media_type}?${params.toString()}`:
-    `${API_BASE}/api/v1/content/contents/${media_type}?${params.toString()}`;
+    const url =  
+    `${API_BASE}api/v1/content/contents/?content_type=${content_type}&${params.toString()}`;
     const response = await fetch(url, {
       method: 'GET',
       headers: getAuthHeaders(),
@@ -461,28 +506,8 @@ export async function listContent({
  * Publish content (change status to published)
  * POST /api/v1/content/content/{content_id}/publish/
  */
-export async function publishContent(contentId: string): Promise<Content> {
-  if (USE_MOCK_DATA) {
-    logMockDataUsage('publishContent');
-    
-    const content = mockContentStore.find(c => c.id === contentId);
-    if (!content) {
-      throw {
-        status: 404,
-        message: 'Content not found',
-      } as ApiError;
-    }
-    
-    // Mock validation: require at least one rendition
-    if (!MOCK_RENDITIONS.some(r => r.asset.includes(contentId))) {
-      throw {
-        status: 400,
-        message: 'Cannot publish: at least one rendition is required',
-      } as ApiError;
-    }
-    
-    return updateContent(contentId, { status: 'published' });
-  }
+export async function publishContent(contentId: string,status?:string): Promise<Content> {
+  
   
   const token = getAccessToken();
   if (!token) {
@@ -494,11 +519,11 @@ export async function publishContent(contentId: string): Promise<Content> {
   }
   
   try {
-    const url = `${API_BASE}/api/v1/content/content/${contentId}/publish/`;
+    const url = `${API_BASE}api/v1/content/contents/${contentId}/`;
     const response = await fetch(url, {
-      method: 'POST',
+      method: 'PATCH',
       headers: getAuthHeaders(),
-      body: JSON.stringify({ status: 'published' }),
+      body: JSON.stringify({ status: status??'published' }),
     });
     
     if (!response.ok) {
@@ -560,7 +585,7 @@ export async function initUpload(
   }
   console.log('object')
   try {
-    const url = `${API_BASE}/api/v1/content/content/upload/init/`;
+    const url = `${API_BASE}api/v1/content/content/upload/init/`;
     const response = await fetch(url, {
       method: 'POST',
       headers: getAuthHeaders(),
@@ -610,7 +635,7 @@ export async function postUploadCallback(payload: S3CallbackPayload): Promise<an
   }
   
   try {
-    const url = `${API_BASE}/api/v1/content/uploads/s3-callback/`;
+    const url = `${API_BASE}api/v1/content/uploads/s3-callback/`;
     const response = await fetch(url, {
       method: 'POST',
       headers: {
@@ -648,7 +673,7 @@ export async function postUploadCallback(payload: S3CallbackPayload): Promise<an
 export async function uploadImage(
   contentId: string,
   file: File,
-  imageType: 'poster' | 'banner' | 'thumbnail'
+  imageType: 'poster' | 'banner' | 'episode-thumbnail'
 ): Promise<ImageUploadResponse> {
   if (USE_MOCK_DATA) {
     logMockDataUsage('uploadImage');
@@ -670,7 +695,7 @@ export async function uploadImage(
   }
   
   try {
-    const url = `${API_BASE}/api/v1/content/content/${contentId}/images/`;
+    const url = `${API_BASE}api/v1/content/content/${contentId}/images/`;
     
     const formData = new FormData();
     formData.append('file', file);
@@ -700,7 +725,61 @@ export async function uploadImage(
     } as ApiError;
   }
 }
-
+export async function uploadImageForEpisode(
+  contentId: string,
+  file: File,
+  imageType: 'poster' | 'banner' | 'thumbnail'
+): Promise<ImageUploadResponse> {
+  if (USE_MOCK_DATA) {
+    logMockDataUsage('uploadImage');
+    
+    // Mock image upload response
+    return {
+      thumbnail_url: `https://cdn.example.com/images/${contentId}/${imageType}_${Date.now()}.jpg`,
+      s3_key: `images/${contentId}/${imageType}_${Date.now()}.jpg`,
+    };
+  }
+  
+  const token = getAccessToken();
+  if (!token) {
+    throw {
+      status: 401,
+      message: 'Not authenticated — please login',
+      needAuth: true,
+    } as ApiError;
+  }
+  
+  try {
+    const url = `${API_BASE}api/v1/content/content/${contentId}/images/`;
+    
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('image_type', 'episode-thumbnail');
+    
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+      body: formData,
+    });
+    
+    if (!response.ok) {
+      throw await handleApiError(response);
+    }
+    
+    return await response.json();
+  } catch (error) {
+    if ((error as ApiError).status) {
+      throw error;
+    }
+    throw {
+      status: 0,
+      message: 'Network error - please check your connection',
+      body: error,
+    } as ApiError;
+  }
+}
 // ============================================================================
 // SERIES / SEASONS / EPISODES API
 // ============================================================================
@@ -733,7 +812,7 @@ export async function createSeries(payload: CreateSeriesPayload): Promise<Series
   }
   
   try {
-    const url = `${API_BASE}/api/v1/content/series/`;
+    const url = `${API_BASE}api/v1/content/series/`;
     const response = await fetch(url, {
       method: 'POST',
       headers: getAuthHeaders(),
@@ -783,7 +862,7 @@ export async function createSeason(payload: CreateSeasonPayload): Promise<Season
   }
   
   try {
-    const url = `${API_BASE}/api/v1/content/seasons/`;
+    const url = `${API_BASE}api/v1/content/seasons/`;
     const response = await fetch(url, {
       method: 'POST',
       headers: getAuthHeaders(),
@@ -834,7 +913,7 @@ export async function createEpisode(payload: CreateEpisodePayload): Promise<Epis
   }
   
   try {
-    const url = `${API_BASE}/api/v1/content/episodes/`;
+    const url = `${API_BASE}api/v1/content/episodes/`;
     const response = await fetch(url, {
       method: 'POST',
       headers: getAuthHeaders(),
@@ -885,7 +964,7 @@ export async function uploadEpisodeThumbnail(
   }
   
   try {
-    const url = `${API_BASE}/api/v1/content/episodes/${episodeId}/upload-thumbnail/`;
+    const url = `${API_BASE}api/v1/content/episodes/${episodeId}/upload-thumbnail/`;
     
     const formData = new FormData();
     formData.append('file', file);
@@ -943,7 +1022,7 @@ export async function getRenditions(contentId: string): Promise<RenditionsListRe
   }
   
   try {
-    const url = `${API_BASE}/api/v1/content/content/${contentId}/renditions/`;
+    const url = `${API_BASE}api/v1/content/content/${contentId}/renditions/`;
     const response = await fetch(url, {
       method: 'GET',
       headers: getAuthHeaders(),
@@ -985,7 +1064,7 @@ export async function getStreamingUrl(contentId: string): Promise<any> {
   }
   
   try {
-    const url = `${API_BASE}/api/v1/content/content/${contentId}/stream/`;
+    const url = `${API_BASE}api/v1/content/content/${contentId}/stream/`;
     const response = await fetch(url, {
       method: 'GET',
       headers: getAuthHeaders(),
@@ -1041,7 +1120,7 @@ https://cdn.example.com/content-${contentId}/1080p/playlist.m3u8`;
   }
   
   try {
-    const url = `${API_BASE}/api/v1/content/content/manifest/${contentId}/`;
+    const url = `${API_BASE}api/v1/content/content/manifest/${contentId}/`;
     const response = await fetch(url, {
       method: 'GET',
       headers: getAuthHeaders(),
@@ -1105,7 +1184,7 @@ export async function getDrmKey(contentId: string): Promise<DrmKeyResponse> {
   }
   
   try {
-    const url = `${API_BASE}/api/v1/content/drm/key/?content_id=${contentId}`;
+    const url = `${API_BASE}api/v1/content/drm/key/?content_id=${contentId}`;
     const response = await fetch(url, {
       method: 'GET',
       headers: getAuthHeaders(),
@@ -1152,7 +1231,7 @@ export async function simulateMediaConvertWebhook(payload: any): Promise<any> {
   }
   
   try {
-    const url = `${API_BASE}/api/v1/content/uploads/mediaconvert-webhook/`;
+    const url = `${API_BASE}api/v1/content/uploads/mediaconvert-webhook/`;
     const response = await fetch(url, {
       method: 'POST',
       headers: {

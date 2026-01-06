@@ -4,9 +4,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import { MembershipType } from '@/lib/auth';
 import { API_BASE, USE_MOCK_DATA } from '@/lib/config';
 import axios from 'axios';
-const adminProtectedRoutes = ['/admin/:path*','/admin']; 
-const userProtectedRoutes = ['/user-tasks/:path*']; 
-const publicRoutes = ['/login', '/signup', '/error', '/home', '/']; 
+const adminProtectedRoutes = ['/admin/:path*','/admin'];   
+const publicRoutes = ['/login', '/signup', '/error' ];
+
 /**
  * Next.js Middleware for authentication and authorization
  * 
@@ -19,30 +19,32 @@ const publicRoutes = ['/login', '/signup', '/error', '/home', '/'];
  */
 
 export async function middleware(request: NextRequest) {
-  const { pathname } = request.nextUrl;
+  const { pathname } = request.nextUrl; 
+  const isPublicRoute =
+  publicRoutes.includes(pathname) ||
+  publicRoutes.some(
+    (route) => route !== '/' && pathname.startsWith(route)
+  );
 
-  
+if (isPublicRoute) {
+  return NextResponse.next();
+}
 
-  if (USE_MOCK_DATA) {
-    return NextResponse.next();
-  }
-  
-   if (publicRoutes.some(route => pathname.startsWith(route))) {
-    return NextResponse.next();
-  } 
+
+ 
+ 
 try {
  
 
     const token = request.cookies.get('access_token')?.value;
 
     if (!token) {
-   
+       console.log('object')
         return NextResponse.redirect(new URL('/login', request.url));
  
-    }
-
+    } 
     // Validate token
-    const accessCheck = await axios.get(`${API_BASE}/api/v1/me/`, {
+    const accessCheck = await axios.get(`${API_BASE}api/v1/me/`, {
       headers: { Authorization: `Bearer ${token}` },
     });
 
@@ -54,12 +56,7 @@ try {
       }
     }
     
-    // USER-PROTECTED ROUTES (restrict admin)
-    // if (pathname.startsWith('/user-tasks')) {
-    //   if (role !== 'user') {
-    //     return NextResponse.redirect(new URL('/login', request.url));
-    //   }
-    // } 
+    
     
   } catch (error) {
     console.log(error, 'middleware error');
@@ -71,7 +68,8 @@ try {
  
 export const config = {
   matcher: [
-    
+    '/admin/:path*',
+    '/admin',
     '/((?!api/auth|_next/static|_next/image|favicon.ico|public).*)',
   ],
 };

@@ -3,6 +3,7 @@ import { Inter } from 'next/font/google'
 import '@/styles/globals.css'
 import { Navbar } from '@/components/Navbar'
 import { AuthProvider } from '@/lib/useAuth'
+import { Toaster } from "sonner";
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -23,6 +24,8 @@ export default function RootLayout({
           <div className="min-h-screen flex flex-col ">
             {/* <Navbar /> */}
             <main className="flex-1">
+              
+      <Toaster richColors position="top-right" />
               {children}
             </main>
           {/* <footer className="bg-gray-900 text-white py-8">
@@ -37,7 +40,7 @@ export default function RootLayout({
                 <div>
                   <h4 className="font-semibold mb-4">Explore</h4>
                   <ul className="space-y-2 text-gray-400 text-sm">
-                    <li><a href="/home" className="hover:text-white transition">Home</a></li>
+                    <li><a href="/admin" className="hover:text-white transition">Home</a></li>
                     <li><a href="/premiere" className="hover:text-white transition">Premiere</a></li>
                     <li><a href="/blog" className="hover:text-white transition">Blog</a></li>
                     <li><a href="/plans" className="hover:text-white transition">Plans</a></li>

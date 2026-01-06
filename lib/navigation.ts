@@ -13,7 +13,7 @@ export function getPlayPath(title: CatalogTitle, user: MockUser | null): string 
     }
     return `/plans?upgrade=true`;
   }
-  return `/signup?from=title&id=${encodeURIComponent(title.id)}`;
+  return `/login?redirect=${encodeURIComponent(`/watch/${title.id}`)}`;
 }
 
 export function getPremiereCheckoutPath(premiereId: string, isLoggedIn: boolean): string {

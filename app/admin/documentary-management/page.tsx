@@ -3,16 +3,23 @@
 import { useState, useEffect, useCallback } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { Content, ContentFilters, ApiError, Rendition } from '@/lib/types/content';
-import { listContent, getContent, getRenditions, getStreamingUrl } from '@/lib/contentApi';
+import { listContent, getContent, getRenditions, getStreamingUrl ,publishContent} from '@/lib/contentApi';
 import ContentEditor from '@/components/admin/content/ContentEditor.client';
 import RoundLoader from '@/components/Loader/RoundLoader';
 import SkeletonLoader from '@/components/Loader/SkeletonLoader';
+import ContentHeaderComponent from '@/components/Content/ContentHeader';
+import ContentLoading from '@/components/Content/ContentLoading';
+import ContentFilter from '@/components/Content/ContentFilter';
+import { BiEdit, BiRefresh } from 'react-icons/bi';
+import ContentDetailsModal from '@/components/Content/ContentDetailsModal';
+import { toast } from 'sonner';
+import { FiTablet } from 'react-icons/fi';
 
 export default function ContentManagementPage() {
   // TODO: Add proper authentication check when NextAuth is ready
   // For now, allow access to admin pages
   const pathname = usePathname()
-  console.log("pathname",pathname)
+  console.log("pathname", pathname)
   const router = useRouter();
   const [content, setContent] = useState<Content[]>([]);
   const [loading, setLoading] = useState(true);
@@ -22,21 +29,26 @@ export default function ContentManagementPage() {
   const [detailContent, setDetailContent] = useState<Content | null>(null);
   const [showDetails, setShowDetails] = useState(false);
   const [renditions, setRenditions] = useState<Rendition[]>([]);
-  const [videoUrl ,  setVideoUrl] = useState<string | null>(null);
-  const [videoUrlLoading ,  setVideoUrlLoading] = useState<boolean>(false);
+  const [videoUrl, setVideoUrl] = useState<string | null>(null);
+  const [videoUrlLoading, setVideoUrlLoading] = useState<boolean>(false);
   const [loadingRenditions, setLoadingRenditions] = useState(false);
 
   // Filter state
- const [filters, setFilters] = useState<ContentFilters>({
+  const [filters, setFilters] = useState<ContentFilters>({
     status: undefined,
-    content_type: undefined, 
+    content_type:pathname.includes('movie')?'movie':
+            pathname.includes('document')?'documentary':
+            pathname.includes('trailer')?'trailer':
+            pathname.includes('series')?'series':
+            pathname.includes('episode')?'episode':"movie"
+          ,
     is_kid_safe: undefined,
     is_ppv: undefined,
     media_type: pathname.includes("movie-management") ? "movies"
-  : pathname.includes("trailer-management") ? "trailers"
-  : pathname.includes("documentary-management") ? "documentaries"
-    : pathname.includes("demo-content-management") ? "democontents"
-  : ""
+      : pathname.includes("trailer-management") ? "trailers"
+        : pathname.includes("documentary-management") ? "documentaries"
+          : pathname.includes("demo-content-management") ? "democontents"
+            : ""
   });
 
   const fetchContent = useCallback(async () => {
@@ -80,11 +92,11 @@ export default function ContentManagementPage() {
       const details = await getContent(item.id);
       setDetailContent(details);
       setShowDetails(true);
-      
+
       // Fetch renditions
       try {
         const urlPayload = await getStreamingUrl(item.id);
-      setVideoUrlLoading(false);
+        setVideoUrlLoading(false);
 
         setVideoUrl(urlPayload.playback_url);
       } catch (rendErr) {
@@ -157,31 +169,13 @@ export default function ContentManagementPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-900 text-white">
+    <div className="min-h-screen  text-white">
       {/* Header */}
-    <div className="bg-gray-800 border-b border-gray-700">
-        <div className="max-w-7xl mx-auto px-4 py-6">
-          <div className="flex items-center justify-between">
-            <div className='m-4'>
-              <h1 className="text-3xl font-bold">
-            {pathname.includes("movie-management") ? "Movie" : pathname.includes("show-management") ? "Show" : pathname.includes("trailer-management") ? "Trailer" : pathname.includes("documentary-management") ? "Documentary" : "Content"}  Management</h1>
-              <p className="text-gray-400 mt-1">
-                Create, upload, and manage video content {pathname}
-              </p>
-            </div>
-            <button
-              onClick={handleCreateNew}
-              className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-semibold"
-            >
-              + Create New {pathname.includes("movie-management") ? "Movie" : pathname.includes("show-management") ? "Show" : pathname.includes("trailer-management") ? "Trailer" : pathname.includes("documentary-management") ? "Documentary" : "Content"}
-            </button>
-          </div>
-        </div>
-      </div>
+      <ContentHeaderComponent handleCreateNew={handleCreateNew} />
 
       <div className="max-w-7xl mx-auto px-4 py-8">
         {/* Loading Spinner */}
-        
+
 
         {/* Error Message */}
         {error && (
@@ -189,395 +183,194 @@ export default function ContentManagementPage() {
             {error}
           </div>
         )}
-{loading ? (
-          <div className="  rounded-lg  w-full flex flex-col items-start ">
-           <div className="mb-4 bg-gray-800 rounded-lg p-4 w-full">
-            
-          <SkeletonLoader className='w-[70px] h-[20px] bg-gray-400 mb-4 mt-2'/>
-          <div className="grid grid-cols-1 md:grid-cols-5 gap-4 w-full">
-             {Array.from({ length: 5 }).map((_, index) => (
-                            <SkeletonLoader key={index} className='w-full col-span-1 h-[40px] bg-gray-400 '/>
-      
-            ))}
-          </div>
+       {loading ?
+            <>
+            <ContentFilter filters={filters} setFilters={setFilters} />
+<div className='flex flex-row items-center w-full justify-end p-2'>
+              <button className='p-2 rounded-md bg-neutral-800 flex flex-row items-center' onClick={() => {
+                fetchContent()
+              }}>Refresh <BiRefresh className='ml-1' /> </button>
+            </div>
+          <ContentLoading /></>
 
-        </div>
-        {Array.from({ length: 2 }).map((_, index) => ( 
-             
-                           <div className='p-4 py-6 bg-gray-800 w-full h-auto rounded-md mt-2 flex flex-col items-start w-full'> 
-                           <div className='flex flex-row items-center justify-between w-full'>
-                             <div className='flex flex-row items-center w-6/12'>
-                             <SkeletonLoader key={index} className='w-[300px] mx-1 h-[25px] bg-gray-400 '/>
-                             <SkeletonLoader key={index} className='w-[50px] mx-1 h-[20px] bg-gray-400 rounded-full '/>
-</div>
-  <div className='flex flex-row items-center justify-end w-6/12'>
-                             <SkeletonLoader key={index} className='w-[100px] mx-1 h-[35px] bg-gray-400 '/>
-                             <SkeletonLoader key={index} className='w-[100px] mx-1 h-[35px] bg-gray-400 '/>
-</div>
-                           </div>
-                            <div className='flex flex-row items-center w-full justify-start'>
-                            <SkeletonLoader key={index} className='ml-1 w-3/12 mt-2 h-[20px] bg-gray-500 '/>
-
-                            </div>
-                            <div className='flex flex-row items-center w-full justify-start mt-4'>
-                            <SkeletonLoader key={index} className='ml-1 w-2/12 h-[15px] bg-gray-500 '/>
-                            <SkeletonLoader key={index} className='ml-4 w-2/12 h-[15px] bg-gray-500 '/>
-                            <SkeletonLoader key={index} className='ml-4 w-3/12 h-[15px] bg-gray-500 '/>
-
-                            </div>
-                           </div>
-          
-            ))}
-          </div>
-
-        ) 
-        :
-        <><div className="mb-6 bg-gray-800 rounded-lg p-4">
-          <h2 className="text-lg font-semibold mb-4">Filters</h2>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <select
-              value={filters.status || ''}
-              onChange={(e) => setFilters({ ...filters, status: e.target.value as any || undefined })}
-              className="px-4 py-2 bg-gray-700 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="">All Statuses</option>
-              <option value="draft">Draft</option>
-              <option value="processing">Processing</option>
-              <option value="published">Published</option>
-              <option value="inactive">Inactive</option>
-            </select>
-
-            {/* <select
-              value={filters.content_type || ''}
-              onChange={(e) => setFilters({ ...filters, content_type: e.target.value as any || undefined })}
-              className="px-4 py-2 bg-gray-700 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="">All Content Types</option>
-              <option value="movie">movie</option>
-              <option value="series">series</option>
-              <option value="episode">episode</option>
-              <option value="trailer">trailer</option>
-              <option value="documentary">documentary</option>
-            </select> */}
-
-            <select
-              value={filters.media_type || ''}
-              onChange={(e) => setFilters({ ...filters, media_type: e.target.value as any || undefined })}
-              className="px-4 py-2 bg-gray-700 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="">All Media Types</option>
-              <option value="flat">flat</option>
-              <option value="vr_360_mono">vr_360_mono</option>
-              <option value="vr_360_sbs">vr_360_sbs</option>
-              <option value="vr_360_tb">vr_360_tb</option>
-              <option value="vr_180_mono">vr_180_mono</option>
-              <option value="vr_180_sbs">vr_180_sbs</option>
-              <option value="vr_180_tb">vr_180_tb</option>
-            </select>
-
-            <select
-              value={filters.is_kid_safe === undefined ? '' : filters.is_kid_safe.toString()}
-              onChange={(e) => setFilters({ ...filters, is_kid_safe: e.target.value === '' ? undefined : e.target.value === 'true' })}
-              className="px-4 py-2 bg-gray-700 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="">All Content</option>
-              <option value="true">Kid Safe Only</option>
-              <option value="false">Not Kid Safe</option>
-            </select>
-
-            <select
-              value={filters.is_ppv === undefined ? '' : filters.is_ppv.toString()}
-              onChange={(e) => setFilters({ ...filters, is_ppv: e.target.value === '' ? undefined : e.target.value === 'true' })}
-              className="px-4 py-2 bg-gray-700 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="">All Content</option>
-              <option value="true">PPV Only</option>
-              <option value="false">Non-PPV</option>
-            </select>
-          </div>
-        </div>
-
-        {/* Content List */}
-        {!loading && (!content || content.length === 0) ? (
-          <div className="bg-gray-800 rounded-lg p-12 text-center">
-            <p className="text-gray-400 text-lg mb-4">No content found</p>
-            <button
-              onClick={handleCreateNew}
-              className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-            >
-              Create Your First Content
-            </button>
-          </div>
-        ) : (
-          <div className="grid gap-4">
-            {content && content.map((item) => (
-              <div
-                key={item.id}
-                className="bg-gray-800 rounded-lg p-6 hover:bg-gray-750 transition-colors"
-              >
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-3 mb-2">
-                      <h3 className="text-xl font-semibold">{item.title}</h3>
-                      <div className={`flex flex-row items-center ${getStatusBadge(item.status)} rounded-full px-2 py-[2px]`}>
-                        <span
-                        className={` py-1 rounded-full text-xs font-bold text-white capitalize`}
-                      >
-                        {item.ingest_status as string}
-                      </span> 
-                       {/* <span
-                        className={` py-1 rounded-full text-xs font-bold text-white capitalize`}
-                      >
-                        {item.transcoding_progress  != null && item.status === 'processing'
-                          ? ` - ${item.transcoding_progress}%`
-                          : ''}
-                      </span> */}
-                      </div>
-                      {item.is_kid_safe && (
-                        <span className="px-2 py-1 bg-green-900/50 text-green-300 rounded text-xs">
-                          Kid Safe
-                        </span>
-                      )}
-                      {item.is_ppv && (
-                        <span className="px-2 py-1 bg-purple-900/50 text-purple-300 rounded text-xs">
-                          PPV ${(item.price_cents / 100).toFixed(2)}
-                        </span>
-                      )}
-                    </div>
-
-                    <p className="text-gray-400 mb-3 line-clamp-2">{item.description}</p>
-
-                    <div className="flex items-center gap-4 text-sm text-gray-500">
-                      <span>Type: {item.content_type}</span>
-                      <span>•</span>
-                      <span>Media: {item.media_type}</span>
-                      <span>•</span>
-                      <span>ID: {item.id}</span>
-                    </div>
-                  </div>
-
-                  <div className="flex gap-2 ml-4">
-                    <button
-                      onClick={() => handleViewDetails(item)}
-                      className="px-4 py-2 bg-gray-700 text-white rounded-lg hover:bg-gray-600 transition-colors"
-                    >
-                      Details
-                    </button>
-                    <button
-                      onClick={() => handleEdit(item)}
-                      className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-                    >
-                      Edit
-                    </button>
-                  </div>
-                </div>
+          :
+          <> 
+            <ContentFilter filters={filters} setFilters={setFilters} />
+            <div className='flex flex-row items-center w-full justify-end p-2'>
+              <button className='p-2 rounded-md bg-neutral-800 flex flex-row items-center' onClick={() => {
+                fetchContent()
+              }}>Refresh <BiRefresh className='ml-1' /> </button>
+            </div>
+            {/* Content List */}
+            {!loading && (!content || content.length === 0) ? (
+              <div className="bg-neutral-900 rounded-lg p-12 text-center">
+                <p className="text-gray-400 text-lg mb-4">No content found</p>
+                <button
+                  onClick={handleCreateNew}
+                  className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                >
+                  Create Your First Content
+                </button>
               </div>
-            ))}
-          </div>
-        )}</>
+            ) : (
+                           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+
+                  {content && content.map((item) => (
+                                  <div
+                                    key={item.id}
+                                    className="bg-neutral-900 rounded-xl shadow-lg p-4 md:p-3 flex flex-col  gap-4 hover:shadow-2xl transition-all duration-300 border border-neutral-700"
+                                  >
+                                    {/* Left: Thumbnail / Type */}
+                                    <div className='flex flex-row justify-between items-start w-full'>
+                                      <div className="flex-shrink-0 w-full md:w-32 h-0 md:h-32 relative rounded-lg overflow-hidden shadow-lg">
+                                      {(item.poster_url || item.banner_url) ?<img
+                                        src={item.poster_url || item.banner_url || '/placeholder.png'}
+                                        alt={item.title}
+                                        className="w-full h-full object-cover"
+                                      />:
+                                      <div className='flex flex-col items-center justify-center w-full h-full text-neutral-400 text-xs bg-neutral-900 text-center'>No Poster Uploaded yet</div>}
+                                      {/* Optional gradient overlay */}
+                                      <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent"></div>
+                                    </div>
+                <div className="flex flex-col gap-2 justify-end   ">
+                      <div className='flex flex-row items-center  w-full justify-end '>
+                      <button
+                        onClick={() => handleViewDetails(item)}
+                         className="mx-[2px] flex flex-row items-center justify-center   p-2 bg-neutral-950 text-white rounded-lg hover:bg-black transition-colors duration-300"
+                    >
+                        <FiTablet />
+                      </button>
+                 <button
+                        onClick={() => handleEdit(item)}
+                         className="mx-[2px] flex flex-row items-center justify-center  p-2 bg-neutral-950 text-white rounded-lg hover:bg-black transition-colors duration-300"
+                      >
+                         <BiEdit  />
+                      </button></div>
+                      {(item.ingest_status === 'ready' && item.status !== 'published' && item.status !== 'inactive') && (
+                        <button
+                          onClick={async () => {
+                            const res = await publishContent(item.id);
+                            if (res.status === 'published') {
+                              toast.success(`Published ${item.title}`);
+                              fetchContent();
+                            } else {
+                              toast.error('Publishing failed');
+                            }
+                          }}
+                           className="text-sm flex flex-row items-center px-2 py-2 bg-yellow-700 text-white rounded-lg hover:bg-black hover:text-yellow-700 transition-colors duration-300"
+                        >
+                          Publish
+                        </button>
+                      )}
+                
+                     
+                    </div>
+                                    </div>
+                                    {/* Middle: Content Info */}
+                                    <div className="flex-1 flex flex-col gap-2">
+                                      <div className="flex flex-wrap items-center gap-2">
+                                     
+                                        {item.status !== 'published' && (
+                                          <span className={`  px-2 py-1 rounded-full font-semibold text-[8px] ${getStatusBadge(item.status)}`}>
+                                            Upload: {item.status}
+                                          </span>
+                                        )}
+                
+                                        <span className={`  px-2 py-1 rounded-full font-semibold text-[8px] ${getStatusBadge(item.ingest_status)}`}>
+                                          Transcoding: {item.ingest_status}
+                                        </span>
+                
+                                        {item.is_kid_safe && (
+                                          <span className="px-1 py-1 bg-green-900/50 text-green-300 text-[8px] rounded  flex items-center gap-1">
+                                            🧒 Kid Safe
+                                          </span>
+                                        )}
+                
+                                        {item.is_ppv && (
+                                          <span className="px-2 py-1 bg-purple-900/50 text-purple-300 rounded text-[8px]">
+                                            PPV ${((item?.price_cents || 0) / 100).toFixed(2)}
+                                          </span>
+                                        )}
+                                           <h3 className="text-xl font-bold text-white capitalize w-full">{item.title}</h3>
+                                      <p className="text-gray-400 text-sm line-clamp-3 capitalize w-full">{item.description}</p>
+                
+                                      </div>
+                
+                
+                                      {/* Metadata Cards */}
+                                      
+                
+                                      {/* Collapsible Extra Details */}
+                                      <details className="mt-2 w-full">
+                                        <summary className="text-sm text-gray-400 cursor-pointer hover:text-white">More Details </summary>
+                                        <div className="flex flex-wrap gap-2 mt-2">
+                                        <span className="bg-neutral-800 px-2 py-1 rounded-md text-gray-300 text-xs font-medium">Type: {item.content_type}</span>
+                                        <span className="bg-neutral-800 px-2 py-1 rounded-md text-gray-300 text-xs font-medium">Media: {item.media_type}</span>
+                                        <span className="bg-neutral-800 px-2 py-1 rounded-md text-gray-300 text-xs font-medium">ID: {item.id}</span>
+                                        {item.content_metadata?.release_year && <span className="bg-neutral-800 px-2 py-1 rounded-md text-gray-300 text-xs font-medium">Year: {item.content_metadata.release_year}</span>}
+                                        {item.content_metadata?.language && <span className="bg-neutral-800 px-2 py-1 rounded-md text-gray-300 text-xs font-medium">Language: {item.content_metadata.language}</span>}
+                                        {Array.isArray(item.genres) && item.genres.length > 0 && <span className="bg-neutral-800 px-2 py-1 rounded-md text-gray-300 text-xs font-medium">Genres: {item.genres.join(', ')}</span>}
+                                      </div>
+                                        <div className="mt-2 flex flex-wrap gap-2 text-xs text-gray-300">
+                                          {Array.isArray(item.content_metadata?.directors) && item.content_metadata?.directors.length > 0 && 
+                                          
+                                        <span className="bg-neutral-800 px-2 py-1 rounded-md text-gray-300 text-xs font-medium"><strong>Director:</strong> {item.content_metadata.directors.join(', ')}</span>
+                                           }
+                                          {Array.isArray(item.content_metadata?.producers) && item.content_metadata?.producers.length > 0 &&
+                                           <span className="bg-neutral-800 px-2 py-1 rounded-md text-gray-300 text-xs font-medium"><strong>Producer:</strong> {item.content_metadata.producers.join(', ')}</span>
+                                         
+                                          }
+                                          {Array.isArray(item.content_metadata?.awards) && item.content_metadata?.awards.length > 0 && 
+                                           <span className="bg-neutral-800 px-2 py-1 rounded-md text-gray-300 text-xs font-medium"><strong>Awards:</strong> {item.content_metadata.awards.join(', ')}</span>
+                                          
+                                          }
+                                        </div>
+                                      </details>
+                                    </div>
+                
+                                    {/* Right: Actions */}
+                
+                                  </div>
+                                ))}
+              </div>
+            )}</>
         }
       </div>
 
       {/* Content Editor Modal */}
-      {showEditor && (
+       {showEditor && (
         <ContentEditor
           content={selectedContent}
           setContent={setContent}
           onClose={handleEditorClose}
           onSuccess={handleEditorSuccess}
+           contentType={pathname.includes('movie')?'movie':
+            pathname.includes('document')?'documentary':
+            pathname.includes('trailer')?'trailer':
+            pathname.includes('series')?'series':
+            pathname.includes('episode')?'episode':"movie"
+          }
         />
       )}
 
       {/* Content Details Modal */}
       {showDetails && detailContent && (
-        <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4 overflow-y-auto">
-          <div className="bg-gray-800 rounded-lg max-w-6xl w-full my-8">
-            {/* Header */}
-            <div className="flex items-center justify-between p-6 border-b border-gray-700">
-              <h2 className="text-2xl font-bold text-white">Content Details</h2>
-              <button
-                onClick={handleDetailsClose}
-                className="text-gray-400 hover:text-white transition-colors"
-              >
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
-            </div>
-
-            {/* Content */}
-            <div className="p-6 max-h-[calc(100vh-200px)] overflow-y-auto space-y-6">
-              {/* Basic Info */}
-              <div>
-                <h3 className="text-xl font-bold mb-4">{detailContent.title}</h3>
-                <p className="text-gray-300">{detailContent.description}</p>
-              </div>
-
-              {/* Images */}
-              {(detailContent.poster_url || detailContent.banner_url) && (
-                <div className="grid grid-cols-2 gap-4">
-                  {detailContent.poster_url && (
-                    <div>
-                      <h4 className="text-sm font-semibold text-gray-400 mb-2">Poster</h4>
-                      <img
-                        src={detailContent.poster_url}
-                        alt="Poster"
-                        className="w-full rounded-lg"
-                      />
-                    </div>
-                  )}
-                  {detailContent.banner_url && (
-                    <div>
-                      <h4 className="text-sm font-semibold text-gray-400 mb-2">Banner</h4>
-                      <img
-                        src={detailContent.banner_url}
-                        alt="Banner"
-                        className="w-full rounded-lg"
-                      />
-                    </div>
-                  )}
-                </div>
-              )}
- {videoUrlLoading && <RoundLoader className=''/> }
- {videoUrl && (
-                    <div>
-                      <h4 className="text-sm font-semibold text-gray-400 mb-2">Video</h4>
-                      <video
-                        src={videoUrl}
-                        controls
-                        className="w-full rounded-lg"
-                      >
-                        Your browser does not support the video tag.
-                      </video>
-                    </div>
-                  )}
-              {/* Renditions */}
-              <div>
-                <h3 className="text-xl font-bold text-white mb-4">
-                  Available Renditions {renditions.length > 0 && `(${renditions.length})`}
-                </h3>
-
-                {loadingRenditions ? (
-                  <div className="bg-gray-800 rounded-lg p-8 text-center">
-                    <p className="text-gray-400">Loading renditions...</p>
-                  </div>
-                ) : renditions.length === 0 ? (
-                  <div className="bg-gray-800 rounded-lg p-8 text-center">
-                    <p className="text-gray-400">No renditions available yet.</p>
-                    <p className="text-sm text-gray-500 mt-2">
-                      Renditions will appear here once transcoding is complete.
-                    </p>
-                  </div>
-                ) : (
-                  <div className="grid gap-4">
-                    {renditions.map((rendition) => (
-                      <div 
-                        key={rendition.id} 
-                        className="bg-gray-800 rounded-lg p-4 hover:bg-gray-750 transition-colors"
-                      >
-                        <div className="flex items-start justify-between mb-3">
-                          <div className="flex items-center gap-3">
-                            <span 
-                              className={`px-3 py-1 rounded-full text-xs font-bold text-white ${getQualityBadgeColor(rendition.quality_label)}`}
-                            >
-                              {rendition.quality_label}
-                            </span>
-                            
-                            <span 
-                              className={`px-2 py-1 rounded text-xs font-medium ${
-                                rendition.status === 'ready' 
-                                  ? 'bg-green-900/50 text-green-300' 
-                                  : rendition.status === 'processing'
-                                  ? 'bg-yellow-900/50 text-yellow-300'
-                                  : 'bg-gray-700 text-gray-300'
-                              }`}
-                            >
-                              {rendition.status}
-                            </span>
-                          </div>
-
-                          {rendition.file_size_bytes && (
-                            <span className="text-sm text-gray-400">
-                              {(rendition.file_size_bytes / (1024 * 1024)).toFixed(2)} MB
-                            </span>
-                          )}
-                        </div>
-
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-                          {(rendition.width && rendition.height) && (
-                            <div>
-                              <span className="text-gray-500">Resolution:</span>
-                              <span className="text-white ml-2">
-                                {rendition.width}x{rendition.height}
-                              </span>
-                            </div>
-                          )}
-
-                          {rendition.bitrate && (
-                            <div>
-                              <span className="text-gray-500">Bitrate:</span>
-                              <span className="text-white ml-2">
-                                {formatBitrate(rendition.bitrate)}
-                              </span>
-                            </div>
-                          )}
-
-                          {rendition.format && (
-                            <div>
-                              <span className="text-gray-500">Format:</span>
-                              <span className="text-white ml-2 uppercase">
-                                {rendition.format}
-                              </span>
-                            </div>
-                          )}
-
-                          {rendition.codec && (
-                            <div>
-                              <span className="text-gray-500">Codec:</span>
-                              <span className="text-white ml-2 uppercase">
-                                {rendition.codec}
-                              </span>
-                            </div>
-                          )}
-                        </div>
-
-                        {rendition.url && (
-                          <div className="mt-3 pt-3 border-t border-gray-700">
-                            <details className="cursor-pointer">
-                              <summary className="text-sm text-gray-400 hover:text-white">
-                                View URLs
-                              </summary>
-                              <div className="mt-2 space-y-2">
-                                <div>
-                                  <span className="text-xs text-gray-500 block mb-1">
-                                    Playback URL:
-                                  </span>
-                                  <code className="text-xs text-blue-400 bg-gray-900 px-2 py-1 rounded block overflow-x-auto">
-                                    {rendition.url}
-                                  </code>
-                                </div>
-                                {rendition.manifest_url && (
-                                  <div>
-                                    <span className="text-xs text-gray-500 block mb-1">
-                                      Manifest URL:
-                                    </span>
-                                    <code className="text-xs text-blue-400 bg-gray-900 px-2 py-1 rounded block overflow-x-auto">
-                                      {rendition.manifest_url}
-                                    </code>
-                                  </div>
-                                )}
-                              </div>
-                            </details>
-                          </div>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
+        <ContentDetailsModal
+  open={showDetails}
+  detailContent={detailContent}
+  onClose={() => {
+    setShowDetails(false);
+    setDetailContent(null);
+    fetchContent()
+  }}
+  videoUrl={videoUrl}
+  videoUrlLoading={videoUrlLoading}
+  renditions={renditions}
+  loadingRenditions={loadingRenditions}
+  publishContent={publishContent}
+  getQualityBadgeColor={getQualityBadgeColor}
+  formatBitrate={formatBitrate}
+/>
       )}
     </div>
   );

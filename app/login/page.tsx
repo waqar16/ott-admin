@@ -10,7 +10,7 @@ export default function LoginPage() {
   // const { isLoggedIn } = useAuth();
   const router = useRouter();
   const params = useSearchParams();
-  const redirect = params.get('redirect') || '/home';
+  const redirect = params.get('redirect') || '/admin';
 
   // useEffect(() => {
   //   if (isLoggedIn) router.replace(redirect);
@@ -36,17 +36,6 @@ export default function LoginPage() {
         <div className="bg-white rounded-xl shadow-2xl p-8">
           <LoginForm />
           
-          <div className="mt-6 text-center">
-            <p className="text-sm text-gray-600">
-              Don't have an account?{' '}
-              <Link
-                href={`/signup${redirect !== '/home' ? `?redirect=${encodeURIComponent(redirect)}` : ''}`}
-                className="text-purple-600 hover:text-purple-700 font-semibold"
-              >
-                Sign up
-              </Link>
-            </p>
-          </div>
         </div>
       </div>
     </div>

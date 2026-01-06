@@ -55,7 +55,7 @@ export interface LandingHeroProps {
   subheadline?: string;
   /** CTA button text (default: "Start Watching") */
   ctaText?: string;
-  /** CTA button link (default: "/signup?plan=full") */
+  /** CTA button link (default: "/catalog") */
   ctaLink?: string;
   /** Email input placeholder (default: "Enter your email") */
   emailPlaceholder?: string;
@@ -90,7 +90,7 @@ export default function LandingHero({
   headline = 'Stream Your Favorite Content Anywhere',
   subheadline = 'Unlimited movies, TV shows, and more. Watch anywhere. Cancel anytime.',
   ctaText = 'Start Watching',
-  ctaLink = '/signup?plan=full',
+  ctaLink = '/catalog',
   emailPlaceholder = 'Enter your email',
   demoImages = DEFAULT_DEMO_IMAGES,
   carouselInterval = 5000,

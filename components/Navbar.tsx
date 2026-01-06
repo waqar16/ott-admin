@@ -21,7 +21,7 @@ export function Navbar() {
   ];
 
   const loggedInLinks = [
-    { href: '/home', label: 'Home' },
+    { href: '/admin', label: 'Home' },
     { href: '/immersive', label: 'VR & Immersive' },
     { href: '/movies', label: 'Movies' },
     { href: '/series', label: 'Series' },
@@ -43,7 +43,7 @@ export function Navbar() {
       <nav className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
-          <Link href={isLoggedIn ? '/home' : '/'} className="flex items-center space-x-2">
+          <Link href={isLoggedIn ? '/admin' : '/'} className="flex items-center space-x-2">
             <div className="w-10 h-10 bg-gradient-to-r from-purple-500 to-pink-500 rounded-lg flex items-center justify-center font-bold text-xl">
               OTT
             </div>
@@ -71,12 +71,6 @@ export function Navbar() {
               <>
                 <Link href="/login" className="px-4 py-2 text-gray-300 hover:text-white transition-colors">
                   Login
-                </Link>
-                <Link
-                  href="/signup"
-                  className="px-6 py-2 bg-gradient-to-r from-purple-500 to-pink-500 rounded-lg font-semibold hover:from-purple-600 hover:to-pink-600 transition-all shadow-lg hover:shadow-xl"
-                >
-                  Sign Up
                 </Link>
               </>
             ) : (
@@ -141,9 +135,6 @@ export function Navbar() {
               <div className="px-4 pt-4 space-y-2 border-t border-gray-800">
                 <Link href="/login" className="block w-full px-4 py-2 text-center text-gray-300 hover:bg-gray-800 rounded-lg transition-colors" onClick={() => setMobileOpen(false)}>
                   Login
-                </Link>
-                <Link href="/signup" className="block w-full px-4 py-2 text-center bg-gradient-to-r from-purple-500 to-pink-500 rounded-lg font-semibold hover:from-purple-600 hover:to-pink-600 transition-all" onClick={() => setMobileOpen(false)}>
-                  Sign Up
                 </Link>
               </div>
             ) : (

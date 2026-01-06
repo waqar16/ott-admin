@@ -286,7 +286,7 @@ export async function listPlans({
   }
   
   try {
-    const url = `${API_BASE}/api/v1/payments/plans/?page=${page}&page_size=${pageSize}`;
+    const url = `${API_BASE}api/v1/payments/plans/?page=${page}&page_size=${pageSize}`;
     const response = await fetch(url, {
       method: 'GET',
       headers: {
@@ -345,7 +345,7 @@ export async function createSubscriptionCheckout(planId: string): Promise<string
   }
   
   try {
-    const url = `${API_BASE}/api/v1/payments/stripe/create-checkout-session/`;
+    const url = `${API_BASE}api/v1/payments/stripe/create-checkout-session/`;
     const response = await fetch(url, {
       method: 'POST',
       headers: getAuthHeaders(),
@@ -398,7 +398,7 @@ export async function listSubscriptions(): Promise<SubscriptionsListResponse> {
   }
   
   try {
-    const url = `${API_BASE}/api/v1/payments/subscriptions/`;
+    const url = `${API_BASE}api/v1/payments/subscriptions/`;
     const response = await fetch(url, {
       method: 'GET',
       headers: getAuthHeaders(),
@@ -455,7 +455,7 @@ export async function changePlan(planId: string): Promise<Subscription> {
   }
   
   try {
-    const url = `${API_BASE}/api/v1/payments/change-plan/`;
+    const url = `${API_BASE}api/v1/payments/change-plan/`;
     const response = await fetch(url, {
       method: 'POST',
       headers: getAuthHeaders(),
@@ -504,7 +504,7 @@ export async function cancelSubscription(): Promise<Subscription> {
   }
   
   try {
-    const url = `${API_BASE}/api/v1/payments/cancel-subscription/`;
+    const url = `${API_BASE}api/v1/payments/cancel-subscription/`;
     const response = await fetch(url, {
       method: 'POST',
       headers: getAuthHeaders(),
@@ -552,7 +552,7 @@ export async function reactivateSubscription(): Promise<Subscription> {
   }
   
   try {
-    const url = `${API_BASE}/api/v1/payments/reactivate-subscription/`;
+    const url = `${API_BASE}api/v1/payments/reactivate-subscription/`;
     const response = await fetch(url, {
       method: 'POST',
       headers: getAuthHeaders(),
@@ -632,7 +632,7 @@ export async function listPayments({
       params.append('status', status);
     }
     
-    const url = `${API_BASE}/api/v1/payments/payments/?${params.toString()}`;
+    const url = `${API_BASE}api/v1/payments/payments/?${params.toString()}`;
     const response = await fetch(url, {
       method: 'GET',
       headers: getAuthHeaders(),
@@ -705,7 +705,7 @@ export async function checkStreamAccess(
   }
   
   try {
-    const url = `${API_BASE}/api/v1/content/content/${contentId}/stream/?quality=${quality}`;
+    const url = `${API_BASE}api/v1/content/content/${contentId}/stream/?quality=${quality}`;
     const response = await fetch(url, {
       method: 'GET',
       headers: getAuthHeaders(),
@@ -763,7 +763,7 @@ export async function createPpvCheckout(contentId: string): Promise<string> {
   }
   
   try {
-    const url = `${API_BASE}/api/v1/content/ppv/checkout/`;
+    const url = `${API_BASE}api/v1/content/ppv/checkout/`;
     const response = await fetch(url, {
       method: 'POST',
       headers: getAuthHeaders(),

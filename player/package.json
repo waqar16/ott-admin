@@ -1,0 +1,34 @@
+{
+  "name": "@urview/player",
+  "version": "0.0.0",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "clean": "rm -rf .turbo node_modules",
+    "lint": "biome check",
+    "format": "biome format --write",
+    "check-types": "tsc --noEmit"
+  },
+  "peerDependencies": {
+    "react": "19.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^24",
+    "@types/react": "19.2.2",
+    "@types/three": "^0.180.0",
+    "typescript": "^5.9.3",
+    "@urview/typescript-config": "workspace:*"
+  },
+  "dependencies": {
+    "@react-three/drei": "^10.7.6",
+    "@react-three/fiber": "^9.3.0",
+    "@urview/ui": "workspace:*",
+    "hls.js": "^1.6.13",
+    "lucide-react": "^0.545.0",
+    "three": "^0.180.0",
+    "three-stdlib": "^2.36.0"
+  },
+  "exports": {
+    ".": "./src/index.ts"
+  }
+}

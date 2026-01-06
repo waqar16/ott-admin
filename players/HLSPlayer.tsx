@@ -1,45 +1,45 @@
-'use client'
+'use client';
 
-import React, { useRef, useEffect } from 'react'
+import Hls from 'hls.js';
+import { useEffect, useRef } from 'react';
 
-interface HLSPlayerProps {
-  src: string
-  poster?: string
-  autoPlay?: boolean
-  className?: string
+interface Props {
+  src: string;
 }
 
-export const HLSPlayer: React.FC<HLSPlayerProps> = ({
-  src,
-  poster,
-  autoPlay = false,
-  className = '',
-}) => {
-  const videoRef = useRef<HTMLVideoElement>(null)
+export default function HlsVideoPlayer({ src }: Props) {
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const hlsRef = useRef<Hls | null>(null);
 
   useEffect(() => {
-    const video = videoRef.current
-    if (!video) return
+    const video = videoRef.current;
+    if (!video) return;
 
-    // HLS.js integration would go here
-    // For now, native HLS support (Safari) or fallback
-    if (video.canPlayType('application/vnd.apple.mpegurl')) {
-      video.src = src
-    } else {
-      // You would initialize HLS.js here
-      console.log('HLS.js would be initialized here')
+    // destroy previous instance
+    if (hlsRef.current) {
+      hlsRef.current.destroy();
     }
-  }, [src])
+
+    if (Hls.isSupported()) {
+      const hls = new Hls();
+      hls.loadSource(src);
+      hls.attachMedia(video);
+      hlsRef.current = hls;
+    } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+      video.src = src; // Safari
+    }
+
+    return () => {
+      hlsRef.current?.destroy();
+    };
+  }, [src]);
 
   return (
     <video
       ref={videoRef}
-      poster={poster}
-      autoPlay={autoPlay}
       controls
-      className={`w-full h-auto rounded-lg ${className}`}
-    >
-      Your browser does not support HLS streaming.
-    </video>
-  )
+      autoPlay
+      className="w-full h-full rounded-lg bg-black"
+    />
+  );
 }

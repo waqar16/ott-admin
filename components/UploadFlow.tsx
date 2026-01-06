@@ -1,7 +1,8 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import { useSession } from 'next-auth/react';
+import { uploadFileWithProgress } from '@/lib/uploader';
 
 interface UploadFile {
   id: string;
@@ -29,6 +30,14 @@ export function UploadFlow({
   const { data: session } = useSession();
   const [files, setFiles] = useState<UploadFile[]>([]);
   const [isDragging, setIsDragging] = useState(false);
+  const [globalError, setGlobalError] = useState<string | null>(null);
+
+  const isUploading = useMemo(
+    () => files.some((f) => f.status === 'uploading' || f.status === 'processing'),
+    [files]
+  );
+
+  const LARGE_FILE_WARNING_BYTES = 1024 * 1024 * 1024; // 1 GB warning threshold (soft warning only)
 
   const getAcceptedTypes = () => {
     if (acceptedFileTypes) return acceptedFileTypes;
@@ -101,6 +110,8 @@ export function UploadFlow({
 
     setFiles((prev) => [...prev, ...uploadFiles]);
 
+    setGlobalError(null);
+
     // Start uploading each file
     uploadFiles.forEach((uploadFile) => {
       startUpload(uploadFile);
@@ -113,63 +124,62 @@ export function UploadFlow({
       updateFileStatus(uploadFile.id, { status: 'uploading', progress: 0 });
 
       // Step 1: Get signed URL from our API
-      const signedUrlResponse = await fetch('/api/upload', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          fileName: uploadFile.file.name,
-          fileType: uploadFile.file.type,
-          fileSize: uploadFile.file.size,
-          contentType,
-        }),
-      });
+      let signedUrlResponse: Response;
+      try {
+        signedUrlResponse = await fetch('/api/upload', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            fileName: uploadFile.file.name,
+            fileType: uploadFile.file.type,
+            fileSize: uploadFile.file.size,
+            contentType,
+          }),
+        });
+      } catch (err) {
+        throw new Error('Network error while requesting upload URL');
+      }
 
       if (!signedUrlResponse.ok) {
-        const error = await signedUrlResponse.json();
-        throw new Error(error.error || 'Failed to get upload URL');
+        let errorMessage = 'Failed to get upload URL';
+        try {
+          const error = await signedUrlResponse.json();
+          errorMessage = error.error || error.message || errorMessage;
+        } catch {}
+        throw new Error(errorMessage);
       }
 
       const { uploadUrl, fileId, fileKey } = await signedUrlResponse.json();
 
-      // Step 2: Upload file directly to S3 using signed URL
-      const xhr = new XMLHttpRequest();
-
-      xhr.upload.addEventListener('progress', (e) => {
-        if (e.lengthComputable) {
-          const progress = Math.round((e.loaded / e.total) * 100);
-          updateFileStatus(uploadFile.id, { progress });
-        }
+      // Step 2: Upload file directly using streaming-friendly XHR
+      await uploadFileWithProgress({
+        url: uploadUrl,
+        method: 'PUT',
+        file: uploadFile.file,
+        headers: {
+          'Content-Type': uploadFile.file.type,
+        },
+        onProgress: ({ percent }) => {
+          updateFileStatus(uploadFile.id, { progress: percent, status: 'uploading' });
+        },
       });
 
-      xhr.addEventListener('load', () => {
-        if (xhr.status === 200) {
-          updateFileStatus(uploadFile.id, {
-            status: 'processing',
-            progress: 100,
-            uploadUrl,
-            fileKey,
-          });
-
-          // Poll for processing status
-          pollProcessingStatus(uploadFile.id, fileId, fileKey);
-        } else {
-          throw new Error(`Upload failed with status ${xhr.status}`);
-        }
+      updateFileStatus(uploadFile.id, {
+        status: 'processing',
+        progress: 100,
+        uploadUrl,
+        fileKey,
       });
 
-      xhr.addEventListener('error', () => {
-        throw new Error('Network error during upload');
-      });
-
-      xhr.open('PUT', uploadUrl);
-      xhr.setRequestHeader('Content-Type', uploadFile.file.type);
-      xhr.send(uploadFile.file);
+      // Poll for processing status
+      pollProcessingStatus(uploadFile.id, fileId, fileKey);
     } catch (error) {
       console.error('Upload error:', error);
       updateFileStatus(uploadFile.id, {
         status: 'error',
         error: error instanceof Error ? error.message : 'Upload failed',
       });
+      setGlobalError(error instanceof Error ? error.message : 'Upload failed');
     }
   };
 
@@ -277,6 +287,12 @@ export function UploadFlow({
 
   return (
     <div className="space-y-6">
+      {globalError && (
+        <div className="p-3 rounded-lg bg-red-50 border border-red-200 text-red-700 text-sm">
+          {globalError}
+        </div>
+      )}
+
       {/* Drop Zone */}
       <div
         onDragEnter={handleDragEnter}
@@ -288,6 +304,7 @@ export function UploadFlow({
             ? 'border-purple-500 bg-purple-50'
             : 'border-gray-300 bg-gray-50 hover:border-gray-400'
         }`}
+        aria-busy={isUploading}
       >
         <input
           type="file"
@@ -296,6 +313,7 @@ export function UploadFlow({
           accept={getAcceptedTypes()}
           onChange={handleFileInput}
           className="hidden"
+          disabled={isUploading}
         />
 
         <div className="space-y-4">
@@ -308,9 +326,14 @@ export function UploadFlow({
           </div>
           <label
             htmlFor={`file-upload-${contentType}`}
-            className="inline-block px-6 py-3 bg-purple-600 text-white font-medium rounded-lg cursor-pointer hover:bg-purple-700 transition"
+            className={`inline-block px-6 py-3 rounded-lg font-medium transition ${
+              isUploading
+                ? 'bg-purple-300 text-white cursor-not-allowed'
+                : 'bg-purple-600 text-white cursor-pointer hover:bg-purple-700'
+            }`}
+            aria-disabled={isUploading}
           >
-            Browse Files
+            {isUploading ? 'Uploading…' : 'Browse Files'}
           </label>
           <div className="text-xs text-gray-500 mt-2">
             <p>Accepted formats: {contentType}</p>
@@ -340,6 +363,11 @@ export function UploadFlow({
                     <p className="text-sm text-gray-600">
                       {formatFileSize(uploadFile.file.size)}
                     </p>
+                    {uploadFile.file.size >= LARGE_FILE_WARNING_BYTES && (
+                      <p className="text-xs text-amber-600 mt-1">
+                        Large file detected. Upload may take time; keep this tab open.
+                      </p>
+                    )}
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
@@ -369,7 +397,7 @@ export function UploadFlow({
                   <div className="flex justify-between text-xs text-gray-600 mb-1">
                     <span>
                       {uploadFile.status === 'uploading'
-                        ? 'Uploading...'
+                        ? 'Uploading…'
                         : 'Processing...'}
                     </span>
                     <span>{uploadFile.progress}%</span>

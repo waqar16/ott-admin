@@ -11,7 +11,7 @@
 
 // Aligned with backend choices
 // Content Type: structural classification of content entity
-export type ContentType = 'movie' | 'series' | 'episode' | 'trailer' | 'documentary';
+export type ContentType = 'movie' | 'series' | 'episode' | 'trailer' | 'documentary' | 'season';
 // Media Type: video projection / VR mode
 export type MediaType =
   | 'flat'
@@ -25,20 +25,38 @@ export type MediaType =
 export type ContentStatus = 'draft' | 'uploaded' | 'published' | 'inactive';
 export type IngestStatus = 'ready' | 'processing' | 'uploading' | 'failed';
 export type ImageType = 'poster' | 'banner' | 'thumbnail';
-
+export type ContentMetadataPayload = {
+  content: string;
+  id?:string;
+  directors: string[];
+  producers: string[];
+  cast: string[];
+  genres: string[];
+  release_year?: number;
+  age_rating?: string;
+  language?: string;
+  subtitles_available: string[];
+  production_company?: string;
+  country?: string;
+  awards: string[];
+};
 export interface Content {
   id: string;
   transcoding_progress?: number;
   ingest_status?: IngestStatus;
   title: string;
+  trailerType?:string;
   description: string;
   content_type: ContentType;
   media_type: MediaType;
+  content_metadata?: ContentMetadataPayload;
   status: ContentStatus;
   is_kid_safe: boolean;
   is_ppv: boolean;
   price_cents?: number;
   genres?: string[];
+  children?:[];
+  parent?:number;
   poster_url?: string;
   banner_url?: string;
   thumbnail_url?: string;
@@ -50,6 +68,7 @@ export interface Content {
   created_at: string;
   updated_at: string;
   user_id?: string;
+
 }
 
 export interface CreateContentPayload {
@@ -60,6 +79,7 @@ export interface CreateContentPayload {
   status?: ContentStatus;
   is_kid_safe?: boolean;
   is_ppv?: boolean;
+  trailerType?:string;
   price_cents?: number;
   genres?: string[];
   duration_seconds?: number;
@@ -67,6 +87,8 @@ export interface CreateContentPayload {
   rating?: string;
   director?: string;
   cast?: string[];
+  parent?:string;
+  seasonNumber?:number;
 }
 
 export interface UpdateContentPayload {
@@ -92,7 +114,13 @@ export interface ContentListResponse {
   previous: string | null;
   results: Content[];
 }
-
+export   interface ContentFilters {
+  status?: string;
+  media_type?: string;
+  content_type?:string
+  is_kid_safe?: boolean;
+  is_ppv?: boolean;
+}
 // ============================================================================
 // ASSET & UPLOAD TYPES
 // ============================================================================
@@ -133,24 +161,20 @@ export interface ImageUploadResponse {
 // RENDITION TYPES
 // ============================================================================
 
-export interface Rendition {
-  id: string;
-  asset: string;
-  preset: string;
+export interface Rendition 
+  {
+    
+  id: string;  
   width: number;
+  stream_url:string;
   height: number;
-  bitrate: number;
-  codec: string;
-  s3_key: string;
-  manifest_url?: string;
-  drm_required: boolean;
-  quality_label: string;
-  created_at: string;
+  bitrate: number; 
+  label: string; 
 }
 
 export interface RenditionsListResponse {
-  count: number;
-  results: Rendition[];
+  content_id: number;
+  renditions: Rendition[];
 }
 
 // ============================================================================
