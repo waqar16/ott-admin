@@ -4,10 +4,13 @@ import '@/styles/globals.css'
 import { Navbar } from '@/components/Navbar'
 import { AuthProvider } from '@/lib/useAuth'
 import { Toaster } from "sonner";
-
+import { Cinzel,Varela_Round,Satisfy,Titan_One } from 'next/font/google'
 const inter = Inter({ subsets: ['latin'] })
-
-export const metadata: Metadata = {
+export const cinzel = Cinzel({ subsets: ['latin'] })
+export const varela_round = Varela_Round({ subsets: ['latin-ext'], weight: "400", })
+export const satisfy = Satisfy({ subsets: ["latin"] , weight: "400",})
+export const titan_one = Titan_One({ subsets: ["latin"] , weight: "400",})
+ const metadata: Metadata = {
   title: 'OTT Platform',
   description: 'Modern OTT streaming platform with immersive experiences',
 }

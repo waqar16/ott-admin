@@ -22,7 +22,7 @@ export type MediaType =
   | 'vr_180_sbs'
   | 'vr_180_tb';
 // Status lifecycle
-export type ContentStatus = 'draft' | 'uploaded' | 'published' | 'inactive';
+export type ContentStatus = 'draft' | 'uploaded' | 'published' | 'inactive' | 'failed';
 export type IngestStatus = 'ready' | 'processing' | 'uploading' | 'failed';
 export type ImageType = 'poster' | 'banner' | 'thumbnail';
 export type ContentMetadataPayload = {

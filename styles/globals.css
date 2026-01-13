@@ -82,3 +82,20 @@
     @apply bg-background text-foreground;
   }
 }
+.minimal-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.minimal-scrollbar::-webkit-scrollbar-thumb {
+  background-color: rgba(255, 255, 255, 0.25);
+  border-radius: 999px;
+}
+
+.minimal-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.minimal-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.25) transparent;
+}

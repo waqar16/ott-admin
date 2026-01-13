@@ -501,7 +501,41 @@ export async function listContent({
     } as ApiError;
   }
 }
-
+export async function retryTranscoding(contentId: string): Promise<any> {
+  
+  
+  const token = getAccessToken();
+  if (!token) {
+    throw {
+      status: 401,
+      message: 'Not authenticated — please login',
+      needAuth: true,
+    } as ApiError;
+  }
+  
+  try {
+    const url = `${API_BASE}api/v1/admin-dashboard/content/video-assets/${contentId}/retry-transcode/`;
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: getAuthHeaders(), 
+    });
+    
+    if (!response.ok) {
+      throw await handleApiError(response);
+    }
+    
+    return await response.json();
+  } catch (error) {
+    if ((error as ApiError).status) {
+      throw error;
+    }
+    throw {
+      status: 0,
+      message: 'Network error - please check your connection',
+      body: error,
+    } as ApiError;
+  }
+}
 /**
  * Publish content (change status to published)
  * POST /api/v1/content/content/{content_id}/publish/
@@ -670,20 +704,10 @@ export async function postUploadCallback(payload: S3CallbackPayload): Promise<an
  * Upload poster or banner image
  * POST /api/v1/content/content/{content_id}/images/
  */
-export async function uploadImage(
+export async function fetchSubtitles(
   contentId: string,
-  file: File,
-  imageType: 'poster' | 'banner' | 'episode-thumbnail'
-): Promise<ImageUploadResponse> {
-  if (USE_MOCK_DATA) {
-    logMockDataUsage('uploadImage');
-    
-    // Mock image upload response
-    return {
-      thumbnail_url: `https://cdn.example.com/images/${contentId}/${imageType}_${Date.now()}.jpg`,
-      s3_key: `images/${contentId}/${imageType}_${Date.now()}.jpg`,
-    };
-  }
+  
+): Promise<any> {
   
   const token = getAccessToken();
   if (!token) {
@@ -695,18 +719,17 @@ export async function uploadImage(
   }
   
   try {
-    const url = `${API_BASE}api/v1/content/content/${contentId}/images/`;
+    const url = `${API_BASE}api/v1/content/content/${contentId}/subtitles/list/`;
     
-    const formData = new FormData();
-    formData.append('file', file);
-    formData.append('image_type', imageType);
+    // const formData = new FormData();
+    // formData.append('file', file);
+    // formData.append('image_type', imageType);
     
     const response = await fetch(url, {
-      method: 'POST',
+      method: 'GET',
       headers: {
         Authorization: `Bearer ${token}`,
-      },
-      body: formData,
+      }, 
     });
     
     if (!response.ok) {
@@ -725,6 +748,97 @@ export async function uploadImage(
     } as ApiError;
   }
 }
+export async function uploadSubtitles(assetId: string, files: File[], languages: string[], names: string[]) {
+  try {
+    const token = getAccessToken();
+  if (!token) {
+    throw {
+      status: 401,
+      message: 'Not authenticated — please login',
+      needAuth: true,
+    } as ApiError;
+  }
+    const fd = new FormData()
+
+    files.forEach((file, i) => {
+      fd.append("files[]", file)            // file
+      fd.append("languages[]", languages[i]) // language of the subtitle
+      fd.append("names[]", names[i])         // subtitle display name
+    })
+
+    const response = await fetch(`${API_BASE}api/v1/content/content/${assetId}/subtitles/bulk/`, {
+      method: "POST",
+      headers:{
+        Authorization: `Bearer ${token}`,
+      },
+      body: fd,
+      // Important: DO NOT set Content-Type manually! browser sets correct multipart boundary
+    })
+
+    if (!response.ok) {
+      const errorText = await response.text()
+      throw new Error(`Upload failed: ${response.status} - ${errorText}`)
+    }
+
+    const data = await response.json()
+    console.log("Upload successful", data)
+    return data
+
+  } catch (err) {
+    console.error("Error uploading subtitles:", err)
+    throw err
+  }
+}
+export async function uploadDubbings(
+  assetId: string,
+  files: File[],
+  languages: string[],
+  names: string[],
+  isDefault: boolean[]  
+) {
+  try {
+    const token = getAccessToken()
+    if (!token) {
+      throw {
+        status: 401,
+        message: 'Not authenticated — please login',
+        needAuth: true,
+      } as ApiError
+    }
+
+    const fd = new FormData()
+
+    files.forEach((file, i) => {
+      fd.append('files[]', file)                     // FILE
+      fd.append('languages[]', languages[i])         // POST
+      fd.append('names[]', names[i])                 // POST
+      fd.append('is_default[]', String(isDefault[i])) // POST → "true" | "false"
+    })
+
+    const response = await fetch(
+      `${API_BASE}api/v1/content/content/${assetId}/audiotracks/bulk/`,
+      {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        body: fd,
+        // ❗ Do NOT set Content-Type
+      }
+    )
+
+    if (!response.ok) {
+      const errorText = await response.text()
+      throw new Error(`Upload failed: ${response.status} - ${errorText}`)
+    }
+
+    return await response.json()
+  } catch (err) {
+    console.error('Error uploading subtitles:', err)
+    throw err
+  }
+}
+
 export async function uploadImageForEpisode(
   contentId: string,
   file: File,
@@ -788,6 +902,61 @@ export async function uploadImageForEpisode(
  * Create a new series
  * POST /api/v1/content/series/
  */
+export async function uploadImage(
+  contentId: string,
+  file: File,
+  imageType: 'poster' | 'banner' | 'episode-thumbnail'
+): Promise<ImageUploadResponse> {
+  if (USE_MOCK_DATA) {
+    logMockDataUsage('uploadImage');
+    
+    // Mock image upload response
+    return {
+      thumbnail_url: `https://cdn.example.com/images/${contentId}/${imageType}_${Date.now()}.jpg`,
+      s3_key: `images/${contentId}/${imageType}_${Date.now()}.jpg`,
+    };
+  }
+  
+  const token = getAccessToken();
+  if (!token) {
+    throw {
+      status: 401,
+      message: 'Not authenticated — please login',
+      needAuth: true,
+    } as ApiError;
+  }
+  
+  try {
+    const url = `${API_BASE}api/v1/content/content/${contentId}/images/`;
+    
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('image_type', imageType);
+    
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+      body: formData,
+    });
+    
+    if (!response.ok) {
+      throw await handleApiError(response);
+    }
+    
+    return await response.json();
+  } catch (error) {
+    if ((error as ApiError).status) {
+      throw error;
+    }
+    throw {
+      status: 0,
+      message: 'Network error - please check your connection',
+      body: error,
+    } as ApiError;
+  }
+}
 export async function createSeries(payload: CreateSeriesPayload): Promise<Series> {
   if (USE_MOCK_DATA) {
     logMockDataUsage('createSeries');

@@ -4,7 +4,6 @@
  * Central configuration file for the OTT platform.
  * Set USE_MOCK_DATA to true to run the app without backend dependencies.
  */
-
 // API Base URL for backend authentication and content APIs
 export const API_BASE = process.env.NEXT_PUBLIC_API_BASE ?? 'https://cmy7tz9t49.execute-api.us-east-1.amazonaws.com/';
 // export const API_BASE = process.env.NEXT_PUBLIC_API_BASE ?? 'http://localhost:8000/';

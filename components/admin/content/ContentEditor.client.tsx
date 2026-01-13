@@ -18,6 +18,8 @@ import {
   uploadImage,
   initUpload,
   publishContent,
+  fetchSubtitles,
+  uploadSubtitles,
 } from '@/lib/contentApi';
 import { uploadWithCallback, validateFile, formatFileSize } from '@/lib/uploadHelper';
 import UploadProgress from './UploadProgress.client';
@@ -28,6 +30,8 @@ import { toast } from 'sonner';
 import HlsVideoPlayer from '@/players/HLSPlayer';
 import SkeletonLoader from '@/components/Loader/SkeletonLoader';
 import FullScreenLoader from '@/components/Loader/FullScreenLoader';
+import { SubtitleUploader } from './SubtitleUploader';
+import { DubbingUploader } from './DubbingUploader';
 
 
 export interface ContentEditorProps {
@@ -50,14 +54,17 @@ export const CONTENT_TYPES: Array<{ value: ContentType; label: string }> = [
 ];
 
 export const MEDIA_TYPES: Array<{ value: MediaType; label: string }> = [
-  { value: 'flat', label: 'flat - Standard 2D video' },
-  { value: 'vr_360_mono', label: 'vr_360_mono - 360 VR Mono (single view)' },
-  { value: 'vr_360_sbs', label: 'vr_360_sbs - 360 VR 3D Side-by-Side stereo' },
-  { value: 'vr_360_tb', label: 'vr_360_tb - 360 VR 3D Top-Bottom stereo' },
-  { value: 'vr_180_mono', label: 'vr_180_mono - 180 VR Mono' },
-  { value: 'vr_180_sbs', label: 'vr_180_sbs - 180 VR 3D Side-by-Side stereo' },
-  { value: 'vr_180_tb', label: 'vr_180_tb - 180 VR 3D Top-Bottom stereo' },
+  { value: 'flat', label: 'Standard Video (2D)' },
+
+  { value: 'vr_360_mono', label: '360° VR Video (Single View)' },
+  { value: 'vr_360_sbs', label: '360° VR Video (3D – Side by Side)' },
+  { value: 'vr_360_tb', label: '360° VR Video (3D – Top & Bottom)' },
+
+  { value: 'vr_180_mono', label: '180° VR Video (Single View)' },
+  { value: 'vr_180_sbs', label: '180° VR Video (3D – Side by Side)' },
+  { value: 'vr_180_tb', label: '180° VR Video (3D – Top & Bottom)' },
 ];
+
 type SearchableSingleSelectProps = {
   label?: string;
   value?: string;
@@ -87,6 +94,24 @@ export default function ContentEditor(props: ContentEditorProps) {
   const [allGenre, setAllGenre] = useState<[]>([]);
   const nextStep = () => setStep((prev) => prev + 1);
   const prevStep = () => setStep((prev) => prev - 1);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
+  const [createdContent, setCreatedContent] = useState<Content | null>(content || null);
+
+  const [showUpload, setShowUpload] = useState(false);
+  const [uploadFile, setUploadFile] = useState<File | null>(null);
+  const [uploading, setUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [uploadStatus, setUploadStatus] = useState<string>('');
+
+  const [posterFile, setPosterFile] = useState<File | null>(null);
+  const [bannerFile, setBannerFile] = useState<File | null>(null);
+  const [uploadingImage, setUploadingImage] = useState<string | null>(null);
+  const [uploadSubtitleFile, setUploadSubtitleFile] = useState<File | null>(null) 
+  const [progress, setProgress] = useState<number>(0)
+  const [subtitles, setSubtitles] = useState<any>(null);
+  const [subtitlesLoading, setSubtitlesLoading] = useState<boolean>(false);
   function updateNode(
     nodes: Content[],
     updated: Content
@@ -121,21 +146,9 @@ export default function ContentEditor(props: ContentEditorProps) {
     parent: parentId
 
   });
+  
+ 
 
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState<string | null>(null);
-  const [createdContent, setCreatedContent] = useState<Content | null>(content || null);
-
-  const [showUpload, setShowUpload] = useState(false);
-  const [uploadFile, setUploadFile] = useState<File | null>(null);
-  const [uploading, setUploading] = useState(false);
-  const [uploadProgress, setUploadProgress] = useState(0);
-  const [uploadStatus, setUploadStatus] = useState<string>('');
-
-  const [posterFile, setPosterFile] = useState<File | null>(null);
-  const [bannerFile, setBannerFile] = useState<File | null>(null);
-  const [uploadingImage, setUploadingImage] = useState<string | null>(null);
   useEffect(() => {
     if (createdContent?.id) {
       setMetaData(prev => ({
@@ -457,7 +470,7 @@ export default function ContentEditor(props: ContentEditorProps) {
 
       <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-8">
         {loading && !uploading && <FullScreenLoader />}
-        <div className="bg-neutral-900 rounded-lg max-w-4xl w-full overflow-y-scroll max-h-[90vh]">
+        <div className="bg-neutral-900 rounded-lg max-w-4xl w-full overflow-y-auto minimal-scrollbar  max-h-[90vh]">
 
           <div className="flex items-center justify-between p-6 border-b border-gray-700">
             <h2 className="text-2xl font-bold text-white capitalize">
@@ -485,7 +498,7 @@ export default function ContentEditor(props: ContentEditorProps) {
           <div className="border-b border-gray-700 px-6 py-4">
             <div className="flex items-center justify-between">
               {<>{contentType == 'series' || contentType == 'season' ?
-                <>{[1, 2, 3].map((num) => (
+                <>{[1, 2, 3, 4,5].map((num) => (
                   <div
                     key={num}
                     onClick={() => { setStep(num) }}
@@ -493,7 +506,7 @@ export default function ContentEditor(props: ContentEditorProps) {
                       }`}
                   ></div>
                 ))}</> :
-                <>{[1, 2, 3, 4].map((num) => (
+                <>{[1, 2, 3, 4, 5,6].map((num) => (
                   <div
                     key={num}
                     onClick={() => { setStep(num) }}
@@ -507,8 +520,10 @@ export default function ContentEditor(props: ContentEditorProps) {
             <p className="text-center text-gray-300 text-sm mt-2">
               {step === 1 && "Step 1: Create Content"}
               {step === 2 && "Step 2: Content Metadata"}
-              {step === 3 && "Step 2: Upload Images"}
-              {step === 4 && "Step 3: Upload Media File"}
+              {step === 3 && "Step 3: Upload Images"}
+              {step === 4 && "Step 4: Upload Subtitles"}
+              {step === 5 && "Step 5: Upload Dubbing"}
+              {step === 6 && "Step 6: Upload Media File"}
             </p>
           </div>
 
@@ -648,7 +663,7 @@ export default function ContentEditor(props: ContentEditorProps) {
                   }}
                   className="mt-4 w-full py-3 bg-blue-600 text-white rounded hover:bg-blue-700"
                 >
-                  Next
+                  Save & Next
                 </button></>
 
             )}
@@ -657,7 +672,7 @@ export default function ContentEditor(props: ContentEditorProps) {
 
                 <h3 className="text-xl text-white font-semibold">
                   Content Metadata
-                </h3> 
+                </h3>
                 <TagInput
                   label="Director"
                   values={metaData.directors}
@@ -750,7 +765,7 @@ export default function ContentEditor(props: ContentEditorProps) {
                     onClick={handleMetadataSubmit}
                     className="px-6 py-2 bg-blue-600 rounded"
                   >
-                    Save & Continue
+                    Save & Next
                   </button>
                 </div>
               </div>
@@ -764,76 +779,171 @@ export default function ContentEditor(props: ContentEditorProps) {
                 </h3>
 
                 {/* Poster */}
-                {contentType != "episode" && <div>
-                  <label className="text-gray-300 text-sm">Poster Image</label>
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={(e) => setPosterFile(e.target.files?.[0] || null)}
+                <div className='grid grid-cols-7 w-full gap-2'>
+                  {contentType != "episode" &&
+                    <div className="space-y-3 col-span-2">
+                      <label className=" font-medium text-gray-300 text-sm">Poster Image</label>
 
-                    className="w-full px-3 py-2 bg-gray-700 text-white rounded my-2"
-                  />
-                  <p className="text-xs text-gray-400 mb-2">
-                    Aspect ratio: 2:3 - Recommended size: 1000x1500.
-                  </p>
-                  {createdContent.poster_url && (
-                    <img
-                      src={createdContent.poster_url}
-                      alt="Poster"
-                      className="w-full h-40 object-cover rounded-lg mb-2"
-                    />
-                  )}
-                  <button
-                    onClick={() => handleImageUpload(contentType == 'episode' ? 'episode-thumbnail' : 'poster')}
+                      {/* Banner / Poster Upload Area */}
+                      <div className="relative w-full max-h-[50vh] aspect-[2/7] rounded-xl border-2 border-dashed border-gray-600 bg-neutral-950 hover:border-blue-500 transition cursor-pointer overflow-hidden group">
 
+                        {/* Preview */}
+                        {createdContent.poster_url ? (
+                          <img
+                            src={createdContent.poster_url}
+                            alt="Poster Preview"
+                            className="absolute inset-0 w-full h-full object-cover"
+                          />
+                        ) : posterFile ? (
+                          <img
+                            src={URL.createObjectURL(posterFile)}
+                            alt="Poster Preview"
+                            className="absolute inset-0 w-full h-full object-cover"
+                          />
+                        ) : null}
 
-                    disabled={!posterFile || uploadingImage === 'poster'}
-                    className="w-full px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:opacity-50 transition-colors"
-                  >
-                    {uploadingImage === 'poster' ? 'Uploading...' : 'Upload Poster'}
-                  </button>
-                </div>}
+                        {/* Overlay */}
+                        <div className="absolute inset-0 bg-black/40 flex flex-col items-center justify-center text-center px-4 opacity-100 group-hover:bg-black/60 transition">
+                          <svg
+                            className="w-14 h-14 text-blue-400 mb-4"
 
-                {/* Banner */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">
-                    Banner Image
-                  </label>
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={(e) => setBannerFile(e.target.files?.[0] || null)}
-                    disabled={uploadingImage === 'banner'}
-                    className="w-full px-4 py-2 bg-gray-700 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 mb-2"
-                  />
-                  <p className="text-xs text-gray-400 mb-2">
-                    Aspect ratio: 16:9 - Recommended size: 1920x1080. Scales responsively across devices.
-                  </p>
-                  {createdContent.banner_url && (
-                    <img
-                      src={createdContent.banner_url}
-                      alt="Banner"
-                      className="w-full h-40 object-cover rounded-lg mb-2"
-                    />
-                  )}
-                  {createdContent.thumbnail_url && (
-                    <>
+                            viewBox="0 0 24 24" version="1.1" xmlns="http://www.w3.org/2000/svg"  >
+                            <title>file_upload_fill</title>
+                            <g id="页面-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+                              <g id="File" transform="translate(-384.000000, -144.000000)">
+                                <g id="file_upload_fill" transform="translate(384.000000, 144.000000)">
+                                  <path d="M24,0 L24,24 L0,24 L0,0 L24,0 Z M12.5934901,23.257841 L12.5819402,23.2595131 L12.5108777,23.2950439 L12.4918791,23.2987469 L12.4918791,23.2987469 L12.4767152,23.2950439 L12.4056548,23.2595131 C12.3958229,23.2563662 12.3870493,23.2590235 12.3821421,23.2649074 L12.3780323,23.275831 L12.360941,23.7031097 L12.3658947,23.7234994 L12.3769048,23.7357139 L12.4804777,23.8096931 L12.4953491,23.8136134 L12.4953491,23.8136134 L12.5071152,23.8096931 L12.6106902,23.7357139 L12.6232938,23.7196733 L12.6232938,23.7196733 L12.6266527,23.7031097 L12.609561,23.275831 C12.6075724,23.2657013 12.6010112,23.2592993 12.5934901,23.257841 L12.5934901,23.257841 Z M12.8583906,23.1452862 L12.8445485,23.1473072 L12.6598443,23.2396597 L12.6498822,23.2499052 L12.6498822,23.2499052 L12.6471943,23.2611114 L12.6650943,23.6906389 L12.6699349,23.7034178 L12.6699349,23.7034178 L12.678386,23.7104931 L12.8793402,23.8032389 C12.8914285,23.8068999 12.9022333,23.8029875 12.9078286,23.7952264 L12.9118235,23.7811639 L12.8776777,23.1665331 C12.8752882,23.1545897 12.8674102,23.1470016 12.8583906,23.1452862 L12.8583906,23.1452862 Z M12.1430473,23.1473072 C12.1332178,23.1423925 12.1221763,23.1452606 12.1156365,23.1525954 L12.1099173,23.1665331 L12.0757714,23.7811639 C12.0751323,23.7926639 12.0828099,23.8018602 12.0926481,23.8045676 L12.108256,23.8032389 L12.3092106,23.7104931 L12.3186497,23.7024347 L12.3186497,23.7024347 L12.3225043,23.6906389 L12.340401,23.2611114 L12.337245,23.2485176 L12.337245,23.2485176 L12.3277531,23.2396597 L12.1430473,23.1473072 Z" id="MingCute" fill-rule="nonzero">
 
-                      <img
-                        src={createdContent.thumbnail_url}
-                        alt="Banner"
-                        className="w-full h-40 object-cover rounded-lg mb-2"
+                                  </path>
+                                  <path d="M12,2 L12,8.5 C12,9.27969882 12.5949121,9.920449 13.3555442,9.99313345 L13.5,10 L20,10 L20,20 C20,21.0543909 19.18415,21.9181678 18.1492661,21.9945144 L18,22 L6,22 C4.94563773,22 4.08183483,21.18415 4.00548573,20.1492661 L4,20 L4,4 C4,2.94563773 4.81587733,2.08183483 5.85073759,2.00548573 L6,2 L12,2 Z M11.2929,11.1729 L9.17157,13.2942 C8.78105,13.6847 8.78105,14.3179 9.17157,14.7084 C9.5621,15.099 10.1953,15.099 10.5858,14.7084 L11,14.2942 L11,17 C11,17.5523 11.4477,18 12,18 C12.5523,18 13,17.5523 13,17 L13,14.2942 L13.4142,14.7084 C13.8047,15.099 14.4379,15.099 14.8284,14.7084 C15.219,14.3179 15.219,13.6847 14.8284,13.2942 L12.7071,11.1729 C12.3166,10.7824 11.6834,10.7824 11.2929,11.1729 Z M14,2.04336 C14.3222,2.11158 14.624049,2.25868408 14.8774606,2.47305359 L15,2.58579 L19.4142,7 C19.6506857,7.23646857 19.8218571,7.52605551 19.9160012,7.8407123 L19.9566,8 L14,8 L14,2.04336 Z" id="形状" fill="#09244B">
+
+                                  </path>
+                                </g>
+                              </g>
+                            </g>
+                          </svg>
+
+                          <p className="text-white font-medium">
+                            {createdContent.poster_url || posterFile
+                              ? 'Change Poster Image'
+                              : 'Click to Upload Poster'}
+                          </p>
+
+                          <p className="text-xs text-gray-300 mt-1">
+                            2:3 ratio · Recommended 1000×1500
+                          </p>
+                        </div>
+
+                        {/* Invisible file input */}
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={(e) => setPosterFile(e.target.files?.[0] || null)}
+                          className="absolute inset-0 opacity-0 cursor-pointer"
+                        />
+                      </div>
+
+                      {/* Upload Button */}
+                      <button
+                        onClick={() =>
+                          handleImageUpload(
+                            contentType === 'episode' ? 'episode-thumbnail' : 'poster'
+                          )
+                        }
+                        disabled={!posterFile || uploadingImage === 'poster'}
+                        className="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 transition-colors"
+                      >
+                        {uploadingImage === 'poster' ? 'Uploading...' : 'Upload Poster'}
+                      </button>
+                    </div>
+                  }
+
+                  {/* Banner */}
+                  <div className="col-span-5 space-y-3 ">
+                    <label className="  text-sm font-medium text-gray-300">
+                      Banner Image
+                    </label>
+
+                    {/* Banner Upload Area */}
+                    <div className="max-h-[50vh] relative w-full aspect-[4/6] rounded-xl border-2 border-dashed border-gray-600 bg-neutral-950 hover:border-blue-500 transition cursor-pointer overflow-hidden group">
+
+                      {/* Preview Priority: banner > thumbnail > selected file */}
+                      {createdContent.banner_url ? (
+                        <img
+                          src={createdContent.banner_url}
+                          alt="Banner Preview"
+                          className="absolute inset-0 w-full h-full object-cover"
+                        />
+                      ) : createdContent.thumbnail_url ? (
+                        <img
+                          src={createdContent.thumbnail_url}
+                          alt="Banner Preview"
+                          className="absolute inset-0 w-full h-full object-cover"
+                        />
+                      ) : bannerFile ? (
+                        <img
+                          src={URL.createObjectURL(bannerFile)}
+                          alt="Banner Preview"
+                          className="absolute inset-0 w-full h-full object-cover"
+                        />
+                      ) : null}
+
+                      {/* Overlay Content */}
+                      <div className="absolute inset-0 bg-black/40 flex flex-col items-center justify-center text-center px-6 group-hover:bg-black/60 transition">
+                        <svg
+                          className="w-14 h-14 text-blue-400 mb-4"
+
+                          viewBox="0 0 24 24" version="1.1" xmlns="http://www.w3.org/2000/svg"  >
+                          <title>file_upload_fill</title>
+                          <g id="页面-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+                            <g id="File" transform="translate(-384.000000, -144.000000)">
+                              <g id="file_upload_fill" transform="translate(384.000000, 144.000000)">
+                                <path d="M24,0 L24,24 L0,24 L0,0 L24,0 Z M12.5934901,23.257841 L12.5819402,23.2595131 L12.5108777,23.2950439 L12.4918791,23.2987469 L12.4918791,23.2987469 L12.4767152,23.2950439 L12.4056548,23.2595131 C12.3958229,23.2563662 12.3870493,23.2590235 12.3821421,23.2649074 L12.3780323,23.275831 L12.360941,23.7031097 L12.3658947,23.7234994 L12.3769048,23.7357139 L12.4804777,23.8096931 L12.4953491,23.8136134 L12.4953491,23.8136134 L12.5071152,23.8096931 L12.6106902,23.7357139 L12.6232938,23.7196733 L12.6232938,23.7196733 L12.6266527,23.7031097 L12.609561,23.275831 C12.6075724,23.2657013 12.6010112,23.2592993 12.5934901,23.257841 L12.5934901,23.257841 Z M12.8583906,23.1452862 L12.8445485,23.1473072 L12.6598443,23.2396597 L12.6498822,23.2499052 L12.6498822,23.2499052 L12.6471943,23.2611114 L12.6650943,23.6906389 L12.6699349,23.7034178 L12.6699349,23.7034178 L12.678386,23.7104931 L12.8793402,23.8032389 C12.8914285,23.8068999 12.9022333,23.8029875 12.9078286,23.7952264 L12.9118235,23.7811639 L12.8776777,23.1665331 C12.8752882,23.1545897 12.8674102,23.1470016 12.8583906,23.1452862 L12.8583906,23.1452862 Z M12.1430473,23.1473072 C12.1332178,23.1423925 12.1221763,23.1452606 12.1156365,23.1525954 L12.1099173,23.1665331 L12.0757714,23.7811639 C12.0751323,23.7926639 12.0828099,23.8018602 12.0926481,23.8045676 L12.108256,23.8032389 L12.3092106,23.7104931 L12.3186497,23.7024347 L12.3186497,23.7024347 L12.3225043,23.6906389 L12.340401,23.2611114 L12.337245,23.2485176 L12.337245,23.2485176 L12.3277531,23.2396597 L12.1430473,23.1473072 Z" id="MingCute" fill-rule="nonzero">
+
+                                </path>
+                                <path d="M12,2 L12,8.5 C12,9.27969882 12.5949121,9.920449 13.3555442,9.99313345 L13.5,10 L20,10 L20,20 C20,21.0543909 19.18415,21.9181678 18.1492661,21.9945144 L18,22 L6,22 C4.94563773,22 4.08183483,21.18415 4.00548573,20.1492661 L4,20 L4,4 C4,2.94563773 4.81587733,2.08183483 5.85073759,2.00548573 L6,2 L12,2 Z M11.2929,11.1729 L9.17157,13.2942 C8.78105,13.6847 8.78105,14.3179 9.17157,14.7084 C9.5621,15.099 10.1953,15.099 10.5858,14.7084 L11,14.2942 L11,17 C11,17.5523 11.4477,18 12,18 C12.5523,18 13,17.5523 13,17 L13,14.2942 L13.4142,14.7084 C13.8047,15.099 14.4379,15.099 14.8284,14.7084 C15.219,14.3179 15.219,13.6847 14.8284,13.2942 L12.7071,11.1729 C12.3166,10.7824 11.6834,10.7824 11.2929,11.1729 Z M14,2.04336 C14.3222,2.11158 14.624049,2.25868408 14.8774606,2.47305359 L15,2.58579 L19.4142,7 C19.6506857,7.23646857 19.8218571,7.52605551 19.9160012,7.8407123 L19.9566,8 L14,8 L14,2.04336 Z" id="形状" fill="#09244B">
+
+                                </path>
+                              </g>
+                            </g>
+                          </g>
+                        </svg>
+
+                        <p className="text-white font-semibold text-lg">
+                          {createdContent.banner_url || bannerFile
+                            ? 'Change Banner Image'
+                            : 'Click to Upload Banner'}
+                        </p>
+
+                        <p className="text-xs text-gray-300 mt-1">
+                          16:9 ratio · Recommended 1920×1080 · Hero banner
+                        </p>
+                      </div>
+
+                      {/* Invisible File Input */}
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={(e) => setBannerFile(e.target.files?.[0] || null)}
+                        disabled={uploadingImage === 'banner'}
+                        className="absolute inset-0 opacity-0 cursor-pointer"
                       />
-                    </>
+                    </div>
 
-                  )}
-                  <button
-                    onClick={() => handleImageUpload(contentType == 'episode' ? 'episode-thumbnail' : 'banner')}
-                    disabled={!bannerFile || uploadingImage === 'banner'}
-                    className="w-full px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:opacity-50 transition-colors"
-                  >
-                    {uploadingImage === 'banner' ? 'Uploading...' : 'Upload Banner'}
-                  </button>
+                    {/* Upload Button */}
+                    <button
+                      onClick={() =>
+                        handleImageUpload(
+                          contentType === 'episode' ? 'episode-thumbnail' : 'banner'
+                        )
+                      }
+                      disabled={!bannerFile || uploadingImage === 'banner'}
+                      className="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 transition-colors"
+                    >
+                      {uploadingImage === 'banner' ? 'Uploading...' : 'Upload Banner'}
+                    </button>
+                  </div>
+
                 </div>
 
                 <div className="flex justify-between mt-6">
@@ -849,7 +959,7 @@ export default function ContentEditor(props: ContentEditorProps) {
                         onClick={nextStep}
                         className="px-6 py-2 bg-blue-600 text-white rounded"
                       >
-                        Continue to Video Upload
+                        Save & Next
                       </button> :
                       <button
                         onClick={onClose}
@@ -864,68 +974,179 @@ export default function ContentEditor(props: ContentEditorProps) {
             )}
 
             {/* -------------------- STEP 3 -------------------- */}
-            {step === 4 && createdContent && (contentType !== 'series' && contentType != 'season') && (
+            {step === 4 && createdContent && contentType !== 'series' && contentType !== 'season' && (
+              <div className='grid grid-cols-2 w-full gap-4'>
+                
+             <SubtitleUploader
+             assetId={createdContent?.id || ''}
+             />
+                <div className="flex justify-between mt-6 col-span-2 w-full">
+                      <button
+                        onClick={prevStep}
+                        className="px-4 py-2 bg-gray-600 text-white rounded-lg"
+                      >
+                        Back
+                      </button>
+
+                      <button
+                        onClick={nextStep}
+                         
+                        className="px-6 py-2 bg-blue-600 text-white rounded-lg flex items-center gap-2 disabled:opacity-50"
+                      >
+                       Save & Next
+                      </button>
+                    </div>
+              </div>
+            )}
+ {step === 5 && createdContent && contentType !== 'series' && contentType !== 'season' && (
+              <div className='grid grid-cols-2 w-full gap-4'>
+                
+             <DubbingUploader
+             assetId={createdContent?.id || ''}
+             />
+                <div className="flex justify-between mt-6 col-span-2 w-full">
+                      <button
+                        onClick={prevStep}
+                        className="px-4 py-2 bg-gray-600 text-white rounded-lg"
+                      >
+                        Back
+                      </button>
+
+                      <button
+                        onClick={nextStep}
+                         
+                        className="px-6 py-2 bg-blue-600 text-white rounded-lg flex items-center gap-2 disabled:opacity-50"
+                      >
+                       Save & Next
+                      </button>
+                    </div>
+              </div>
+            )}
+            {step === 6 && createdContent && contentType !== 'series' && contentType !== 'season' && (
               <div className="space-y-6">
-                {videoFetchLoading ?
-                  <SkeletonLoader className='w-full h-[40vh] bg-gray-600' /> :
+
+                {videoFetchLoading ? (
+                  <SkeletonLoader className="w-full h-[40vh] bg-gray-700 rounded-xl" />
+                ) : (
                   <>
+                    {/* Status Heading */}
+                    <h3 className="text-xl text-white font-semibold">
+                      {content?.ingest_status === 'processing'
+                        ? 'Content is uploading to cloud (this may take a while)'
+                        : 'Upload Media File'}
+                    </h3>
 
-                    {content?.ingest_status == 'processing' ?
+                    {/* Media Upload Area */}
+                    <div className="relative max-h-[50vh] w-full aspect-video rounded-xl border-2 border-dashed border-gray-600 bg-neutral-900 hover:border-blue-500 transition cursor-pointer overflow-hidden group">
 
-                      <><h3 className="text-xl text-white font-semibold">
-                        Content is Uploading to cloud (this might take a while)
-                      </h3> </>
-                      :
-                      <><h3 className="text-xl text-white font-semibold">
-                        Upload Media File
-                      </h3>
+                      {/* Video Preview */}
+                      {!videoFetchLoading && videoUrl && isEditing ? (
+                        <div className="absolute inset-0">
+                          <HlsVideoPlayer src={videoUrl} />
+                        </div>
+                      ) : uploadFile ? (
+                        <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-6 bg-black/60">
+                          <svg
+                            className="w-12 h-12 text-orange-400 mb-3"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth={1.5}
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              d="M3 16.5V19a2 2 0 002 2h14a2 2 0 002-2v-2.5M7 10l5-5 5 5M12 5v14"
+                            />
+                          </svg>
 
-                        {!videoFetchLoading && videoUrl && isEditing && (
-                          <div className="relative w-full h-full">
-                            <HlsVideoPlayer src={videoUrl} />
-                          </div>
-                        )}
-                        <input
-                          type="file"
-                          accept="video/*,audio/*"
-                          onChange={(e) => setUploadFile(e.target.files?.[0] || null)}
-                          disabled={uploading}
-                          className="w-full px-4 py-2 bg-gray-700 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        />
-                        {uploadFile && (
-                          <p className="text-sm text-gray-400 mt-1">
-                            Selected: {uploadFile.name} ({formatFileSize(uploadFile.size)})
+                          <p className="text-white font-medium">
+                            {uploadFile.name}
                           </p>
-                        )}</>}
+                          <p className="text-xs text-gray-300 mt-1">
+                            {formatFileSize(uploadFile.size)}
+                          </p>
+                        </div>
+                      ) : (
+                        <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-6 bg-black/40 group-hover:bg-black/60 transition">
+                          <svg
+                            className="w-14 h-14 text-blue-400 mb-4"
 
-                    {/* Large file soft warning (≥1GB) */}
+                            viewBox="0 0 24 24" version="1.1" xmlns="http://www.w3.org/2000/svg"  >
+                            <title>file_upload_fill</title>
+                            <g id="页面-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+                              <g id="File" transform="translate(-384.000000, -144.000000)">
+                                <g id="file_upload_fill" transform="translate(384.000000, 144.000000)">
+                                  <path d="M24,0 L24,24 L0,24 L0,0 L24,0 Z M12.5934901,23.257841 L12.5819402,23.2595131 L12.5108777,23.2950439 L12.4918791,23.2987469 L12.4918791,23.2987469 L12.4767152,23.2950439 L12.4056548,23.2595131 C12.3958229,23.2563662 12.3870493,23.2590235 12.3821421,23.2649074 L12.3780323,23.275831 L12.360941,23.7031097 L12.3658947,23.7234994 L12.3769048,23.7357139 L12.4804777,23.8096931 L12.4953491,23.8136134 L12.4953491,23.8136134 L12.5071152,23.8096931 L12.6106902,23.7357139 L12.6232938,23.7196733 L12.6232938,23.7196733 L12.6266527,23.7031097 L12.609561,23.275831 C12.6075724,23.2657013 12.6010112,23.2592993 12.5934901,23.257841 L12.5934901,23.257841 Z M12.8583906,23.1452862 L12.8445485,23.1473072 L12.6598443,23.2396597 L12.6498822,23.2499052 L12.6498822,23.2499052 L12.6471943,23.2611114 L12.6650943,23.6906389 L12.6699349,23.7034178 L12.6699349,23.7034178 L12.678386,23.7104931 L12.8793402,23.8032389 C12.8914285,23.8068999 12.9022333,23.8029875 12.9078286,23.7952264 L12.9118235,23.7811639 L12.8776777,23.1665331 C12.8752882,23.1545897 12.8674102,23.1470016 12.8583906,23.1452862 L12.8583906,23.1452862 Z M12.1430473,23.1473072 C12.1332178,23.1423925 12.1221763,23.1452606 12.1156365,23.1525954 L12.1099173,23.1665331 L12.0757714,23.7811639 C12.0751323,23.7926639 12.0828099,23.8018602 12.0926481,23.8045676 L12.108256,23.8032389 L12.3092106,23.7104931 L12.3186497,23.7024347 L12.3186497,23.7024347 L12.3225043,23.6906389 L12.340401,23.2611114 L12.337245,23.2485176 L12.337245,23.2485176 L12.3277531,23.2396597 L12.1430473,23.1473072 Z" id="MingCute" fill-rule="nonzero">
+
+                                  </path>
+                                  <path d="M12,2 L12,8.5 C12,9.27969882 12.5949121,9.920449 13.3555442,9.99313345 L13.5,10 L20,10 L20,20 C20,21.0543909 19.18415,21.9181678 18.1492661,21.9945144 L18,22 L6,22 C4.94563773,22 4.08183483,21.18415 4.00548573,20.1492661 L4,20 L4,4 C4,2.94563773 4.81587733,2.08183483 5.85073759,2.00548573 L6,2 L12,2 Z M11.2929,11.1729 L9.17157,13.2942 C8.78105,13.6847 8.78105,14.3179 9.17157,14.7084 C9.5621,15.099 10.1953,15.099 10.5858,14.7084 L11,14.2942 L11,17 C11,17.5523 11.4477,18 12,18 C12.5523,18 13,17.5523 13,17 L13,14.2942 L13.4142,14.7084 C13.8047,15.099 14.4379,15.099 14.8284,14.7084 C15.219,14.3179 15.219,13.6847 14.8284,13.2942 L12.7071,11.1729 C12.3166,10.7824 11.6834,10.7824 11.2929,11.1729 Z M14,2.04336 C14.3222,2.11158 14.624049,2.25868408 14.8774606,2.47305359 L15,2.58579 L19.4142,7 C19.6506857,7.23646857 19.8218571,7.52605551 19.9160012,7.8407123 L19.9566,8 L14,8 L14,2.04336 Z" id="形状" fill="#09244B">
+
+                                  </path>
+                                </g>
+                              </g>
+                            </g>
+                          </svg>
+
+                          <p className="text-white font-semibold text-lg">
+                            Click to Upload Video or Audio
+                          </p>
+                          <p className="text-xs text-gray-300 mt-1">
+                            MP4, MOV, MKV, MP3 · Large files supported
+                          </p>
+                        </div>
+                      )}
+
+                      {/* Invisible Input */}
+                      <input
+                        type="file"
+                        accept="video/*,audio/*"
+                        onChange={(e) => setUploadFile(e.target.files?.[0] || null)}
+                        disabled={uploading || content?.ingest_status === 'processing'}
+                        className="absolute inset-0 opacity-0 cursor-pointer"
+                      />
+                    </div>
+
+                    {/* Large File Warning */}
                     {uploadFile && uploadFile.size >= 1024 * 1024 * 1024 && (
-                      <p className="text-xs text-amber-500 mt-1">
-                        Large file detected. Upload may take time; keep this tab open.
+                      <p className="text-xs text-amber-500">
+                        Large file detected. Upload may take time — keep this tab open.
                       </p>
                     )}
 
+                    {/* Actions */}
                     <div className="flex justify-between mt-6">
                       <button
                         onClick={prevStep}
-                        className="px-4 py-2 bg-gray-600 text-white rounded"
+                        className="px-4 py-2 bg-gray-600 text-white rounded-lg"
                       >
                         Back
                       </button>
 
                       <button
                         onClick={handleFileUpload}
-                        disabled={!uploadFile || uploading || content?.ingest_status == "processing"}
-                        className="px-6 py-2 bg-orange-600 text-white rounded flex flex-row items-center "
+                        disabled={!uploadFile || uploading || content?.ingest_status === 'processing'}
+                        className="px-6 py-2 bg-orange-600 text-white rounded-lg flex items-center gap-2 disabled:opacity-50"
                       >
-                        {uploading ? <RoundLoader /> : <>
-                          {content?.ingest_status == "processing" && <RoundLoader className='mr-1' />}
-                          {content?.ingest_status == "processing" ? "Initializing Content" : 'Initialize Content'}</>}
+                        {uploading || content?.ingest_status === 'processing' ? (
+                          <>
+                            <RoundLoader />
+                            <span>
+                              {content?.ingest_status === 'processing'
+                                ? 'Initializing Content'
+                                : 'Uploading'}
+                            </span>
+                          </>
+                        ) : (
+                          'Initialize Content'
+                        )}
                       </button>
                     </div>
-                  </>}
+                  </>
+                )}
               </div>
             )}
+
           </div>
         </div>
       </div>
@@ -977,7 +1198,7 @@ function MultiSelect({ allGenre, formData, setFormData }) {
 
       {/* Dropdown Panel */}
       {open && (
-        <div className="absolute z-20 w-full mt-2 bg-gray-800 rounded-lg shadow-lg border border-gray-700 max-h-48 overflow-y-auto">
+        <div className="absolute z-20 w-full mt-2 bg-neutral-950 rounded-lg shadow-lg border border-gray-700 max-h-48 overflow-y-auto">
           {allGenre.map((type: { id: string; name: string }) => {
             const isSelected = formData.genres.includes(type.id);
 
@@ -1058,7 +1279,7 @@ export function SingleSelect({
 
       {/* Dropdown Panel */}
       {open && (
-        <div className="absolute z-20 w-full mt-2 bg-gray-800 rounded-lg shadow-lg border border-gray-700 max-h-48 overflow-y-auto">
+        <div className="absolute z-20 w-full mt-2 bg-neutral-950 rounded-lg shadow-lg border border-gray-700 max-h-48 overflow-y-auto">
           {options.map((opt) => {
             const isSelected = opt.id === value;
 
@@ -1159,7 +1380,7 @@ export function SearchableSingleSelect({
 
       {/* Dropdown */}
       {open && (
-        <div className="absolute z-30 w-full mt-2 bg-gray-800 rounded-lg shadow-lg border border-gray-700">
+        <div className="absolute z-30 w-full mt-2 bg-neutral-950 rounded-lg shadow-lg border border-gray-700">
           {/* 🔍 Search */}
           <div className="p-2 border-b border-gray-700">
             <input

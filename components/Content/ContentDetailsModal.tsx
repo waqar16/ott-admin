@@ -136,32 +136,37 @@ const ContentDetailsModal: React.FC<ContentDetailsModalProps> = ({
           </div>
 
           {/* Images */}
-          {(detailContent.poster_url || detailContent.banner_url) && (
-            <div className="grid grid-cols-2 gap-4">
-              {detailContent.poster_url && (
+          {  (
+            <div className="  grid grid-cols-7 gap-4 h-[70vh]">
+              {detailContent.poster_url ? (
                 <img
                   src={detailContent.poster_url}
                   alt="Poster"
-                  className="rounded-lg"
+                  className="rounded-lg col-span-2 w-auto h-[70vh] object-cover"
                 />
-              )}
-              {detailContent.banner_url && (
+              ):
+              <div className='h-full col-span-5 w-full flex flex-col items-center justify-center'>No Poster Uploaded Yet</div>
+              }
+              {detailContent.banner_url ? (
                 <img
                   src={detailContent.banner_url}
                   alt="Banner"
-                  className="rounded-lg"
-                />
-              )}
+                  className="rounded-lg col-span-5 w-auto h-[70vh] object-cover"
+                />):
+                            <div className='h-full col-span-5 w-full flex flex-col items-center justify-center'>No Banner Uploaded Yet</div>
+
+
+              }
             </div>
           )}
 
           {/* Video */}
           {videoUrlLoading && <RoundLoader />}
           {videoUrl && (
-            <video src={videoUrl} controls className="w-full rounded-lg" />
+            <video src={videoUrl} controls className=" w-full rounded-lg" />
           )}
 {!videoUrl && (
-            <div className='w-full p-8 flex flex-col items-center justify-center bg-neutral-700'> No VIdeo to show</div>         )}
+            <div className='  w-full p-8 flex flex-col items-center justify-center bg-neutral-700'> No VIdeo to show</div>         )}
           {/* Renditions */}
           <div>
             <h3 className="text-xl font-bold text-white mb-4">

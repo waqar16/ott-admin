@@ -21,7 +21,7 @@ import { GrAnalytics, GrDocumentCloud, GrPlan } from "react-icons/gr";
 import { BsCash, BsFileBarGraph, BsPersonFillGear, BsQuestionDiamondFill, BsSubscript } from "react-icons/bs";
 import FullScreenLoader from "../Loader/FullScreenLoader";
 import { usePlatformSettings } from "@/lib/platformSettings";
-
+ import { titan_one,cinzel, varela_round } from "@/app/layout";
 export default function AdminSidebar() {
   const { settings } = usePlatformSettings();
   const pathname = usePathname();
@@ -48,7 +48,7 @@ export default function AdminSidebar() {
   const logoUrl = settings.logo_url;
 
   return (
-    <div className="pr-2 w-[260px] bg-black h-screen text-gray-200 fixed left-0 top-0 shadow-xl overflow-y-auto border border-r-blue-500 border-l-0 border-y-0">
+    <div className={`pr-2 w-[260px] bg-black h-screen text-gray-200 fixed left-0 top-0 shadow-xl overflow-y-auto border border-r-blue-500 border-l-0 border-y-0 ${varela_round.className}`}>
       
       {isNavigating && <FullScreenLoader/>}
       <div className="py-5 text-center border-b border-gray-700">
@@ -64,7 +64,7 @@ export default function AdminSidebar() {
               {brandName}
             </span>
           )}
-          <h1 className="text-xl font-bold text-white">{brandName} Admin Panel</h1>
+          <h1 className={`text-xl font-bold text-white ${titan_one.className}`}>{brandName} Admin Panel</h1>
         </div>
       </div>
        
