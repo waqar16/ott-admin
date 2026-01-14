@@ -498,7 +498,7 @@ export default function ContentEditor(props: ContentEditorProps) {
           <div className="border-b border-gray-700 px-6 py-4">
             <div className="flex items-center justify-between">
               {<>{contentType == 'series' || contentType == 'season' ?
-                <>{[1, 2, 3, 4,5].map((num) => (
+                <>{[1, 2, 3].map((num) => (
                   <div
                     key={num}
                     onClick={() => { setStep(num) }}
@@ -506,7 +506,7 @@ export default function ContentEditor(props: ContentEditorProps) {
                       }`}
                   ></div>
                 ))}</> :
-                <>{[1, 2, 3, 4, 5,6].map((num) => (
+                <>{[1, 2, 3, 4].map((num) => (
                   <div
                     key={num}
                     onClick={() => { setStep(num) }}
@@ -520,10 +520,8 @@ export default function ContentEditor(props: ContentEditorProps) {
             <p className="text-center text-gray-300 text-sm mt-2">
               {step === 1 && "Step 1: Create Content"}
               {step === 2 && "Step 2: Content Metadata"}
-              {step === 3 && "Step 3: Upload Images"}
-              {step === 4 && "Step 4: Upload Subtitles"}
-              {step === 5 && "Step 5: Upload Dubbing"}
-              {step === 6 && "Step 6: Upload Media File"}
+              {step === 3 && "Step 3: Upload Images"} 
+              {step === 4 && "Step 4: Upload Media File"}
             </p>
           </div>
 
@@ -973,56 +971,8 @@ export default function ContentEditor(props: ContentEditorProps) {
               </div>
             )}
 
-            {/* -------------------- STEP 3 -------------------- */}
+             
             {step === 4 && createdContent && contentType !== 'series' && contentType !== 'season' && (
-              <div className='grid grid-cols-2 w-full gap-4'>
-                
-             <SubtitleUploader
-             assetId={createdContent?.id || ''}
-             />
-                <div className="flex justify-between mt-6 col-span-2 w-full">
-                      <button
-                        onClick={prevStep}
-                        className="px-4 py-2 bg-gray-600 text-white rounded-lg"
-                      >
-                        Back
-                      </button>
-
-                      <button
-                        onClick={nextStep}
-                         
-                        className="px-6 py-2 bg-blue-600 text-white rounded-lg flex items-center gap-2 disabled:opacity-50"
-                      >
-                       Save & Next
-                      </button>
-                    </div>
-              </div>
-            )}
- {step === 5 && createdContent && contentType !== 'series' && contentType !== 'season' && (
-              <div className='grid grid-cols-2 w-full gap-4'>
-                
-             <DubbingUploader
-             assetId={createdContent?.id || ''}
-             />
-                <div className="flex justify-between mt-6 col-span-2 w-full">
-                      <button
-                        onClick={prevStep}
-                        className="px-4 py-2 bg-gray-600 text-white rounded-lg"
-                      >
-                        Back
-                      </button>
-
-                      <button
-                        onClick={nextStep}
-                         
-                        className="px-6 py-2 bg-blue-600 text-white rounded-lg flex items-center gap-2 disabled:opacity-50"
-                      >
-                       Save & Next
-                      </button>
-                    </div>
-              </div>
-            )}
-            {step === 6 && createdContent && contentType !== 'series' && contentType !== 'season' && (
               <div className="space-y-6">
 
                 {videoFetchLoading ? (
