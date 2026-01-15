@@ -222,8 +222,8 @@ if (loading)
       </div>
     );
   return (
-    <div className="p-6 space-y-8  text-white">
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+    <div className="p-6 space-y-8  text-white sm:mt-0 mt-12 ">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 ">
        <ChartCard
   title="User Growth"
   description="New users per day"
@@ -237,7 +237,7 @@ if (loading)
 />
       </div>
 
-      <div className="grid grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
        <PieCard
   title="User Roles"
   data={Object.entries(data.userRoles ?? {}).map(([k, v]) => ({ label: k, count: v }))}
@@ -254,7 +254,7 @@ if (loading)
 />
       </div>
 
-      <div className="grid grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
         <StatCard title="Churn Rate" value={`${data.subscriptionChurn.churn_rate_percent}%`} />
         <ChartCard title="New Subscriptions" description="Subscriptions per day" chartData={data.newSubscriptions.results?? []} />
         <ChartCard title="Revenue Timeseries" description="Revenue per day" chartData={data.revenueTimeseries.results?? []} />
@@ -262,7 +262,7 @@ if (loading)
 
       <TableCard title="Top Paying Users" columns={["email", "total_spent", "subscription_count", "last_payment_date"]} data={data.topUsers.results ?? []} />
 
-      <div className="grid grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
         <PieCard title="Payment Status" data={Object.entries(data.paymentStatus).map(([k, v]) => ({ label: k, count: v })) ?? []} />
         <PieCard title="Payment Processor" data={data?.paymentProcessor?.results?data.paymentProcessor.results.map((p: any) => ({ label: p.processor, count: p.count })) : []} />
       </div>

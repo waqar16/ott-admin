@@ -22,6 +22,8 @@ import { BsCash, BsFileBarGraph, BsPersonFillGear, BsQuestionDiamondFill, BsSubs
 import FullScreenLoader from "../Loader/FullScreenLoader";
 import { usePlatformSettings } from "@/lib/platformSettings";
  import { titan_one,cinzel, varela_round } from "@/app/layout";
+import { leagueSpartan } from "@/fonts/fonts";
+import FullScreenRedirectLoader from "../Loader/FullScreenRedirectLoader";
 export default function AdminSidebar() {
   const { settings } = usePlatformSettings();
   const pathname = usePathname();
@@ -35,8 +37,8 @@ export default function AdminSidebar() {
   const [isNavigating, setIsNavigating] = useState(false);
 
   const linkBase =
-    "flex items-center gap-3 px-4 py-2 rounded-md text-gray-300 hover:bg-[var(--brand-primary)] hover:text-white transition";
-  const activeClass = "bg-[var(--brand-primary)] text-white font-semibold";
+    "w-11/12 flex items-center text-sm gap-3 px-4 py-2 rounded-md text-gray-300 hover:bg-[var(--brand-primary)] hover:text-white transition";
+  const activeClass = "bg-[var(--brand-primary)] text-white  ";
 
   const isActive = (path: string) => pathname === path;
  useEffect(() => {
@@ -50,26 +52,16 @@ export default function AdminSidebar() {
   return (
     <div className={`pr-2 w-[260px] bg-black h-screen text-gray-200 fixed left-0 top-0 shadow-xl overflow-y-auto border border-r-blue-500 border-l-0 border-y-0 ${varela_round.className}`}>
       
-      {isNavigating && <FullScreenLoader/>}
+      {isNavigating && <FullScreenRedirectLoader message="loading"/>}
       <div className="py-5 text-center border-b border-gray-700">
-        <div className="flex flex-col items-center gap-2">
-          {logoUrl ? (
-            <img
-              src={logoUrl}
-              alt={`${brandName} logo`}
-              className="h-10 w-auto object-contain"
-            />
-          ) : (
-            <span className="p-1 rounded-md bg-[var(--brand-primary)] text-white text-sm font-semibold uppercase tracking-wide">
-              {brandName}
-            </span>
-          )}
-          <h1 className={`text-xl font-bold text-white ${titan_one.className}`}>{brandName} Admin Panel</h1>
+        <div className="flex flex-row items-center gap-2 w-full justify-center">
+           
+          <img src="/mainLogo.webp" className="w-8 h-auto mr-2"/><h1 className={`text-xl font-bold text-white ${leagueSpartan.className}`}> Admin Panel</h1>
         </div>
       </div>
        
 
-      <div className="mt-4 flex flex-col space-y-2">
+      <div className="mt-4 flex flex-col items-center space-y-2">
 
  
         <Link
@@ -93,12 +85,14 @@ onClick={() => {
           <BsFileBarGraph size={18} /> Analytics
         </Link>
         {/* Users dropdown */}
-        <div>
+        <div className="w-11/12">
           <button
             onClick={() => {
               setOpenUsers(!openUsers)
               setOpenShows(false)
               setOpenPayments(false)
+              setOpenTemplates(false)
+              setOpenFaqs(false)
             }}
             className={`${linkBase} w-full justify-between`}
           >
@@ -116,7 +110,7 @@ onClick={() => {
     setIsNavigating(true);
   }
 }}                href={"/admin/users"}
-                className={`${linkBase} ${isActive("/admin/users") ? activeClass : ""}`}
+                className={`${linkBase} ${isActive("/admin/users") ? activeClass : ""} text-xs`}
               >
                 <FiList size={16} />Manage Users
               </Link>
@@ -126,7 +120,7 @@ onClick={() => {
     setIsNavigating(true);
   }
 }}                href="/admin/user-profiles"
-                className={`${linkBase} ${isActive("/admin/user-profiles") ? activeClass : ""}`}
+                className={`${linkBase} ${isActive("/admin/user-profiles") ? activeClass : ""}  text-xs`}
               >
                 <BsPersonFillGear size={16} /> Manage User Profiles
               </Link>
@@ -145,12 +139,13 @@ onClick={() => {
           )}
         </div>
 {/* Faqs Dropdown */}
- <div>
+ <div className="w-11/12">
           <button
             onClick={() => {
               setOpenFaqs(!openFaqs)
               setOpenUsers(false)
               setOpenShows(false)
+              setOpenTemplates(false)
               setOpenPayments(false)
             }}
             className={`${linkBase} w-full justify-between`}
@@ -158,7 +153,7 @@ onClick={() => {
             <span className="flex items-center gap-3">
               <BsQuestionDiamondFill size={18} /> Faqs
             </span>
-            {openUsers ? <FiChevronUp /> : <FiChevronDown />}
+            {openFaqs ? <FiChevronUp /> : <FiChevronDown />}
           </button>
 
           {openFaqs && (
@@ -169,7 +164,7 @@ onClick={() => {
     setIsNavigating(true);
   }
 }}                href={"/admin/faqs"}
-                className={`${linkBase} ${isActive("/admin/faqs") ? activeClass : ""}`}
+                className={`${linkBase} ${isActive("/admin/faqs") ? activeClass : ""}  text-xs`}
               >
                 <FiMessageSquare size={16} />Manage FAQS
               </Link>
@@ -179,11 +174,12 @@ onClick={() => {
           )}
         </div>
         {/* Templates dropdown */}
-        <div>
+        <div className="w-11/12">
           <button
             onClick={() => {
               setOpenPayments(false)
               setOpenUsers(false)
+              setOpenFaqs(false)
               setOpenTemplates(!openTemplates)}}
             className={`${linkBase} w-full justify-between`}
           >
@@ -201,7 +197,7 @@ onClick={() => {
     setIsNavigating(true);
   }
 }}                href="/admin/movie-management"
-                className={`${linkBase} ${isActive("/admin/movie-management") ? activeClass : ""}`}
+                className={`${linkBase} ${isActive("/admin/movie-management") ? activeClass : ""}  text-xs`}
               >
                 <BiMovie size={16} /> Movies
               </Link>
@@ -251,7 +247,7 @@ onClick={() => {
     setIsNavigating(true);
   }
 }}                    href="/admin/series-management"
-                    className={`${linkBase} ${isActive("/admin/series-management") ? activeClass : ""}`}
+                    className={`${linkBase} ${isActive("/admin/series-management") ? activeClass : ""}  text-xs`}
                   >
                     <BiTv size={16} />   Series
                   </Link>
@@ -262,7 +258,7 @@ onClick={() => {
   }
 }}                href="/admin/documentary-management"
 
-                className={`${linkBase} ${isActive("/admin/documentary-management") ? activeClass : ""}`}
+                className={`${linkBase} ${isActive("/admin/documentary-management") ? activeClass : ""}  text-xs`}
               >
                 <GrDocumentCloud size={16} /> Documentary
               </Link>
@@ -272,7 +268,7 @@ onClick={() => {
     setIsNavigating(true);
   }
 }}                href="/admin/trailer-management"
-                className={`${linkBase} ${isActive("/admin/trailer-management") ? activeClass : ""}`}
+                className={`${linkBase} ${isActive("/admin/trailer-management") ? activeClass : ""}  text-xs`}
               >
                 <BiTv size={16} /> Trailers
               </Link>
@@ -283,18 +279,19 @@ onClick={() => {
     setIsNavigating(true);
   }
 }}                href="/admin/demo-content-management"
-                className={`${linkBase} ${isActive("/admin/demo-content-management") ? activeClass : ""}`}
+                className={`${linkBase} ${isActive("/admin/demo-content-management") ? activeClass : ""}  text-xs`}
               >
                 <FiList size={16} /> Demo Contents
               </Link>
             </div>
           )}
         </div>
- <div>
+ <div className="w-11/12">
           <button
             onClick={() => {
               setOpenPayments(!openPayments)
               setOpenUsers(false)
+              setOpenFaqs(false)
               setOpenShows(false)
               setOpenTemplates(false)
             }}
@@ -314,7 +311,7 @@ onClick={() => {
     setIsNavigating(true);
   }
 }}                href={"/admin/payment-plans"}
-                className={`${linkBase} ${isActive("/admin/payment-plans") ? activeClass : ""}`}
+                className={`${linkBase} ${isActive("/admin/payment-plans") ? activeClass : ""}  text-xs`}
               >
                 <BsSubscript size={16} />   Payment Plans
               </Link>
@@ -325,7 +322,7 @@ onClick={() => {
     setIsNavigating(true);
   }
 }}                href="/admin/subscriptions"
-                className={`${linkBase} ${isActive("/admin/subscriptions") ? activeClass : ""}`}
+                className={`${linkBase} ${isActive("/admin/subscriptions") ? activeClass : ""}  text-xs`}
               >
                 <GrPlan size={16} /> Subscriptions
               </Link>

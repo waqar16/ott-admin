@@ -62,25 +62,25 @@ export default function EditUser({ setEditUser,user,setUsers }: EditUserProps) {
   };
 
   return (
-    <div className="p-6 w-full mx-auto text-white bg-gray-900">
+    <div className="p-2 md:p-6 w-full mx-auto text-white   md:mt-0 mt-16">
       <div className="flex flex-row items-start w-full justify-between">
         <div className="fex flex-col items-start ">
           <h1 className="text-3xl font-bold mb-2">Create New User</h1>
-      <p className="text-gray-400 mb-6">Fill details to create a new user.</p>
+      <p className="text-neutral-400 mb-6">Fill details to create a new user.</p>
         </div>
         <BiX size={40} onClick={()=>setEditUser(null)} className="cursor-pointer"/>
       </div>
 
       <form
         onSubmit={submitForm}
-        className="space-y-6 bg-gray-800 p-6 rounded-xl border border-gray-700 shadow-xl"
+        className="space-y-6 bg-neutral-800 p-6 rounded-xl border border-neutral-700 shadow-xl"
       >
         {/* Name */}
         <div>
           <label className="block mb-1 text-gray-300">Full Name</label>
           <input
             type="text"
-            className="w-full p-3 bg-gray-700 rounded-lg outline-none border border-gray-600 focus:border-blue-500"
+            className="w-full p-3 bg-neutral-700 rounded-lg outline-none border border-gray-600 focus:border-blue-500"
             placeholder="John Doe"
             value={form.name}
             onChange={(e) => setForm({ ...form, name: e.target.value })}
@@ -95,7 +95,7 @@ export default function EditUser({ setEditUser,user,setUsers }: EditUserProps) {
           <label className="block mb-1 text-gray-300">Email Address</label>
           <input
             type="email"
-            className="w-full p-3 bg-gray-700 rounded-lg outline-none border border-gray-600 focus:border-blue-500"
+            className="w-full p-3 bg-neutral-700 rounded-lg outline-none border border-gray-600 focus:border-blue-500"
             placeholder="example@email.com"
             value={form.email}
             onChange={(e) => setForm({ ...form, email: e.target.value })}
@@ -111,7 +111,7 @@ export default function EditUser({ setEditUser,user,setUsers }: EditUserProps) {
         <div>
           <label className="block mb-1 text-gray-300">Active Status</label>
           <select
-            className="w-full p-3 bg-gray-700 rounded-lg border border-gray-600 focus:border-blue-500"
+            className="w-full p-3 bg-neutral-700 rounded-lg border border-gray-600 focus:border-blue-500"
             value={String(form.is_active)}
             onChange={(e) => setForm({ ...form, is_active: Boolean(e.target.value) })}
           >
@@ -127,7 +127,7 @@ export default function EditUser({ setEditUser,user,setUsers }: EditUserProps) {
 <div>
           <label className="block mb-1 text-gray-300">User Role</label>
           <select
-            className="w-full p-3 bg-gray-700 rounded-lg border border-gray-600 focus:border-blue-500"
+            className="w-full p-3 bg-neutral-700 rounded-lg border border-gray-600 focus:border-blue-500"
             value={form.role}
             onChange={(e) => setForm({ ...form, role: e.target.value })}
           >
@@ -144,7 +144,7 @@ export default function EditUser({ setEditUser,user,setUsers }: EditUserProps) {
         {/* <div>
           <label className="block mb-1 text-gray-300">Subscription</label>
           <select
-            className="w-full p-3 bg-gray-700 rounded-lg border border-gray-600 focus:border-blue-500"
+            className="w-full p-3 bg-neutral-700 rounded-lg border border-gray-600 focus:border-blue-500"
             value={form.subscription}
             onChange={(e) =>
               setForm({ ...form, subscription: e.target.value })
@@ -164,7 +164,7 @@ export default function EditUser({ setEditUser,user,setUsers }: EditUserProps) {
         {/* Submit */}
         <button
           type="submit"
-          className="w-full p-3 bg-blue-600 rounded-lg text-lg font-semibold hover:bg-blue-700"
+          className="w-full p-3 bg-[var(--main-color)] rounded-lg text-lg font-semibold hover:bg-blue-700"
         >
           Update User
         </button>

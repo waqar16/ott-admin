@@ -53,16 +53,16 @@ export const CONTENT_TYPES: Array<{ value: ContentType; label: string }> = [
   { value: 'documentary', label: 'documentary - Documentary content' },
 ];
 
-export const MEDIA_TYPES: Array<{ value: MediaType; label: string }> = [
-  { value: 'flat', label: 'Standard Video (2D)' },
+export const MEDIA_TYPES: Array<{ id: MediaType; name: string }> = [
+  { id: 'flat', name: 'Standard Video (2D)' },
 
-  { value: 'vr_360_mono', label: '360° VR Video (Single View)' },
-  { value: 'vr_360_sbs', label: '360° VR Video (3D – Side by Side)' },
-  { value: 'vr_360_tb', label: '360° VR Video (3D – Top & Bottom)' },
+  { id: 'vr_360_mono', name: '360° VR Video (Single View)' },
+  { id: 'vr_360_sbs', name: '360° VR Video (3D – Side by Side)' },
+  { id: 'vr_360_tb', name: '360° VR Video (3D – Top & Bottom)' },
 
-  { value: 'vr_180_mono', label: '180° VR Video (Single View)' },
-  { value: 'vr_180_sbs', label: '180° VR Video (3D – Side by Side)' },
-  { value: 'vr_180_tb', label: '180° VR Video (3D – Top & Bottom)' },
+  { id: 'vr_180_mono', name: '180° VR Video (Single View)' },
+  { id: 'vr_180_sbs', name: '180° VR Video (3D – Side by Side)' },
+  { id: 'vr_180_tb', name: '180° VR Video (3D – Top & Bottom)' },
 ];
 
 type SearchableSingleSelectProps = {
@@ -112,6 +112,8 @@ export default function ContentEditor(props: ContentEditorProps) {
   const [progress, setProgress] = useState<number>(0)
   const [subtitles, setSubtitles] = useState<any>(null);
   const [subtitlesLoading, setSubtitlesLoading] = useState<boolean>(false);
+  const [trailerMode, setTrailerMode] = useState<"upload" | "url">("upload");
+const [videoUrlInput, setVideoUrlInput] = useState("");
   function updateNode(
     nodes: Content[],
     updated: Content
@@ -588,22 +590,18 @@ export default function ContentEditor(props: ContentEditorProps) {
                       </>
 
                     }
-
-                    <div>
-                      <label className="block text-sm font-medium text-gray-300 mb-2">
-                        Media Type
-                      </label>
-                      <select
-                        value={formData.media_type}
-                        onChange={(e) => handleChange('media_type', e.target.value)}
-                        className="w-full px-4 py-2 bg-gray-700 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      >
-                        {MEDIA_TYPES.map(type => (
-                          <option key={type.value} value={type.value}>{type.label}</option>
-                        ))}
-                      </select>
-                    </div>
-
+<SingleSelect
+                          label="Media Type"
+                          options={MEDIA_TYPES}
+                          value={String(formData.media_type)}
+                       onChange={(id) =>
+  setFormData((prev) => ({
+    ...prev,
+    media_type: id as MediaType
+  }))
+}
+                        />
+                     
                     <div className="flex items-center">
                       <input
                         type="checkbox"
@@ -973,9 +971,78 @@ export default function ContentEditor(props: ContentEditorProps) {
 
              
             {step === 4 && createdContent && contentType !== 'series' && contentType !== 'season' && (
-              <div className="space-y-6">
+          <>    <div className="space-y-6">
+{contentType === "trailer" && (
+  <div className="flex items-center gap-3 bg-neutral-800 p-2 rounded-lg w-fit">
+    <button
+      onClick={() => setTrailerMode("upload")}
+      className={`px-4 py-2 rounded-lg ${
+        trailerMode === "upload"
+          ? "bg-orange-600 text-white"
+          : "bg-gray-700 text-gray-300"
+      }`}
+    >
+      Upload File
+    </button>
 
-                {videoFetchLoading ? (
+    <button
+      onClick={() => setTrailerMode("url")}
+      className={`px-4 py-2 rounded-lg ${
+        trailerMode === "url"
+          ? "bg-orange-600 text-white"
+          : "bg-gray-700 text-gray-300"
+      }`}
+    >
+      Use Video URL
+    </button>
+  </div>
+)}
+{contentType === "trailer" && trailerMode === "url" ? (
+  <div className="space-y-3">
+    <label className="text-white text-sm">Trailer Video URL</label>
+    <input
+      type="url"
+      placeholder="https://example.com/trailer.mp4"
+      value={videoUrlInput}
+      onChange={(e) => setVideoUrlInput(e.target.value)}
+      className="w-full p-3 rounded-lg bg-neutral-900 text-white border border-gray-700"
+    />
+      <div className="flex justify-between mt-6">
+                      <button
+                        onClick={()=>{
+                          prevStep()
+                          setVideoUrlInput("")
+                          setTrailerMode("upload")
+                        }}
+                        className="px-4 py-2 bg-gray-600 text-white rounded-lg"
+                      >
+                        Back
+                      </button>
+
+                      <button
+                        onClick={()=>{toast.info('Backend Work for this section is undergoing. Wait for that to complete')}}
+
+                        // onClick={handleFileUpload}
+                        disabled={  !videoUrlInput || !videoUrlInput.includes("https://") || videoUrlInput.length<8}
+                        className="px-6 py-2 bg-orange-600 text-white rounded-lg flex items-center gap-2 disabled:opacity-50"
+                      >
+                        {uploading || content?.ingest_status === 'processing' ? (
+                          <>
+                            <RoundLoader />
+                            <span>
+                              {content?.ingest_status === 'processing'
+                                ? 'Initializing Content'
+                                : 'Uploading'}
+                            </span>
+                          </>
+                        ) : (
+                          'Initialize Content'
+                        )}
+                      </button>
+                    </div>
+  </div>
+) : (
+                <>{videoFetchLoading ? (
                   <SkeletonLoader className="w-full h-[40vh] bg-gray-700 rounded-xl" />
                 ) : (
                   <>
@@ -1093,8 +1160,9 @@ export default function ContentEditor(props: ContentEditorProps) {
                       </button>
                     </div>
                   </>
+                )}</>
                 )}
-              </div>
+              </div></>
             )}
 
           </div>

@@ -32,7 +32,7 @@ export default async function AdminUsersPage() {
    <>
     {editUser?
       <EditUser setEditUser={setEditUser} user={editUser} setUsers={setUsers}/>:
-      <div className="p-6 text-white space-y-6 bg-black"> 
+      <div className="p-2 md:p-6 text-white space-y-6 bg-black md:mt-0 mt-16"> 
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-3xl font-bold">Users Management</h1>

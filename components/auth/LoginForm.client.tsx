@@ -11,6 +11,10 @@ import { useAuth } from '@/lib/useAuth';
 import { USE_MOCK_DATA } from '@/lib/config';
 import { useRouter } from 'next/navigation';
 import FullScreenLoader from '../Loader/FullScreenLoader';
+    
+ import { HiEye, HiEyeOff } from "react-icons/hi";
+import FullScreenRedirectLoader from '../Loader/FullScreenRedirectLoader';
+import { toast } from 'sonner';
 
 interface LoginFormProps {
  
@@ -27,6 +31,9 @@ export function LoginForm({   }: LoginFormProps) {
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [loginLoading,setLoginLoading] = React.useState(false)
+  const [showPassword, setShowPassword] = React.useState(false);
+  const [showRedirectLoader, setShowRedirectLoader] = React.useState<{show:boolean,message:string}>({show:false,message:''});
+
   useEffect(() => {
     setMounted(true);
   }, []);
@@ -44,9 +51,11 @@ setLoginLoading(true)
         return;
       }
       if(result.role =='user'){
+        toast.error("You do not have access to this platform.")
         router.push('/')
       }
       else if( result.role == 'admin'){
+        setShowRedirectLoader({show:true,message:'Redirecting to Admin Dashboard'})
         router.push('/admin')
 
       }
@@ -74,44 +83,63 @@ setLoginLoading(false)
   };
 
   return (
-    <div className="w-full max-w-md">
+    <div className="w-full max-w-md mt-4">
        
 
       <form onSubmit={handleSubmit} className="space-y-4">
-        <div>
-          <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
-            Email
-          </label>
+          <div className="relative flex-1 md:w-auto w-full" >
           <input
-            id="email"
             type="email"
+            id="email"
             value={email}
-            onChange={(e) => setEmail(e.target.value)}
             required
             disabled={Boolean(isSubmitting || loading)}
-            className="text-gray-800 w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
-            placeholder="you@example.com"
-            autoComplete="email"
-          />
-        </div>
 
-        <div>
-          <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
+            onChange={(e)=>setEmail(e.target.value)}
+            className=" peer w-full   px-4 pt-6  pb-2   placeholder-transparent outline-none ring-1 ring-white  bg-transparent text-neutral-800 text-sm min-h-[60px]  "
+            placeholder="Email address"
+          />
+          <label htmlFor="email" className="pointer-events-none absolute left-4 top-2 text-xs text-neutral-800 transition-all peer-placeholder-shown:top-5 peer-placeholder-shown:text-neutral-800 peer-placeholder-shown:text-neutral-950 peer-focus:top-2 peer-focus:text-[10px] ">
+            Email address
+          </label>
+        </div>
+         
+   <div className="relative flex-1 md:w-auto w-full" >
+          <input
+            
+    type={showPassword ? "text" : "password"}
+            id="password"
+            value={password}
+            required
+
+            onChange={(e)=>setPassword(e.target.value)}
+            className=" peer w-full   px-4 pt-6  pb-2   placeholder-transparent outline-none ring-1 ring-white  bg-transparent text-neutral-800 text-sm min-h-[60px]  "
+            placeholder="Password"
+            disabled={Boolean(isSubmitting || loading)}
+
+            autoComplete="current-password"
+
+          />
+          <label htmlFor="password" className="pointer-events-none absolute left-4 top-2 text-xs text-neutral-800 transition-all peer-placeholder-shown:top-5 peer-placeholder-shown:text-neutral-800 peer-placeholder-shown:text-neutral-950 peer-focus:top-2 peer-focus:text-[10px] ">
             Password
           </label>
-          <input
-            id="password"
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-            disabled={Boolean(isSubmitting || loading)}
-            className="text-gray-800 w-full   px-4 py-2 border  border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
-            placeholder="Enter your password"
-            autoComplete="current-password"
-          />
+          <button
+    type="button"
+    onClick={() => setShowPassword(!showPassword)}
+    className="
+      absolute right-4 top-1/2 -translate-y-1/2
+      text-neutral-600 focus:outline-none
+    "
+  >
+    {showPassword ? (
+      <HiEyeOff size={20} />
+    ) : (
+      <HiEye size={20} />
+    )}
+  </button>
         </div>
-
+        
+       
         {show2FA && (
           <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
             <label htmlFor="token2fa" className="block text-sm font-medium text-blue-900 mb-2">
@@ -144,7 +172,7 @@ setLoginLoading(false)
         <button
           type="submit"
           disabled={Boolean(isSubmitting || loading)}
-          className="w-full py-3 px-4 bg-gradient-to-r from-purple-600 to-pink-600 text-white font-semibold rounded-lg hover:from-purple-700 hover:to-pink-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+          className="w-full py-3 px-4 bg-[var(--main-color)]  text-white font-semibold rounded-lg hover:bg-[var(--main-color)] hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
         >
           {(isSubmitting || loading) ? (
             <span className="flex items-center justify-center gap-2">
@@ -178,12 +206,14 @@ setLoginLoading(false)
         </button>
 
         <div className="text-center text-sm text-gray-600">
-          <a href="#" className="text-purple-600 hover:text-purple-700 font-medium">
+          <a href="#" className="text-[var(--main-color)]  font-medium">
             Forgot password?
           </a>
         </div>
       </form>
       {loginLoading && <FullScreenLoader msg={'Signing you in'}/>}
+
+      {showRedirectLoader.show && <FullScreenRedirectLoader message={showRedirectLoader.message} />}
     </div>
   );
 }

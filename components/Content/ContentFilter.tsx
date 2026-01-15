@@ -68,7 +68,7 @@ interface ContentFilterProps { filters: ContentFilters; setFilters: React.Dispat
 
 const ContentFilter: React.FC<ContentFilterProps> = ({ filters, setFilters }) => {
   return (
-    <div className="mb-6 bg-neutral-900 rounded-xl p-5 border border-neutral-800">
+    <div className="  bg-neutral-900 rounded-xl p-5 border border-neutral-800">
       <h2 className="text-lg font-semibold mb-4">Filters</h2>
 
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">

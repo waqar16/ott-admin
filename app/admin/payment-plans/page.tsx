@@ -68,15 +68,15 @@ const [loading, setLoading] = useState(true);
   }, [page, filters]);
 
   return (
-    <div className="p-6">
+    <div className="md:p-6 p-2 mt-16 md:mt-0 min-h-screen bg-black">
 
       {/* Header */}
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold text-white">Payment Plans</h1>
+        <h1 className=" text-2xl md:text-3xl font-bold text-white">Payment Plans</h1>
 
         <button
           onClick={() => setModalOpen(true)}
-          className="px-5 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold"
+          className="px-3 md:px-5 py-2 md:py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg  text-sm md:text-md"
         >
           + Add New Payment Plan
         </button>
@@ -133,13 +133,13 @@ const [loading, setLoading] = useState(true);
     </>
   ) : (
     plans.map((plan) => (
-      <div key={plan.id} className="bg-neutral-800 p-6 rounded-lg shadow-lg border border-gray-700">
+      <div key={plan.id} className="bg-neutral-800 p-6 rounded-lg shadow-lg border border-neutral-700">
         <h3 className="text-xl text-neutral-300 font-bold mb-2">{plan.name}</h3>
-        <p className="text-gray-400 mb-3">{plan.description}</p>
+        <p className="text-neutral-400 mb-3">{plan.description}</p>
 
         <p className="text-2xl text-neutral-300 font-bold mb-3">${plan.price}</p>
 
-        <ul className="text-gray-300 text-sm space-y-1">
+        <ul className="text-neutral-300 text-sm space-y-1">
           <li>Duration: {plan.duration_days} days</li>
           <li>Devices: {plan.max_devices}</li>
           <li>Profiles: {plan.max_profiles}</li>
@@ -170,7 +170,7 @@ const [loading, setLoading] = useState(true);
         <button
           disabled={page === 1}
           onClick={() => setPage((p) => p - 1)}
-          className={`px-4 py-2 rounded-lg ${page === 1 ? "bg-gray-700" : "bg-gray-600 hover:bg-gray-700"} text-white`}
+          className={`px-4 py-2 rounded-lg ${page === 1 ? "bg-neutral-700" : "bg-neutral-600 hover:bg-neutral-700"} text-white`}
         >
           Previous
         </button>
@@ -180,7 +180,7 @@ const [loading, setLoading] = useState(true);
         <button
           disabled={page * 10 >= count}
           onClick={() => setPage((p) => p + 1)}
-          className={`px-4 py-2 rounded-lg ${(page * 10 >= count) ? "bg-gray-700" : "bg-gray-600 hover:bg-gray-700"} text-white`}
+          className={`px-4 py-2 rounded-lg ${(page * 10 >= count) ? "bg-neutral-700" : "bg-neutral-600 hover:bg-neutral-700"} text-white`}
         >
           Next
         </button>
@@ -190,7 +190,7 @@ const [loading, setLoading] = useState(true);
       {/* Add New Plan Modal */}
       {modalOpen && (
   <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
-    <div className="bg-gray-800 p-6 rounded-lg w-full max-w-lg">
+    <div className="bg-neutral-800 p-6 rounded-lg w-full max-w-lg">
 
       <h2 className="text-xl font-bold mb-4">
         {editPlan ? "Edit Payment Plan" : "Add New Payment Plan"}
@@ -275,14 +275,14 @@ const PlanForm = ({
           placeholder="Plan Name"
           value={form.name}
           onChange={(e) => update("name", e.target.value)}
-          className="w-full px-4 py-2 bg-gray-700 text-white rounded-lg"
+          className="w-full px-4 py-2 bg-neutral-700 text-white rounded-lg"
         />
 
         <textarea
           placeholder="Description"
           value={form.description}
           onChange={(e) => update("description", e.target.value)}
-          className="w-full px-4 py-2 bg-gray-700 text-white rounded-lg"
+          className="w-full px-4 py-2 bg-neutral-700 text-white rounded-lg"
         />
 
         <input
@@ -290,7 +290,7 @@ const PlanForm = ({
           placeholder="Price"
           value={form.price}
           onChange={(e) => update("price", parseFloat(e.target.value))}
-          className="w-full px-4 py-2 bg-gray-700 text-white rounded-lg"
+          className="w-full px-4 py-2 bg-neutral-700 text-white rounded-lg"
         />
 
         <input
@@ -298,7 +298,7 @@ const PlanForm = ({
           placeholder="Duration (days)"
           value={form.duration_days}
           onChange={(e) => update("duration_days", Number(e.target.value))}
-          className="w-full px-4 py-2 bg-gray-700 text-white rounded-lg"
+          className="w-full px-4 py-2 bg-neutral-700 text-white rounded-lg"
         />
 
         <input
@@ -306,7 +306,7 @@ const PlanForm = ({
           placeholder="Max Devices"
           value={form.max_devices}
           onChange={(e) => update("max_devices", Number(e.target.value))}
-          className="w-full px-4 py-2 bg-gray-700 text-white rounded-lg"
+          className="w-full px-4 py-2 bg-neutral-700 text-white rounded-lg"
         />
 
         <input
@@ -314,14 +314,14 @@ const PlanForm = ({
           placeholder="Max Profiles"
           value={form.max_profiles}
           onChange={(e) => update("max_profiles", Number(e.target.value))}
-          className="w-full px-4 py-2 bg-gray-700 text-white rounded-lg"
+          className="w-full px-4 py-2 bg-neutral-700 text-white rounded-lg"
         />
 
         {/* Ad Supported */}
         <select
           value={form.ad_supported ? "true" : "false"}
           onChange={(e) => update("ad_supported", e.target.value === "true")}
-          className="w-full px-4 py-2 bg-gray-700 text-white rounded-lg"
+          className="w-full px-4 py-2 bg-neutral-700 text-white rounded-lg"
         >
           <option value="false">No Ads</option>
           <option value="true">Ad Supported</option>
@@ -331,7 +331,7 @@ const PlanForm = ({
         <select
           value={form.is_active ? "true" : "false"}
           onChange={(e) => update("is_active", e.target.value === "true")}
-          className="w-full px-4 py-2 bg-gray-700 text-white rounded-lg"
+          className="w-full px-4 py-2 bg-neutral-700 text-white rounded-lg"
         >
           <option value="true">Active</option>
           <option value="false">Inactive</option>
@@ -343,7 +343,7 @@ const PlanForm = ({
       <div className="flex justify-end gap-3 mt-6">
         <button
           onClick={onClose}
-          className="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg"
+          className="px-4 py-2 bg-neutral-600 hover:bg-neutral-700 text-white rounded-lg"
         >
           Cancel
         </button>
@@ -362,21 +362,21 @@ const PlanForm = ({
   );
 };
 const PlanCardSkeleton = () => (
-  <div className="bg-gray-800 p-6 rounded-lg border border-gray-700 animate-pulse">
-    <SkeletonLoader className="h-6 w-32 bg-gray-700 mb-4" />
-    <SkeletonLoader className="h-4 w-full bg-gray-700 mb-3" />
-    <SkeletonLoader className="h-4 w-1/2 bg-gray-700 mb-6" />
+  <div className="bg-neutral-800 p-6 rounded-lg border border-neutral-700 animate-pulse">
+    <SkeletonLoader className="h-6 w-32 bg-neutral-700 mb-4" />
+    <SkeletonLoader className="h-4 w-full bg-neutral-700 mb-3" />
+    <SkeletonLoader className="h-4 w-1/2 bg-neutral-700 mb-6" />
     
-    <SkeletonLoader className="h-8 w-20 bg-gray-700 mb-4" />
+    <SkeletonLoader className="h-8 w-20 bg-neutral-700 mb-4" />
 
     <div className="space-y-2">
-      <SkeletonLoader className="h-4 w-40 bg-gray-700" />
-      <SkeletonLoader className="h-4 w-28 bg-gray-700" />
-      <SkeletonLoader className="h-4 w-32 bg-gray-700" />
-      <SkeletonLoader className="h-4 w-24 bg-gray-700" />
+      <SkeletonLoader className="h-4 w-40 bg-neutral-700" />
+      <SkeletonLoader className="h-4 w-28 bg-neutral-700" />
+      <SkeletonLoader className="h-4 w-32 bg-neutral-700" />
+      <SkeletonLoader className="h-4 w-24 bg-neutral-700" />
     </div>
 
-    <SkeletonLoader className="h-10 w-full bg-gray-700 mt-5 rounded" />
+    <SkeletonLoader className="h-10 w-full bg-neutral-700 mt-5 rounded" />
   </div>
 );
 

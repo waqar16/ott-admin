@@ -68,9 +68,11 @@ export default function SeriesTree({
 }: SeriesTreeProps) {
   return (
     <div className="space-y-4">
-      {seriesList.map((series) => (
+      {seriesList.length>0?
+      <>{seriesList.map((series) => (
         <SeriesItem key={series.id} series={series} refresh={refresh} setSelectedContent={setSelectedContent} setSeriesList={setSeriesList} editSeriesHandler={editSeriesHandler} />
-      ))}
+      ))}</>:
+      <p>No series found. Create One!</p>}
     </div>
   );
 }
@@ -151,8 +153,8 @@ export function SeriesItem({ series, refresh, setSeriesList, editSeriesHandler, 
       {/* Seasons */}
       {open && (
         <div className="mt-3 ml-6 space-y-3">
-          {series.children?.map((season) => (
-            <SeasonItem setSeriesList={setSeriesList} key={season.id} season={season} refresh={refresh} series={series} />
+          {series.children?.map((season,index) => (
+            <SeasonItem setSeriesList={setSeriesList} key={index} season={season} refresh={refresh} series={series} />
           ))}
 
           {/* Add Season */}

@@ -216,8 +216,7 @@ const ContentDetailsModal: React.FC<ContentDetailsModalProps> = ({
 
           {/* Publish Button */}
           {detailContent.ingest_status === 'ready' && detailContent.status != 'published' && (
-            <button
-              disabled={detailContent.status === 'published'}
+            <button 
               className="bg-yellow-600 px-4 py-2 rounded-md text-black"
               onClick={async () => {
                 const res = await publishContent(detailContent.id);
@@ -229,9 +228,7 @@ const ContentDetailsModal: React.FC<ContentDetailsModalProps> = ({
                 }
               }}
             >
-              {detailContent.status === 'published'
-                ? 'Published'
-                : 'Publish Content'}
+              {'Publish Content'}
             </button>
             
           )}

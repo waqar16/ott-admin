@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { Content, ContentFilters, ApiError, Rendition } from '@/lib/types/content';
-import { listContent, getContent, getRenditions, getStreamingUrl ,publishContent} from '@/lib/contentApi';
+import { listContent, getContent, getRenditions, getStreamingUrl, publishContent } from '@/lib/contentApi';
 import ContentEditor from '@/components/admin/content/ContentEditor.client';
 import RoundLoader from '@/components/Loader/RoundLoader';
 import SkeletonLoader from '@/components/Loader/SkeletonLoader';
@@ -37,12 +37,12 @@ export default function ContentManagementPage() {
   // Filter state
   const [filters, setFilters] = useState<ContentFilters>({
     status: undefined,
-    content_type:pathname.includes('movie')?'movie':
-            pathname.includes('document')?'documentary':
-            pathname.includes('trailer')?'trailer':
-            pathname.includes('series')?'series':
-            pathname.includes('episode')?'episode':"movie"
-          ,
+    content_type: pathname.includes('movie') ? 'movie' :
+      pathname.includes('document') ? 'documentary' :
+        pathname.includes('trailer') ? 'trailer' :
+          pathname.includes('series') ? 'series' :
+            pathname.includes('episode') ? 'episode' : "movie"
+    ,
     is_kid_safe: undefined,
     is_ppv: undefined,
     media_type: pathname.includes("movie-management") ? "movies"
@@ -115,6 +115,7 @@ export default function ContentManagementPage() {
   function handleEditorClose() {
     setShowEditor(false);
     setSelectedContent(null);
+    fetchContent();
   }
 
   function handleEditorSuccess(updatedContent: Content) {
@@ -131,15 +132,7 @@ export default function ContentManagementPage() {
     setDetailContent(null);
   }
 
-  function getStatusBadge(status: string) {
-    const colors = {
-      draft: 'bg-gray-600',
-      processing: 'bg-yellow-600',
-      published: 'bg-green-600',
-      inactive: 'bg-gray-700',
-    } as const;
-    return (colors as any)[status] || 'bg-gray-600';
-  }
+ 
 
   function formatBitrate(bitrate: number): string {
     if (bitrate >= 1000000) {
@@ -184,18 +177,18 @@ export default function ContentManagementPage() {
             {error}
           </div>
         )}
-       {loading ?
-            <>
+        {loading ?
+          <>
             <ContentFilter filters={filters} setFilters={setFilters} />
-<div className='flex flex-row items-center w-full justify-end p-2'>
+            <div className='flex flex-row items-center w-full justify-end p-2'>
               <button className='p-2 rounded-md bg-neutral-800 flex flex-row items-center' onClick={() => {
                 fetchContent()
               }}>Refresh <BiRefresh className='ml-1' /> </button>
             </div>
-          <ContentLoading /></>
+            <ContentLoading /></>
 
           :
-          <> 
+          <>
             <ContentFilter filters={filters} setFilters={setFilters} />
             <div className='flex flex-row items-center w-full justify-end p-2'>
               <button className='p-2 rounded-md bg-neutral-800 flex flex-row items-center' onClick={() => {
@@ -214,36 +207,36 @@ export default function ContentManagementPage() {
                 </button>
               </div>
             ) : (
-                           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
 
-                  {content && content.map((item) => (
-                                    <ContentCard
+                {content && content.map((item) => (
+                  <ContentCard
                     key={item.id}
                     item={item}
                     handleViewDetails={handleViewDetails}
                     handleEdit={handleEdit}
                     publishContent={publishContent}
                     fetchContent={fetchContent}
-                    getStatusBadge={getStatusBadge}
+                   
                   />
-                                ))}
+                ))}
               </div>
             )}</>
         }
       </div>
 
       {/* Content Editor Modal */}
-       {showEditor && (
+      {showEditor && (
         <ContentEditor
           content={selectedContent}
           setContent={setContent}
           onClose={handleEditorClose}
           onSuccess={handleEditorSuccess}
-           contentType={pathname.includes('movie')?'movie':
-            pathname.includes('document')?'documentary':
-            pathname.includes('trailer')?'trailer':
-            pathname.includes('series')?'series':
-            pathname.includes('episode')?'episode':"movie"
+          contentType={pathname.includes('movie') ? 'movie' :
+            pathname.includes('document') ? 'documentary' :
+              pathname.includes('trailer') ? 'trailer' :
+                pathname.includes('series') ? 'series' :
+                  pathname.includes('episode') ? 'episode' : "movie"
           }
         />
       )}
@@ -251,21 +244,21 @@ export default function ContentManagementPage() {
       {/* Content Details Modal */}
       {showDetails && detailContent && (
         <ContentDetailsModal
-  open={showDetails}
-  detailContent={detailContent}
-  onClose={() => {
-    setShowDetails(false);
-    setDetailContent(null);
-    fetchContent()
-  }}
-  videoUrl={videoUrl}
-  videoUrlLoading={videoUrlLoading}
-  renditions={renditions}
-  loadingRenditions={loadingRenditions}
-  publishContent={publishContent}
-  getQualityBadgeColor={getQualityBadgeColor}
-  formatBitrate={formatBitrate}
-/>
+          open={showDetails}
+          detailContent={detailContent}
+          onClose={() => {
+            setShowDetails(false);
+            setDetailContent(null);
+            fetchContent()
+          }}
+          videoUrl={videoUrl}
+          videoUrlLoading={videoUrlLoading}
+          renditions={renditions}
+          loadingRenditions={loadingRenditions}
+          publishContent={publishContent}
+          getQualityBadgeColor={getQualityBadgeColor}
+          formatBitrate={formatBitrate}
+        />
       )}
     </div>
   );

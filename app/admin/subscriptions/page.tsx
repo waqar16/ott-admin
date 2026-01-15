@@ -62,7 +62,7 @@ const SubscriptionPage = () => {
   }, [page, filters]);
 
   return (
-    <div className="p-6">
+    <div className="mt-16 md:mt-0 p-2 md:p-6">
       {/* Header */}
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold text-white">User Subscriptions</h1>
@@ -120,26 +120,26 @@ const SubscriptionPage = () => {
             <SubscriptionCardSkeleton />
           </>
         ) : subscriptions.length === 0 ? (
-          <p className="text-gray-400">No subscriptions found.</p>
+          <p className="text-neutral-400">No subscriptions found.</p>
         ) : (
           subscriptions.map((sub) => (
             <div
               key={sub.id}
-              className="bg-gray-800 p-6 rounded-lg border border-gray-700 shadow-lg"
+              className="bg-neutral-800 p-6 rounded-lg border border-neutral-700 shadow-lg"
             >
               <h3 className="text-xl font-semibold mb-2">
                 {sub.plan?.name}
               </h3>
 
-              <p className="text-gray-300">
+              <p className="text-neutral-300">
                 Price: <span className="font-bold">${sub.plan.price}</span>
               </p>
 
-              <p className="text-gray-300 mt-1">
+              <p className="text-neutral-300 mt-1">
                 User: <span className="text-white">{sub.user}</span>
               </p>
 
-              <p className="text-gray-300 mt-1">
+              <p className="text-neutral-300 mt-1">
                 Status:{" "}
                 <span
                   className={`font-bold ${
@@ -152,10 +152,10 @@ const SubscriptionPage = () => {
                 </span>
               </p>
 
-              <p className="text-gray-400 text-sm mt-3">
+              <p className="text-neutral-400 text-sm mt-3">
                 Start: {new Date(sub.start_date).toLocaleDateString()}
               </p>
-              <p className="text-gray-400 text-sm">
+              <p className="text-neutral-400 text-sm">
                 End: {new Date(sub.end_date).toLocaleDateString()}
               </p>
             </div>
@@ -195,12 +195,12 @@ const SubscriptionPage = () => {
   );
 };
 const SubscriptionCardSkeleton = () => (
-  <div className="bg-gray-800 p-6 rounded-lg border border-gray-700 animate-pulse">
-    <SkeletonLoader className="h-6 w-36 bg-gray-700 mb-4" />
-    <SkeletonLoader className="h-4 w-24 bg-gray-700 mb-3" />
-    <SkeletonLoader className="h-4 w-44 bg-gray-700 mb-3" />
-    <SkeletonLoader className="h-4 w-28 bg-gray-700 mb-3" />
-    <SkeletonLoader className="h-4 w-40 bg-gray-700 mt-5" />
+  <div className="bg-neutral-800 p-6 rounded-lg border border-neutral-700 animate-pulse">
+    <SkeletonLoader className="h-6 w-36 bg-neutral-700 mb-4" />
+    <SkeletonLoader className="h-4 w-24 bg-neutral-700 mb-3" />
+    <SkeletonLoader className="h-4 w-44 bg-neutral-700 mb-3" />
+    <SkeletonLoader className="h-4 w-28 bg-neutral-700 mb-3" />
+    <SkeletonLoader className="h-4 w-40 bg-neutral-700 mt-5" />
   </div>
 );
 

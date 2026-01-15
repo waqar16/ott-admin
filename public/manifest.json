@@ -1,0 +1,7 @@
+{
+  "name": "Admin Panel",
+  "short_name": "Admin",
+  "display": "standalone",
+  "background_color": "#000000",
+  "theme_color": "#000000"
+}

@@ -116,12 +116,12 @@
 
 //   function getStatusBadge(status: string) {
 //     const colors = {
-//       draft: 'bg-gray-600',
+//       draft: 'bg-neutral-600',
 //       processing: 'bg-yellow-600',
 //       published: 'bg-green-600',
-//       inactive: 'bg-gray-700',
+//       inactive: 'bg-neutral-700',
 //     } as const;
-//     return (colors as any)[status] || 'bg-gray-600';
+//     return (colors as any)[status] || 'bg-neutral-600';
 //   }
 
 //   function formatBitrate(bitrate: number): string {
@@ -148,12 +148,12 @@
 //       case 'sd':
 //         return 'bg-yellow-600';
 //       default:
-//         return 'bg-gray-600';
+//         return 'bg-neutral-600';
 //     }
 //   }
 
 //   return (
-//     <div className="min-h-screen bg-gray-900 text-white">
+//     <div className="min-h-screen bg-neutral-900 text-white">
 //       {/* Header */}
 //       <ContentHeaderComponent handleCreateNew={handleCreateNew} />
 
@@ -180,8 +180,8 @@
 
 //             {/* Content List */}
 //             {!loading && (!content || content.length === 0) ? (
-//               <div className="bg-gray-800 rounded-lg p-12 text-center">
-//                 <p className="text-gray-400 text-lg mb-4">No content found</p>
+//               <div className="bg-neutral-800 rounded-lg p-12 text-center">
+//                 <p className="text-neutral-400 text-lg mb-4">No content found</p>
 //                 <button
 //                   onClick={handleCreateNew}
 //                   className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
@@ -194,7 +194,7 @@
 //                 {content && content.map((item) => (
 //                   <div
 //                     key={item.id}
-//                     className="bg-gray-800 rounded-lg p-6 hover:bg-gray-750 transition-colors"
+//                     className="bg-neutral-800 rounded-lg p-6 hover:bg-neutral-750 transition-colors"
 //                   >
 //                     <div className="flex items-start justify-between">
 //                       <div className="flex-1">
@@ -226,9 +226,9 @@
 //                           )}
 //                         </div>
 
-//                         <p className="text-gray-400 mb-3 line-clamp-2">{item.description}</p>
+//                         <p className="text-neutral-400 mb-3 line-clamp-2">{item.description}</p>
 
-//                         <div className="flex items-center gap-4 text-sm text-gray-500">
+//                         <div className="flex items-center gap-4 text-sm text-neutral-500">
 //                           <span>Type: {item.content_type}</span>
 //                           <span>•</span>
 //                           <span>Media: {item.media_type}</span>
@@ -240,7 +240,7 @@
 //                       <div className="flex gap-2 ml-4">
 //                         <button
 //                           onClick={() => handleViewDetails(item)}
-//                           className="px-4 py-2 bg-gray-700 text-white rounded-lg hover:bg-gray-600 transition-colors"
+//                           className="px-4 py-2 bg-neutral-700 text-white rounded-lg hover:bg-neutral-600 transition-colors"
 //                         >
 //                           Details
 //                         </button>
@@ -272,13 +272,13 @@
 //       {/* Content Details Modal */}
 //       {showDetails && detailContent && (
 //         <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4 overflow-y-auto">
-//           <div className="bg-gray-800 rounded-lg max-w-6xl w-full my-8">
+//           <div className="bg-neutral-800 rounded-lg max-w-6xl w-full my-8">
 //             {/* Header */}
-//             <div className="flex items-center justify-between p-6 border-b border-gray-700">
+//             <div className="flex items-center justify-between p-6 border-b border-neutral-700">
 //               <h2 className="text-2xl font-bold text-white">Content Details</h2>
 //               <button
 //                 onClick={handleDetailsClose}
-//                 className="text-gray-400 hover:text-white transition-colors"
+//                 className="text-neutral-400 hover:text-white transition-colors"
 //               >
 //                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 //                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -291,7 +291,7 @@
 //               {/* Basic Info */}
 //               <div>
 //                 <h3 className="text-xl font-bold mb-4">{detailContent.title}</h3>
-//                 <p className="text-gray-300">{detailContent.description}</p>
+//                 <p className="text-neutral-300">{detailContent.description}</p>
 //               </div>
 
 //               {/* Images */}
@@ -299,7 +299,7 @@
 //                 <div className="grid grid-cols-2 gap-4">
 //                   {detailContent.poster_url && (
 //                     <div>
-//                       <h4 className="text-sm font-semibold text-gray-400 mb-2">Poster</h4>
+//                       <h4 className="text-sm font-semibold text-neutral-400 mb-2">Poster</h4>
 //                       <img
 //                         src={detailContent.poster_url}
 //                         alt="Poster"
@@ -309,7 +309,7 @@
 //                   )}
 //                   {detailContent.banner_url && (
 //                     <div>
-//                       <h4 className="text-sm font-semibold text-gray-400 mb-2">Banner</h4>
+//                       <h4 className="text-sm font-semibold text-neutral-400 mb-2">Banner</h4>
 //                       <img
 //                         src={detailContent.banner_url}
 //                         alt="Banner"
@@ -322,7 +322,7 @@
 //               {videoUrlLoading && <RoundLoader className='' />}
 //               {videoUrl && (
 //                 <div>
-//                   <h4 className="text-sm font-semibold text-gray-400 mb-2">Video</h4>
+//                   <h4 className="text-sm font-semibold text-neutral-400 mb-2">Video</h4>
 //                   <video
 //                     src={videoUrl}
 //                     controls
@@ -339,13 +339,13 @@
 //                 </h3>
 
 //                 {loadingRenditions ? (
-//                   <div className="bg-gray-800 rounded-lg p-8 text-center">
-//                     <p className="text-gray-400">Loading renditions...</p>
+//                   <div className="bg-neutral-800 rounded-lg p-8 text-center">
+//                     <p className="text-neutral-400">Loading renditions...</p>
 //                   </div>
 //                 ) : renditions.length === 0 ? (
-//                   <div className="bg-gray-800 rounded-lg p-8 text-center">
-//                     <p className="text-gray-400">No renditions available yet.</p>
-//                     <p className="text-sm text-gray-500 mt-2">
+//                   <div className="bg-neutral-800 rounded-lg p-8 text-center">
+//                     <p className="text-neutral-400">No renditions available yet.</p>
+//                     <p className="text-sm text-neutral-500 mt-2">
 //                       Renditions will appear here once transcoding is complete.
 //                     </p>
 //                   </div>
@@ -354,7 +354,7 @@
 //                     {renditions.map((rendition) => (
 //                       <div
 //                         key={rendition.id}
-//                         className="bg-gray-800 rounded-lg p-4 hover:bg-gray-750 transition-colors"
+//                         className="bg-neutral-800 rounded-lg p-4 hover:bg-neutral-750 transition-colors"
 //                       >
 //                         <div className="flex items-start justify-between mb-3">
 //                           <div className="flex items-center gap-3">
@@ -369,7 +369,7 @@
 //                                   ? 'bg-green-900/50 text-green-300'
 //                                   : rendition.status === 'processing'
 //                                     ? 'bg-yellow-900/50 text-yellow-300'
-//                                     : 'bg-gray-700 text-gray-300'
+//                                     : 'bg-neutral-700 text-neutral-300'
 //                                 }`}
 //                             >
 //                               {rendition.status}
@@ -377,7 +377,7 @@
 //                           </div>
 
 //                           {rendition.file_size_bytes && (
-//                             <span className="text-sm text-gray-400">
+//                             <span className="text-sm text-neutral-400">
 //                               {(rendition.file_size_bytes / (1024 * 1024)).toFixed(2)} MB
 //                             </span>
 //                           )}
@@ -386,7 +386,7 @@
 //                         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
 //                           {(rendition.width && rendition.height) && (
 //                             <div>
-//                               <span className="text-gray-500">Resolution:</span>
+//                               <span className="text-neutral-500">Resolution:</span>
 //                               <span className="text-white ml-2">
 //                                 {rendition.width}x{rendition.height}
 //                               </span>
@@ -395,7 +395,7 @@
 
 //                           {rendition.bitrate && (
 //                             <div>
-//                               <span className="text-gray-500">Bitrate:</span>
+//                               <span className="text-neutral-500">Bitrate:</span>
 //                               <span className="text-white ml-2">
 //                                 {formatBitrate(rendition.bitrate)}
 //                               </span>
@@ -404,7 +404,7 @@
 
 //                           {rendition.format && (
 //                             <div>
-//                               <span className="text-gray-500">Format:</span>
+//                               <span className="text-neutral-500">Format:</span>
 //                               <span className="text-white ml-2 uppercase">
 //                                 {rendition.format}
 //                               </span>
@@ -413,7 +413,7 @@
 
 //                           {rendition.codec && (
 //                             <div>
-//                               <span className="text-gray-500">Codec:</span>
+//                               <span className="text-neutral-500">Codec:</span>
 //                               <span className="text-white ml-2 uppercase">
 //                                 {rendition.codec}
 //                               </span>
@@ -422,26 +422,26 @@
 //                         </div>
 
 //                         {rendition.url && (
-//                           <div className="mt-3 pt-3 border-t border-gray-700">
+//                           <div className="mt-3 pt-3 border-t border-neutral-700">
 //                             <details className="cursor-pointer">
-//                               <summary className="text-sm text-gray-400 hover:text-white">
+//                               <summary className="text-sm text-neutral-400 hover:text-white">
 //                                 View URLs
 //                               </summary>
 //                               <div className="mt-2 space-y-2">
 //                                 <div>
-//                                   <span className="text-xs text-gray-500 block mb-1">
+//                                   <span className="text-xs text-neutral-500 block mb-1">
 //                                     Playback URL:
 //                                   </span>
-//                                   <code className="text-xs text-blue-400 bg-gray-900 px-2 py-1 rounded block overflow-x-auto">
+//                                   <code className="text-xs text-blue-400 bg-neutral-900 px-2 py-1 rounded block overflow-x-auto">
 //                                     {rendition.url}
 //                                   </code>
 //                                 </div>
 //                                 {rendition.manifest_url && (
 //                                   <div>
-//                                     <span className="text-xs text-gray-500 block mb-1">
+//                                     <span className="text-xs text-neutral-500 block mb-1">
 //                                       Manifest URL:
 //                                     </span>
-//                                     <code className="text-xs text-blue-400 bg-gray-900 px-2 py-1 rounded block overflow-x-auto">
+//                                     <code className="text-xs text-blue-400 bg-neutral-900 px-2 py-1 rounded block overflow-x-auto">
 //                                       {rendition.manifest_url}
 //                                     </code>
 //                                   </div>
@@ -544,19 +544,19 @@ let pathname = usePathname()
   );
 
   return (
-    <div className="min-h-screen   text-white p-6">
+    <div className="min-h-screen   text-white p-2 md:p-6 mt-16 md:mt-0">
       {/* Top Section */}
-      <div className="flex justify-between items-center mb-6">
+      <div className="flex justify-between items-center md:mb-6 mb-2">
         <input
           type="text"
           placeholder="Search Series"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="bg-neutral-800 px-4 py-2 rounded-lg w-1/3 outline-none"
+          className="bg-neutral-800 px-4 py-2 rounded-lg md:w-1/3 w-7/12 outline-none md:text-lg text-sm"
         />
 
         <button
-          className="px-5 py-2 bg-neutral-700 rounded-lg hover:bg-neutral-900"
+          className="px-5 py-2 bg-[var(--main-color)] rounded-lg hover:bg-neutral-900 md:text-lg text-sm "
          onClick={openAddSeriesModal}
 
         >
@@ -582,13 +582,13 @@ let pathname = usePathname()
       )}
       {showAddSeries && (
   <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 p-4">
-    <div className="bg-gray-800 rounded-lg w-full max-w-lg p-6 space-y-4">
+    <div className="bg-neutral-800 rounded-lg w-full max-w-lg p-6 space-y-4">
 
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-2xl font-bold">Add New Series</h2>
         <button
           onClick={() => setShowAddSeries(false)}
-          className="text-gray-400 hover:text-white"
+          className="text-neutral-400 hover:text-white"
         >
           ✕
         </button>
@@ -596,22 +596,22 @@ let pathname = usePathname()
 
       <div className="space-y-4">
         <div>
-          <label className="text-gray-300 mb-1 block">Series Title</label>
+          <label className="text-neutral-300 mb-1 block">Series Title</label>
           <input
             type="text"
             value={seriesTitle}
             onChange={(e) => setSeriesTitle(e.target.value)}
-            className="w-full bg-gray-700 border border-gray-600 rounded px-3 py-2 outline-none"
+            className="w-full bg-neutral-700 border border-neutral-600 rounded px-3 py-2 outline-none"
             placeholder="Enter series title"
           />
         </div>
 
         <div>
-          <label className="text-gray-300 mb-1 block">Description</label>
+          <label className="text-neutral-300 mb-1 block">Description</label>
           <textarea
             value={seriesDescription}
             onChange={(e) => setSeriesDescription(e.target.value)}
-            className="w-full bg-gray-700 border border-gray-600 rounded px-3 py-2 outline-none h-24"
+            className="w-full bg-neutral-700 border border-neutral-600 rounded px-3 py-2 outline-none h-24"
             placeholder="Enter series description"
           />
         </div>
@@ -620,7 +620,7 @@ let pathname = usePathname()
       <div className="flex justify-end gap-3 mt-6">
         <button
           onClick={() => setShowAddSeries(false)}
-          className="px-4 py-2 bg-gray-600 rounded-lg hover:bg-gray-500"
+          className="px-4 py-2 bg-neutral-600 rounded-lg hover:bg-neutral-500"
         >
           Cancel
         </button>

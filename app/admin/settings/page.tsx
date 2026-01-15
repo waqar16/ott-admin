@@ -118,7 +118,7 @@ export default function AdminSettingsPage() {
   }
 
   return (
-    <div className="min-h-screen p-6 space-y-8">
+    <div className="min-h-screen p-2 md:p-6 mt-16 md:mt-0 space-y-8">
       {/* Header */}
       <div className="flex items-center gap-3">
         <Settings className="w-7 h-7 text-blue-600" />
@@ -139,14 +139,14 @@ export default function AdminSettingsPage() {
       </div>
 
       {selectedTab === 'General' && (
-        <div className="flex w-full flex-col items-center space-y-8">
+        <div className="flex w-full flex-col items-center  space-y-8">
          <Section title="Platform Settings">
   <form
     onSubmit={e => {
       e.preventDefault()
       handleSave()
     }}
-    className="grid grid-cols-1 lg:grid-cols-2 gap-6"
+    className="grid grid-cols-1 lg:grid-cols-2 gap-2 md:gap-6"
   >
     {/* LEFT – BRANDING */}
     <div className="bg-neutral-900 border border-neutral-800 rounded-xl p-5 space-y-5">
@@ -396,7 +396,7 @@ function LogoutSection() {
         <div className="flex justify-end gap-2 mt-4">
           <button
             onClick={() => toast.dismiss(t)}
-            className="px-3 py-1.5 text-sm rounded-md border border-slate-300 hover:bg-slate-400 hover:text-slate-900 duration-300 transition-colors"
+            className="text-neutral-400 px-3 py-1.5 text-sm rounded-md border border-slate-300 hover:bg-slate-400 hover:text-slate-900 duration-300 transition-colors"
           >
             Cancel
           </button>
@@ -410,7 +410,7 @@ function LogoutSection() {
                 "access_token=; Max-Age=0; path=/";
 
               // Redirect
-              router.push("/login");
+              router.push("/");
 
               toast.success("Logged out successfully");
             }}

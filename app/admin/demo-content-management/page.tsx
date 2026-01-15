@@ -116,6 +116,7 @@ export default function ContentManagementPage() {
   function handleEditorClose() {
     setShowEditor(false);
     setSelectedContent(null);
+    fetchContent();
   }
 
   function handleEditorSuccess(updatedContent: Content) {
@@ -132,15 +133,7 @@ export default function ContentManagementPage() {
     setDetailContent(null);
   }
 
-  function getStatusBadge(status: string) {
-    const colors = {
-      draft: 'bg-gray-600',
-      processing: 'bg-yellow-600',
-      published: 'bg-green-600',
-      inactive: 'bg-gray-700',
-    } as const;
-    return (colors as any)[status] || 'bg-gray-600';
-  }
+  
 
   function formatBitrate(bitrate: number): string {
     if (bitrate >= 1000000) {
@@ -225,7 +218,7 @@ export default function ContentManagementPage() {
                     handleEdit={handleEdit}
                     publishContent={publishContent}
                     fetchContent={fetchContent}
-                    getStatusBadge={getStatusBadge}
+                   
                   />
                                 ))}
               </div>

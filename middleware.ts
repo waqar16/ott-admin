@@ -40,7 +40,7 @@ try {
 
     if (!token) {
        console.log('object')
-        return NextResponse.redirect(new URL('/login', request.url));
+        return NextResponse.redirect(new URL('/', request.url));
  
     } 
     // Validate token
@@ -52,7 +52,7 @@ try {
     // ADMIN ROUTES
     if (pathname.startsWith('/admin')) {
       if (role !== 'admin') {
-        return NextResponse.redirect(new URL('/login', request.url));
+        return NextResponse.redirect(new URL('/', request.url));
       }
     }
     
@@ -61,7 +61,7 @@ try {
   } catch (error) {
     console.log(error, 'middleware error');
 
-    return NextResponse.redirect(new URL('/login', request.url));
+    return NextResponse.redirect(new URL('/', request.url));
   }
    
 }
@@ -69,7 +69,6 @@ try {
 export const config = {
   matcher: [
     '/admin/:path*',
-    '/admin',
-    '/((?!api/auth|_next/static|_next/image|favicon.ico|public).*)',
+    '/admin', 
   ],
 };

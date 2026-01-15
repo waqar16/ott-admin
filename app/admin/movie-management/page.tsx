@@ -65,7 +65,7 @@ export default function ContentManagementPage() {
   const fetchContent = useCallback(async () => {
     try {
       setLoading(true);
-      setError(null); 
+      setError(null);
       const result: any = await listContent(filters as any);
       const items = Array.isArray(result)
         ? result
@@ -130,6 +130,7 @@ export default function ContentManagementPage() {
   function handleEditorClose() {
     setShowEditor(false);
     setSelectedContent(null);
+    fetchContent();
   }
 
   function handleEditorSuccess(updatedContent: Content) {
@@ -147,23 +148,13 @@ export default function ContentManagementPage() {
     fetchContent()
   }
 
-  function getStatusBadge(status: string) {
-    const colors = {
-      draft: 'bg-gray-700',
-      processing: 'bg-yellow-700',
-      published: 'bg-blue-700',
-      ready: 'bg-green-700',
-      inactive: 'bg-red-700',
-    } as const;
-    return (colors as any)[status] || 'bg-gray-600';
-  }
-
+ 
 
 
 
 
   return (
-    <div className={`min-h-screen   text-white ${varela_round.className}`}>
+    <div className={`min-h-screen   text-white `}>
       {/* Header */}
       <ContentHeaderComponent handleCreateNew={handleCreateNew} />
 
@@ -210,7 +201,7 @@ export default function ContentManagementPage() {
                 </button>
               </div>
             ) : (
-                                        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
 
                 {content && content.map((item) => (
                   <ContentCard
@@ -219,8 +210,7 @@ export default function ContentManagementPage() {
                     handleViewDetails={handleViewDetails}
                     handleEdit={handleEdit}
                     publishContent={publishContent}
-                    fetchContent={fetchContent}
-                    getStatusBadge={getStatusBadge}
+                    fetchContent={fetchContent} 
                   />
                 ))}
 

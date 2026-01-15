@@ -3,10 +3,23 @@
 @tailwind utilities;
 
 :root {
-  --brand-primary: #1d4ed8;
-  --brand-primary-hover: #1e40af;
-  --brand-primary-ring: rgba(37, 99, 235, 0.35);
+  --main-color: var(--dynamic-main-color, #1C4D8D);
+  --main-font: var(--dynamic-main-font, 'Jost', sans-serif;);
+  /* --main-color-dark: var(--dynamic-main-color-dark, #c4080f); */
+  --main-color-transparent-10: var(--dynamic-main-color-transparent-10, rgba(229, 9, 20, 0.1));
+  --main-color-transparent-15: var(--dynamic-main-color-transparent-15, rgba(112, 112, 112, 0.1));
+  --main-color-transparent-30: var(--dynamic-main-color-transparent-30, rgba(103, 103, 103, 0.1));
+  --main-color-transparent-40: var(--dynamic-main-color-transparent-40, rgba(229, 9, 20, 0.1));
+  --main-color-transparent-60: var(--dynamic-main-color-transparent-60, rgba(125, 125, 125, 0.1));
+
+  --main-color-shadow-10: var(--dynamic-main-color-shadow-10, rgba(229, 9, 20, 0.1));
+  --main-color-shadow-20: var(--dynamic-main-color-shadow-20, rgba(229, 9, 20, 0.1));
+  --main-color-shadow-30: var(--dynamic-main-color-shadow-30, rgba(229, 9, 20, 0.1));
+  --main-color-shadow-40: var(--dynamic-main-color-shadow-40, rgba(229, 9, 20, 0.1));
+  --main-color-shadow-50: var(--dynamic-main-color-shadow-50, rgba(229, 9, 20, 0.1));
+  --main-color-shadow-60: var(--dynamic-main-color-shadow-60, rgba(229, 9, 20, 0.1));
 }
+
 
 @layer utilities {
   .text-balance {
