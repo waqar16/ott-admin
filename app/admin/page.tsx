@@ -84,7 +84,7 @@ export default function AdminHome() {
     <div className="p-6 space-y-4 bg-black text-white">
       {/* Header */}
       <h1 className="text-3xl font-bold">Admin Dashboard</h1>
-      <p className="text-gray-400">Analytics overview of your OTT Platform</p>
+      <p className="text-gray-400">Numeral overview of your OTT Platform</p>
        <h1>User Stats</h1>
 
       {/* User Stats */}

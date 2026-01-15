@@ -222,7 +222,9 @@ if (loading)
       </div>
     );
   return (
-    <div className="p-6 space-y-8  text-white sm:mt-0 mt-12 ">
+    <div className=" p-2 md:p-6 space-y-8  text-white sm:mt-0 mt-16 ">
+       <h1 className="text-3xl font-bold">Admin Dashboard</h1>
+      <p className="text-gray-400">Numeral overview of your OTT Platform</p>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 ">
        <ChartCard
   title="User Growth"
