@@ -10,7 +10,7 @@ const ContentHeaderComponent: React.FC<ContentHeaderProps> = ({ handleCreateNew 
   const pathname = usePathname()
 
   return (
-    <div className={`bg-black border-b border-gray-700  ${leagueSpartan.className}`}>
+    <div className={`mt-4 md:mt-0 bg-black border-b border-gray-700  ${leagueSpartan.className}`}>
         <div className="max-w-7xl mx-auto px-4 py-2">
           <div className="flex flex-col md:flex-row items-center justify-between mt-12 md:mt-0 md:mb-0 mb-4">
             <div className='m-2 md:m-4'>

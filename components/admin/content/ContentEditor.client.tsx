@@ -169,17 +169,17 @@ const [videoUrlInput, setVideoUrlInput] = useState("");
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
     if (!formData.title.trim()) {
-      setError('Title is required');
+      toast.error('Title is required');
       return;
     }
 
     if (!formData.description.trim()) {
-      setError('Description is required');
+       toast.error('Description is required');
       return;
     }
 
     if (formData.is_ppv && (!formData.price_cents || formData.price_cents <= 0)) {
-      setError('Price is required for PPV content');
+       toast.error('Price is required for PPV content');
       return;
     }
 
@@ -253,7 +253,7 @@ const [videoUrlInput, setVideoUrlInput] = useState("");
       }
     } catch (err) {
       const apiError = err as ApiError;
-      setError(apiError.message || 'Failed to save content');
+       toast.error(apiError.message || 'Failed to save content');
     } finally {
       setLoading(false);
     }
@@ -261,7 +261,7 @@ const [videoUrlInput, setVideoUrlInput] = useState("");
 
   async function handleFileUpload() {
     if (!uploadFile || !createdContent) {
-      setError('Please select a file to upload');
+       toast.error('Please select a file to upload');
       return;
     }
 
@@ -271,7 +271,7 @@ const [videoUrlInput, setVideoUrlInput] = useState("");
     });
 
     if (!validation.valid) {
-      setError(validation.error || 'Invalid file');
+       toast.error(validation.error || 'Invalid file');
       return;
     }
     try {
@@ -302,7 +302,7 @@ const [videoUrlInput, setVideoUrlInput] = useState("");
 
     } catch (err) {
       const apiError = err as ApiError;
-      setError(apiError.message || 'Upload failed');
+       toast.error(apiError.message || 'Upload failed');
     } finally {
       setUploading(false);
       setLoading(false)
@@ -372,7 +372,7 @@ const [videoUrlInput, setVideoUrlInput] = useState("");
 
     } catch (err) {
       const apiError = err as ApiError;
-      setError(apiError.message || 'Failed to publish content');
+       toast.error(apiError.message || 'Failed to publish content');
     } finally {
       setLoading(false);
     }
@@ -470,9 +470,9 @@ const [videoUrlInput, setVideoUrlInput] = useState("");
   return (
     <>
 
-      <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-8">
+      <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-2 md:p-8">
         {loading && !uploading && <FullScreenLoader />}
-        <div className="bg-neutral-900 rounded-lg max-w-4xl w-full overflow-y-auto minimal-scrollbar  max-h-[90vh]">
+        <div className="bg-neutral-900 rounded-lg max-w-4xl w-full overflow-y-auto minimal-scrollbar h-[100vh]  md:max-h-[90vh]">
 
           <div className="flex items-center justify-between p-6 border-b border-gray-700">
             <h2 className="text-2xl font-bold text-white capitalize">
