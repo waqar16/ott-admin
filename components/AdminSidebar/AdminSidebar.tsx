@@ -37,8 +37,8 @@ export default function AdminSidebar() {
   const [isNavigating, setIsNavigating] = useState(false);
 
   const linkBase =
-    "w-11/12 flex items-center text-sm gap-3 px-4 py-2 rounded-md text-gray-300 hover:bg-[var(--brand-primary)] hover:text-white transition";
-  const activeClass = "bg-[var(--brand-primary)] text-white  ";
+    "w-11/12 flex items-center text-sm gap-3 px-4 py-2 rounded-md text-gray-300 hover:bg-[var(--main-color)] hover:text-white transition";
+  const activeClass = "bg-[var(--main-color)] text-white  ";
 
   const isActive = (path: string) => pathname === path;
  useEffect(() => {

@@ -208,22 +208,23 @@ export default function Analytics() {
 
 if (loading)
     return (
-      <div className="p-6 space-y-6 ">
-        <SkeletonLoader className="h-56 w-full bg-neutral-900" />
-        <div className="grid grid-cols-2 gap-6">
-          <SkeletonLoader className="h-56 w-full bg-neutral-900" />
-          <SkeletonLoader className="h-56 w-full bg-neutral-900" />
+      <div className=" p-2 md:p-6 mt-16 md:mt-0 space-y-2 md:space-y-8 ">
+        <SkeletonLoader className="h-[25px] md:h-56 w-full bg-neutral-800 w-8/12" />
+        <SkeletonLoader className="md:hidden h-[15px] md:h-56 w-9/12 bg-neutral-800 mt-4" />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <SkeletonLoader className="h-64 md:h-56 w-full bg-neutral-800" />
+          <SkeletonLoader className="h-64 md:h-56 w-full bg-neutral-800" />
         </div>
-        <div className="grid grid-cols-3 gap-6">
-          <SkeletonLoader className="h-56 w-full bg-neutral-900" />
-          <SkeletonLoader className="h-56 w-full bg-neutral-900" />
-          <SkeletonLoader className="h-56 w-full bg-neutral-900" />
+        <div className="grid  grid-cols-1  sm:grid-cols-2  md:grid-cols-3 gap-6">
+          <SkeletonLoader className="h-56 w-full bg-neutral-800" />
+          <SkeletonLoader className="h-56 w-full bg-neutral-800" />
+          <SkeletonLoader className="h-56 w-full bg-neutral-800" />
         </div>
       </div>
     );
   return (
-    <div className=" p-2 md:p-6 space-y-8  text-white sm:mt-0 mt-16 ">
-       <h1 className="text-3xl font-bold">Admin Dashboard</h1>
+    <div className=" p-2 md:p-6 space-y-2 md:space-y-8  text-white sm:mt-0 mt-16 ">
+       <h1 className="text-3xl font-bold">Admin Analytics</h1>
       <p className="text-gray-400">Numeral overview of your OTT Platform</p>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 ">
        <ChartCard

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
@@ -62,6 +62,13 @@ const exitFullscreen = () => {
 
   // Sub-dropdown states
 
+ useEffect(() => {
+  if (openDrawer) {
+    document.body.style.overflow = "hidden";
+  } else {
+    document.body.style.overflow = "auto";
+  }
+}, [openDrawer]);
 
   return (
     <>

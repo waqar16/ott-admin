@@ -22,12 +22,12 @@ export default function FullScreenRedirectLoader({
   }, []);
 
   return (
-    <div className="fixed inset-0 bg-black/80 backdrop-blur-lg flex flex-col items-center justify-center z-[9999]">
+    <div className="fixed inset-0 bg-black/80 backdrop-blur-lg flex flex-col items-center justify-center z-[9999] pointer-events-auto isolate">
       
      
 
 <motion.div
-  className="relative m-2 h-10 w-auto overflow-hidden"
+  className="relative m-2 h-10 w-auto overflow-hidden z-[9999]"
 >
   {/* Your logo */}
   <img 
@@ -54,7 +54,7 @@ export default function FullScreenRedirectLoader({
 </motion.div>
 
       
-      <div className='flex flex-row items-center w-full justify-center'>
+      <div className='flex flex-row items-center w-full justify-center z-[9999]'>
 <p className="text-neutral-300 text-sm tracking-wide mr-2">
         {message}
       </p>

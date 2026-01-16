@@ -25,7 +25,7 @@ const ContentCard: React.FC<ContentCardProps> = ({
       className="w-full bg-neutral-900 rounded-xs shadow-lg rounded-md flex flex-col  hover:shadow-2xl transition-all duration-300 border border-neutral-700"
     >
       {/* Left: Thumbnail / Type */}
-      <div className=" relative w-full h-48 sm:h-32 md:h-36  rounded-t-md overflow-hidden shadow-xl bg-neutral-900">
+      <div className=" relative w-full h-48 sm:h-32 md:h-36  rounded-t-md overflow-hidden shadow-xl bg-neutral-900  ">
 
         {/* ===== BACKGROUND IMAGE (FULL CARD) ===== */}
         {  item.banner_url ? (

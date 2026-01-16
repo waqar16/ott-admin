@@ -53,27 +53,28 @@ export default function AdminHome() {
 
   return (<> 
  {loading?
- <div className="p-6 space-y-8 bg-black flex flex-col items-start w-fll">
-  <SkeletonLoader className="h-[30px] w-[300px] bg-neutral-950"/>
-  <SkeletonLoader className="h-[20px] w-[300px] bg-neutral-950 mt-4"/>
-  <div className="grid grid-cols-4 w-full gap-6">
+ <div className=" p-2 md:p-6 space-y-2 md:space-y-8 bg-black flex flex-col items-start w-fll mt-16 md:mt-0">
+  <SkeletonLoader className="h-[30px] md:h-[30px] w-8/12 md:w-[300px] bg-neutral-800"/>
+  <SkeletonLoader className="h-[20px] md:h-[20px] w-9/12 md:w-[300px] bg-neutral-800 mt-4"/>
+  <SkeletonLoader className="h-[20px] md:h-[20px] w-2/12 md:w-[300px] bg-neutral-800 mt-4 sm:hidden "/>
+  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 w-full gap-6">
 {Array.from({length:8}).map((_, index)=>(
-  <div key={index} className="w-full    bg-black flex flex-col items-start rounded-lg p-6 border border-gray-700">
-      <SkeletonLoader className="h-[20px] w-5/12 bg-neutral-950  "/>
-      <SkeletonLoader className="h-[20px] w-3/12 bg-neutral-950 mt-2 "/>
-      <SkeletonLoader className="h-[20px] w-3/12 bg-neutral-950 mt-4  "/>
+  <div key={index} className="w-full      flex flex-col items-start rounded-lg  p-6 border border-neutral-950 bg-neutral-900">
+      <SkeletonLoader className=" h-[10px] md:h-[20px] w-[70px] md:w-5/12 bg-neutral-800  "/>
+      <SkeletonLoader className=" h-[25px] md:h-[20px] w-[30px] md:w-3/12 bg-neutral-800 mt-2 "/>
+      <SkeletonLoader className=" h-[20px] md:h-[20px] w-[65px] md:w-3/12 bg-neutral-800 mt-2  "/>
 
      </div>
 ))
 }
 
   </div>
- <div className="grid grid-cols-3 w-full gap-6">
+ <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 w-full gap-6">
     {Array.from({length:3}).map((_, index)=>(
   <div key={index} className="w-full    bg-black flex flex-col items-start rounded-lg p-6 border border-gray-700">
-      <SkeletonLoader className="h-[20px] w-5/12 bg-neutral-950  "/>
-      <SkeletonLoader className="h-[20px] w-3/12 bg-neutral-950 mt-2 "/>
-      <SkeletonLoader className="h-[20px] w-3/12 bg-neutral-950 mt-4  "/>
+      <SkeletonLoader className="h-[100px] md:h-[20px] w-full md:w-5/12 bg-neutral-800  "/>
+      <SkeletonLoader className="h-[100px] md:h-[20px] w-full md:w-3/12 bg-neutral-800 mt-2 "/>
+      <SkeletonLoader className="h-[100px] md:h-[20px] w-full md:w-3/12 bg-neutral-800 mt-4  "/>
 
      </div>
 ))
@@ -81,11 +82,11 @@ export default function AdminHome() {
   </div>
  </div>
   :     
-    <div className="p-6 space-y-4 bg-black text-white">
+    <div className=" p-2 md:p-6 space-y-1 md:space-y-4 bg-black text-white mt-16 md:mt-0">
       {/* Header */}
-      <h1 className="text-3xl font-bold">Admin Dashboard</h1>
+      <h1 className="text-3xl font-bold">Admin Overview</h1>
       <p className="text-gray-400">Numeral overview of your OTT Platform</p>
-       <h1>User Stats</h1>
+       <h1 className=" ">User Stats</h1>
 
       {/* User Stats */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
@@ -140,7 +141,7 @@ function StatCard({ title, value, growth }: any) {
     <div className="bg-neutral-900 p-5 rounded-xl shadow-lg border border-neutral-800">
       <p className="text-gray-400 text-sm">{title}</p>
       <h3 className="text-2xl font-bold text-white mt-1">{value}</h3>
-      <p className="text-green-400 text-sm mt-2">{growth} this month</p>
+      <p className="text-[var(--main-color)] text-sm mt-1">{growth} this month</p>
     </div>
   );
 }
