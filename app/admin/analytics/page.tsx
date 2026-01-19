@@ -212,7 +212,7 @@ if (loading)
         <SkeletonLoader className="h-[25px] md:h-56 w-full bg-neutral-800 w-8/12" />
         <SkeletonLoader className="md:hidden h-[15px] md:h-56 w-9/12 bg-neutral-800 mt-4" />
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <SkeletonLoader className="h-64 md:h-56 w-full bg-neutral-800" />
+          <SkeletonLoader  className="h-64 md:h-56 w-full bg-neutral-800" />
           <SkeletonLoader className="h-64 md:h-56 w-full bg-neutral-800" />
         </div>
         <div className="grid  grid-cols-1  sm:grid-cols-2  md:grid-cols-3 gap-6">
