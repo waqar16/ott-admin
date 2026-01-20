@@ -331,7 +331,7 @@ const [videoUrlInput, setVideoUrlInput] = useState("");
 
     try {
       setUploadingImage(imageType);
-
+console.log("file",file)
       const result = await uploadImage(createdContent.id, file, imageType);
       if (contentType != 'episode') {
         setCreatedContent(prev => prev ? {
@@ -388,7 +388,7 @@ const [videoUrlInput, setVideoUrlInput] = useState("");
   }
   useEffect(() => {
     fetchGenre()
-  }, [])
+  }, []) 
 
   const [videoUrl, setVideoUrl] = useState<string | null>(null)
   const [videoFetchLoading, setVideoFetchLoading] = useState<boolean>(true)
@@ -477,6 +477,98 @@ const [videoUrlInput, setVideoUrlInput] = useState("");
       document.body.style.overflow = "auto";
     };
   }, []);
+  const handleBannerUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const file = e.target.files?.[0] || null;
+
+  // reset errors first
+ 
+
+  if (!file) {
+    setBannerFile(null);
+    return;
+  }
+
+  // ---- Check file size (1MB) ----
+  const MAX_SIZE = 1 * 1024 * 1024; // 1MB
+
+  if (file.size > MAX_SIZE) {
+    toast.error("File must be less than 1MB.");
+    setBannerFile(null);
+    return;
+  }
+
+  // ---- Check orientation (landscape) ----
+  const img = new Image();
+  const objectUrl = URL.createObjectURL(file);
+
+  img.onload = () => {
+    const isLandscape = img.width > img.height;
+
+    URL.revokeObjectURL(objectUrl);
+
+    if (!isLandscape) {
+      toast.error("Banner must be in landscape orientation.");
+      setBannerFile(null);
+      return;
+    }
+
+    // ✅ Everything valid
+    setBannerFile(file);
+  
+
+  };
+  setCreatedContent(prev => ({
+  ...prev,
+  banner_url: null
+}));
+  img.src = objectUrl;
+};
+const handlePosterUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const file = e.target.files?.[0] || null;
+console.log(file,"file")
+  // reset errors first
+ 
+
+  if (!file) {
+    setPosterFile(null);
+    return;
+  }
+
+  // ---- Check file size (1MB) ----
+  const MAX_SIZE = 1 * 1024 * 1024; // 1MB
+
+  if (file.size > MAX_SIZE) {
+    toast.error("File must be less than 1MB.");
+    setPosterFile(null);
+    return;
+  }
+
+  // ---- Check orientation (landscape) ----
+  const img = new Image();
+  const objectUrl = URL.createObjectURL(file);
+
+  img.onload = () => {
+    const isLandscape = img.width > img.height;
+
+    URL.revokeObjectURL(objectUrl);
+
+    if (isLandscape) {
+      toast.error("Banner must be in Portrait orientation.");
+      setPosterFile(null);
+      return;
+    }
+
+    // ✅ Everything valid
+    setPosterFile(file);
+  
+
+  };
+  setCreatedContent(prev => ({
+  ...prev,
+  poster_url: null
+}));
+  img.src = objectUrl;
+};
   return (
     <>
 
@@ -591,7 +683,7 @@ const [videoUrlInput, setVideoUrlInput] = useState("");
                         />
                         {formData.trailerType &&
                           <SearchableSingleSelect
-                            label="Select Trailer"
+                            label="Attach Trailer To"
                             value={formData.parent}
                             onChange={(id) =>
                               setFormData((prev) => ({ ...prev, parent: id }))
@@ -785,9 +877,13 @@ const [videoUrlInput, setVideoUrlInput] = useState("");
             <div className="flex flex-col w-full">
               <div className="space-y-2  w-full space-y-6 overflow-y-auto minimal-scrollbar max-h-[55vh] md:max-h-[60]">
                 <h3 className="text-xl text-white font-semibold">
-                  Upload Images
+                  Upload Images 
                 </h3>
-
+<p className="  text-neutral-400 text-sm leading-relaxed">
+  • File size must be less than <span className="text-white font-medium">1MB</span> per image. <br />
+  • Banner: Landscape orientation (recommended 16:9). <br />
+  • Poster: Portrait orientation (recommended 2:3).
+</p>
                 {/* Poster */}
                 <div className='hidden md:grid grid-cols-7 w-full gap-2 '>
                   {contentType != "episode" &&
@@ -848,7 +944,7 @@ const [videoUrlInput, setVideoUrlInput] = useState("");
                         <input
                           type="file"
                           accept="image/*"
-                          onChange={(e) => setPosterFile(e.target.files?.[0] || null)}
+                          onChange={handlePosterUpload}
                           className="absolute inset-0 opacity-0 cursor-pointer"
                         />
                       </div>
@@ -934,7 +1030,8 @@ const [videoUrlInput, setVideoUrlInput] = useState("");
                       <input
                         type="file"
                         accept="image/*"
-                        onChange={(e) => setBannerFile(e.target.files?.[0] || null)}
+                        onChange={handleBannerUpload}
+
                         disabled={uploadingImage === 'banner'}
                         className="absolute inset-0 opacity-0 cursor-pointer"
                       />
@@ -1037,7 +1134,7 @@ const [videoUrlInput, setVideoUrlInput] = useState("");
                         <input
                           type="file"
                           accept="image/*"
-                          onChange={(e) => setPosterFile(e.target.files?.[0] || null)}
+                          onChange={handlePosterUpload} 
                           className="absolute inset-0 opacity-0 cursor-pointer"
                         />
                       </div>
@@ -1123,7 +1220,8 @@ const [videoUrlInput, setVideoUrlInput] = useState("");
                       <input
                         type="file"
                         accept="image/*"
-                        onChange={(e) => setBannerFile(e.target.files?.[0] || null)}
+                        onChange={handleBannerUpload}
+ 
                         disabled={uploadingImage === 'banner'}
                         className="absolute inset-0 opacity-0 cursor-pointer"
                       />
@@ -1175,7 +1273,10 @@ const [videoUrlInput, setVideoUrlInput] = useState("");
 
              
             {step === 4 && createdContent && contentType !== 'series' && contentType !== 'season' && (
-          <>    <div className="space-y-6">
+          <>  
+            <div className="flex flex-col w-full">
+              <div className="space-y-2  w-full space-y-6 overflow-y-auto minimal-scrollbar max-h-[55vh] md:max-h-[60]"> 
+            
 {contentType === "trailer" && (
   <div className="flex items-center gap-3 bg-neutral-800 p-2 rounded-lg w-fit">
     <button
@@ -1258,7 +1359,7 @@ const [videoUrlInput, setVideoUrlInput] = useState("");
                     </h3>
 
                     {/* Media Upload Area */}
-                    <div className="relative max-h-[50vh] w-full aspect-video rounded-xl border-2 border-dashed border-gray-600 bg-neutral-900 hover:border-blue-500 transition cursor-pointer overflow-hidden group">
+                    <div className="relative max-h-[30vh] w-full aspect-video rounded-xl border-2 border-dashed border-gray-600 bg-neutral-900 hover:border-blue-500 transition cursor-pointer overflow-hidden group">
 
                       {/* Video Preview */}
                       {!videoFetchLoading && videoUrl && isEditing ? (
@@ -1336,7 +1437,12 @@ const [videoUrlInput, setVideoUrlInput] = useState("");
                     )}
 
                     {/* Actions */}
-                    <div className="flex justify-between mt-6">
+                    
+                  </>
+                )}</>
+                )}
+           </div>   
+           <div className="flex justify-between mt-6">
                       <button
                         onClick={prevStep}
                         className="px-4 py-2 bg-gray-600 text-white rounded-lg"
@@ -1363,10 +1469,7 @@ const [videoUrlInput, setVideoUrlInput] = useState("");
                         )}
                       </button>
                     </div>
-                  </>
-                )}</>
-                )}
-              </div></>
+           </div></>
             )}
 
           </div>
