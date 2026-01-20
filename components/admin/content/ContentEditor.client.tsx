@@ -1650,7 +1650,7 @@ export function SearchableSingleSelect({
         setLoading(true);
 
         const res = await axios.get(
-          `${API_BASE}/api/v1/content/search-movies`,
+          `${API_BASE}api/v1/content/search-movies`,
           { params: { q: search } }
         );
 
