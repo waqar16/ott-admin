@@ -71,7 +71,9 @@ export default function SeriesTree({
       {seriesList.length>0?
       <>{seriesList.map((series) => (
         <SeriesItem key={series.id} series={series} refresh={refresh} setSelectedContent={setSelectedContent} setSeriesList={setSeriesList} editSeriesHandler={editSeriesHandler} />
-      ))}</>:
+      ))}
+      
+      </>:
       <p>No series found. Create One!</p>}
     </div>
   );

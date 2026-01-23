@@ -11,7 +11,7 @@
 
 // Aligned with backend choices
 // Content Type: structural classification of content entity
-export type ContentType = 'movie' | 'series' | 'episode' | 'trailer' | 'documentary' | 'season';
+export type ContentType = 'movie' | 'series' | 'episode' | 'trailer' | 'documentary' | 'season' | 'democontent';
 // Media Type: video projection / VR mode
 export type MediaType =
   | 'flat'
@@ -42,12 +42,15 @@ export type ContentMetadataPayload = {
 };
 export interface Content {
   id: string;
+  trailer_id?:string;
   transcoding_progress?: number;
   ingest_status?: IngestStatus;
+  is_demo_content?:boolean;
   title: string;
   trailerType?:string;
   description: string;
   content_type: ContentType;
+  trailer_url:null | string;
   media_type: MediaType;
   content_metadata?: ContentMetadataPayload;
   status: ContentStatus;
@@ -73,6 +76,8 @@ export interface Content {
 
 export interface CreateContentPayload {
   title: string;
+  trailer_id?:string;
+  is_demo_content?:boolean;
   description: string;
   content_type: ContentType;
   media_type: MediaType;
@@ -117,7 +122,9 @@ export interface ContentListResponse {
 export   interface ContentFilters {
   status?: string;
   media_type?: string;
-  content_type?:string
+  content_type?:string;
+
+  search?: string;
   is_kid_safe?: boolean;
   is_ppv?: boolean;
 }

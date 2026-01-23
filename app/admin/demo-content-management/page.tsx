@@ -37,10 +37,12 @@ export default function ContentManagementPage() {
   // Filter state
   const [filters, setFilters] = useState<ContentFilters>({
     status: undefined,
+    search: undefined,
     content_type:pathname.includes('movie')?'movie':
             pathname.includes('document')?'documentary':
             pathname.includes('trailer')?'trailer':
             pathname.includes('series')?'series':
+            pathname.includes('demo-content')?'democontent':
             pathname.includes('episode')?'episode':"movie"
           ,
     is_kid_safe: undefined,
@@ -48,10 +50,13 @@ export default function ContentManagementPage() {
     media_type: pathname.includes("movie-management") ? "movies"
       : pathname.includes("trailer-management") ? "trailers"
         : pathname.includes("documentary-management") ? "documentaries"
-          : pathname.includes("demo-content-management") ? "democontents"
+          : pathname.includes("demo-content") ? "democontent"
             : ""
   });
-
+const [page, setPage] = useState(1); 
+const [totalCount, setTotalCount] = useState(0);
+const [hasNext, setHasNext] = useState(false);
+const [hasPrev, setHasPrev] = useState(false);
   const fetchContent = useCallback(async () => {
     try {
       setLoading(true);
@@ -62,6 +67,10 @@ export default function ContentManagementPage() {
         ? result
         : (result?.results ?? result?.content ?? []);
       setContent(items as Content[]);
+         
+    setTotalCount(result?.count ?? 0);
+    setHasNext(Boolean(result?.next));
+    setHasPrev(Boolean(result?.previous));
     } catch (err) {
       const apiError = err as ApiError;
       setError(apiError.message || 'Failed to load content');
@@ -208,7 +217,7 @@ export default function ContentManagementPage() {
                 </button>
               </div>
             ) : (
-                           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                        <>   <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
 
                   {content && content.map((item) => (
                                    <ContentCard
@@ -222,6 +231,30 @@ export default function ContentManagementPage() {
                   />
                                 ))}
               </div>
+              <div className="flex items-center justify-between mt-6">
+  <p className="text-sm text-gray-400">
+    Page {page} 
+  </p>
+
+  <div className="flex gap-2">
+    <button
+      disabled={!hasPrev}
+      onClick={() => setPage((p) => Math.max(1, p - 1))}
+      className="px-4 py-2 rounded bg-gray-800 text-white disabled:opacity-40"
+    >
+      Previous
+    </button>
+
+    <button
+      disabled={!hasNext}
+      onClick={() => setPage((p) => p + 1)}
+      className="px-4 py-2 rounded bg-gray-800 text-white disabled:opacity-40"
+    >
+      Next
+    </button>
+  </div>
+</div></>
+
             )}</>
         }
       </div>
@@ -235,6 +268,8 @@ export default function ContentManagementPage() {
           onSuccess={handleEditorSuccess}
            contentType={pathname.includes('movie')?'movie':
             pathname.includes('document')?'documentary':
+            pathname.includes('demo-content')?'democontent':
+            
             pathname.includes('trailer')?'trailer':
             pathname.includes('series')?'series':
             pathname.includes('episode')?'episode':"movie"

@@ -149,28 +149,18 @@ export async function uploadWithCallback(
 ): Promise<{
   uploadResult: UploadResult;
   callbackResult: any;
-}> {
-  // Step 1: Upload to S3
+}> { 
   const uploadResult = await uploadToS3Presigned(uploadInitResponse, file, options);
-
-  // Step 2: Simulate S3 callback (DEV ONLY)
-  // PRODUCTION NOTE: Remove this in production - S3 will notify backend automatically
+ 
   console.warn(
     '[DEV ONLY] Simulating S3 callback. In production, S3 event notifications handle this.'
   );
 
-  const callbackPayload: S3CallbackPayload = {
-    s3_key: uploadResult.s3_key,
-    bucket: uploadResult.bucket,
-    size: uploadResult.size,
-  };
-console.log('callbackPayload')
-  // const callbackResult = await postUploadCallback(callbackPayload);
+  
 
   return {
     uploadResult,
-    callbackResult: null,
-    // callbackResult,
+    callbackResult: null, 
   };
 }
 

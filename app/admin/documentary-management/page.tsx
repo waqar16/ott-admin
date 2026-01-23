@@ -37,6 +37,7 @@ export default function ContentManagementPage() {
   // Filter state
   const [filters, setFilters] = useState<ContentFilters>({
     status: undefined,
+    search: undefined,
     content_type: pathname.includes('movie') ? 'movie' :
       pathname.includes('document') ? 'documentary' :
         pathname.includes('trailer') ? 'trailer' :

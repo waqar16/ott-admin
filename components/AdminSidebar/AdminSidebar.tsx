@@ -50,7 +50,7 @@ export default function AdminSidebar() {
   const logoUrl = settings.logo_url;
 
   return (
-    <div className={`pr-2 w-[260px] bg-black h-screen text-gray-200 fixed left-0 top-0 shadow-xl overflow-y-auto border border-r-blue-500 border-l-0 border-y-0 ${varela_round.className}`}>
+    <div className={`  w-[260px] bg-black h-screen text-gray-200 fixed left-0 top-0 shadow-xl overflow-y-auto   ${varela_round.className}`}>
       
       {isNavigating && <FullScreenRedirectLoader message="loading"/>}
       <div className="py-5 text-center border-b border-gray-700">
@@ -273,7 +273,7 @@ onClick={() => {
                 <BiTv size={16} /> Trailers
               </Link>
 
-              <Link
+              {/* <Link
 onClick={() => {
   if (pathname !== "/admin/demo-content-management") {
     setIsNavigating(true);
@@ -282,7 +282,7 @@ onClick={() => {
                 className={`${linkBase} ${isActive("/admin/demo-content-management") ? activeClass : ""}  text-xs`}
               >
                 <FiList size={16} /> Demo Contents
-              </Link>
+              </Link> */}
             </div>
           )}
         </div>

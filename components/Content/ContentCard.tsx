@@ -25,7 +25,7 @@ const ContentCard: React.FC<ContentCardProps> = ({
       className="w-full bg-neutral-900 rounded-xs shadow-lg rounded-md flex flex-col  hover:shadow-2xl transition-all duration-300 border border-neutral-700"
     >
       {/* Left: Thumbnail / Type */}
-      <div className=" relative w-full h-48 sm:h-32 md:h-36  rounded-t-md overflow-hidden shadow-xl bg-neutral-900  ">
+      <div className=" relative   z-0 w-full h-48 sm:h-32 md:h-36  rounded-t-md overflow-hidden shadow-xl bg-neutral-900  ">
 
         {/* ===== BACKGROUND IMAGE (FULL CARD) ===== */}
         {  item.banner_url ? (
@@ -37,10 +37,10 @@ const ContentCard: React.FC<ContentCardProps> = ({
             />
 
             {/* Dark overlay for readability */}
-            <div className="absolute inset-0 bg-black  opacity-60"></div>
+            <div className="absolute inset-0 bg-black opacity-60 z-0"></div>
           </>
         ) : (
-          <div className="absolute inset-0 flex items-center justify-center bg-neutral-800 text-gray-400">
+          <div className="absolute inset-0 flex items-center justify-center bg-neutral-800 text-gray-400 z-0">
             No Banner Available
           </div>
         )}

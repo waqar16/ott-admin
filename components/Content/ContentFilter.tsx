@@ -1,8 +1,9 @@
 
 "use client"
-import React from 'react' 
+import React, { useState } from 'react' 
 
 import { ContentFilters } from '@/lib/types/content'
+import { AnimatePresence,motion } from 'framer-motion'
 const STATUS_OPTIONS = [
   { label: 'All', value: undefined },
   { label: 'Draft', value: 'draft' },
@@ -64,59 +65,134 @@ function FilterSelect<T>({
     </div>
   )
 }
+
+interface SearchInputProps {
+  value?: string
+  onChange: (val: string | undefined) => void
+}
+
+const SearchInput: React.FC<SearchInputProps> = ({ value, onChange }) => {
+  const [localValue, setLocalValue] = React.useState(value ?? '')
+  React.useEffect(() => {
+    if ((value ?? '') !== localValue) {
+      setLocalValue(value ?? '')
+    }
+  }, [value])
+ React.useEffect(() => {
+    const timer = setTimeout(() => {
+      const next = localValue.trim() || undefined
+
+      // 🔥 prevent infinite loop
+      if (next !== value) {
+        onChange(next)
+      }
+    }, 400)
+
+    return () => clearTimeout(timer)
+  }, [localValue, value, onChange])
+  return (
+    <div className=" flex flex-col gap-1 col-span-4 md:col-span-4">
+      <label className="text-xs text-gray-400">Search</label>
+      <input
+        type="text"
+        placeholder="Search by title or description..."
+        value={localValue}
+        onChange={e => setLocalValue(e.target.value)}
+        className="bg-neutral-800 border border-neutral-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-blue-600"
+      />
+    </div>
+  )
+}
+
 interface ContentFilterProps { filters: ContentFilters; setFilters: React.Dispatch<React.SetStateAction<ContentFilters>> }
 
 const ContentFilter: React.FC<ContentFilterProps> = ({ filters, setFilters }) => {
+  const [openFilters, setOpenFilters] = useState(false);
   return (
-    <div className="  bg-neutral-900 rounded-xl p-5 border border-neutral-800">
-      <h2 className="text-lg font-semibold mb-4">Filters</h2>
+   <AnimatePresence initial={false}>
+    <button
+  onClick={() => setOpenFilters(prev => !prev)}
+  className="flex items-center gap-2 px-4 py-2 bg-neutral-800 text-white rounded-lg hover:bg-neutral-700 transition"
+>
+  Filters
+  <span className={`transition-transform ${openFilters ? "rotate-180" : ""}`}>
+    <svg xmlns="http://www.w3.org/2000/svg" fill="#c7c7c7" width="10" height="10" viewBox="-6.5 0 32 32" version="1.1">
+ 
+<path d="M18.813 11.406l-7.906 9.906c-0.75 0.906-1.906 0.906-2.625 0l-7.906-9.906c-0.75-0.938-0.375-1.656 0.781-1.656h16.875c1.188 0 1.531 0.719 0.781 1.656z"/>
+</svg>
+  </span>
+</button>
 
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <FilterSelect
-          label="Status"
-          value={filters.status}
-          options={STATUS_OPTIONS}
-          onChange={status =>
-            setFilters(prev => ({ ...prev, status }))
-          }
-        />
+  {openFilters && (
+    <motion.div
+      key="filters"
+      initial={{ height: 0, opacity: 0 }}
+      animate={{ height: "auto", opacity: 1 }}
+      exit={{ height: 0, opacity: 0 }}
+      transition={{ duration: 0.35, ease: "easeInOut" }}
+      className="overflow-hidden"
+       
+    >
+      <div className="bg-neutral-900 rounded-xl p-5 border border-neutral-800 mt-1">
+        <h2 className="text-lg font-semibold mb-4">Filters</h2>
 
-        <FilterSelect
-          label="Media Type"
-          value={filters.media_type}
-          options={MEDIA_OPTIONS}
-          onChange={media_type =>
-            setFilters(prev => ({ ...prev, media_type }))
-          }
-        />
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <SearchInput
+            value={filters.search}
+            onChange={search =>
+              setFilters(prev => ({ ...prev, search }))
+            }
+          />
 
-        <FilterSelect
-          label="Kid Safe"
-          value={filters.is_kid_safe}
-          options={[
-            { label: 'All', value: undefined },
-            { label: 'Kid Safe', value: true },
-            { label: 'Not Kid Safe', value: false },
-          ]}
-          onChange={is_kid_safe =>
-            setFilters(prev => ({ ...prev, is_kid_safe }))
-          }
-        />
+          <FilterSelect
+            label="Status"
+            value={filters.status}
+            options={STATUS_OPTIONS}
+            onChange={status =>
+              setFilters(prev => ({ ...prev, status }))
+            }
+          />
 
-        <FilterSelect
-          label="PPV"
-          value={filters.is_ppv}
-          options={[
-            { label: 'All', value: undefined },
-            { label: 'PPV', value: true },
-            { label: 'Non-PPV', value: false },
-          ]}
-          onChange={is_ppv =>
-            setFilters(prev => ({ ...prev, is_ppv }))
-          }
-        />
+          <FilterSelect
+            label="Media Type"
+            value={filters.media_type}
+            options={MEDIA_OPTIONS}
+            onChange={media_type =>
+              setFilters(prev => ({ ...prev, media_type }))
+            }
+          />
+
+          <FilterSelect
+            label="Kid Safe"
+            value={filters.is_kid_safe}
+            options={[
+              { label: "All", value: undefined },
+              { label: "Kid Safe", value: true },
+              { label: "Not Kid Safe", value: false },
+            ]}
+            onChange={is_kid_safe =>
+              setFilters(prev => ({ ...prev, is_kid_safe }))
+            }
+          />
+
+          <FilterSelect
+            label="PPV"
+            value={filters.is_ppv}
+            options={[
+              { label: "All", value: undefined },
+              { label: "PPV", value: true },
+              { label: "Non-PPV", value: false },
+            ]}
+            onChange={is_ppv =>
+              setFilters(prev => ({ ...prev, is_ppv }))
+            }
+          />
+        </div>
       </div>
-    </div>
+    </motion.div>
+  )}
+</AnimatePresence>
+
   )
 }
 

@@ -22,7 +22,9 @@ export default function FullScreenRedirectLoader({
   }, []);
 
   return (
-    <div className="fixed inset-0 bg-black/80 backdrop-blur-lg flex flex-col items-center justify-center z-[9999] pointer-events-auto isolate">
+    <div className="fixed inset-0 bg-black/80 backdrop-blur-lg flex flex-col items-center justify-center z-[2147483647] pointer-events-auto"
+    
+  >
       
      
 
