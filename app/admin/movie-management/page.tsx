@@ -105,23 +105,15 @@ const [hasPrev, setHasPrev] = useState(false);
 
   async function handleViewDetails(item: Content) {
     try {
-      setVideoUrlLoading(true);
-      setLoadingRenditions(true);
-      setRenditions([]);
-      const details = await getContent(item.id);
-      setLoadingRenditions(true)
-      const renditionsResponse = await getRenditions(item.id);
-      console.log(renditionsResponse.renditions)
-      setRenditions(renditionsResponse.renditions)
+      setVideoUrlLoading(true);  
+      const details = await getContent(item.id); 
       setDetailContent(details);
-      setShowDetails(true);
-      setLoadingRenditions(false)
-      // Fetch renditions
+      setShowDetails(true);  
       try {
         const urlPayload = await getStreamingUrl(item.id);
         setVideoUrlLoading(false);
-
-        setVideoUrl(urlPayload.playback_url);
+        console.log("urlPayload.dash_url",urlPayload.dash_url)
+        setVideoUrl(urlPayload.dash_url);
       } catch (rendErr) {
         console.error('Error fetching renditions:', rendErr);
         // Don't fail the whole operation if renditions fail
@@ -130,8 +122,7 @@ const [hasPrev, setHasPrev] = useState(false);
     } catch (err) {
       const apiError = err as ApiError;
       setError(apiError.message || 'Failed to load content details');
-    } finally {
-      setLoadingRenditions(false);
+    } finally { 
     }
   }
 

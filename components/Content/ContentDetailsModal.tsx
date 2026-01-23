@@ -162,57 +162,14 @@ const ContentDetailsModal: React.FC<ContentDetailsModalProps> = ({
 
           {/* Video */}
           {videoUrlLoading && <RoundLoader />}
+        
           {videoUrl && (
             <video src={videoUrl} controls className=" w-full rounded-lg" />
           )}
 {!videoUrl && (
             <div className='  w-full p-8 flex flex-col items-center justify-center bg-neutral-700'> No VIdeo to show</div>         )}
           {/* Renditions */}
-          <div>
-            <h3 className="text-xl font-bold text-white mb-4">
-              Available Renditions ({renditions.length})
-            </h3>
-
-            {loadingRenditions ? (
-              <p className="text-gray-400">Loading renditions...</p>
-            ) : renditions.length === 0 ? (
-              <p className="text-gray-400">No renditions available.</p>
-            ) : (
-              <div className="grid gap-4">
-                {renditions.map((r) => (
-                  <div key={r.id} className="bg-gray-900 rounded-lg p-4">
-                    <span
-                      className={`px-3 py-1 rounded-full text-xs font-bold ${getQualityBadgeColor(
-                        r.label
-                      )}`}
-                    >
-                      {r.label}
-                    </span>
-
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm mt-3">
-                      {r.width && r.height && (
-                        <div>
-                          <span className="text-gray-500">Resolution:</span>
-                          <span className="text-white ml-2">
-                            {r.width}x{r.height}
-                          </span>
-                        </div>
-                      )}
-
-                      {r.bitrate && (
-                        <div>
-                          <span className="text-gray-500">Bitrate:</span>
-                          <span className="text-white ml-2">
-                            {formatBitrate(r.bitrate)}
-                          </span>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
+          
 
           {/* Publish Button */}
           {detailContent.ingest_status === 'ready' && detailContent.status != 'published' && (

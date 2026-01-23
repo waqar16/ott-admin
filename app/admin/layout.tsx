@@ -8,7 +8,7 @@ import MobileAdminNav from "@/components/AdminSidebar/MobileAdminNav";
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   return (
     <PlatformSettingsProvider>
-      <div className="flex">
+      <div className="flex ">
          <div className="hidden md:block">
         <AdminSidebar />
       </div>

@@ -1,10 +1,11 @@
 
-import { retryTranscoding } from "@/lib/contentApi"
+import { deleteContent, retryTranscoding } from "@/lib/contentApi"
 import { Content, ContentStatus } from "@/lib/types/content"
-import { BiEdit, BiLoaderAlt } from "react-icons/bi"
+import { BiEdit, BiLoaderAlt, BiTrash } from "react-icons/bi"
 import { FiChevronDown, FiInfo, FiLoader, FiRotateCw, FiTablet } from "react-icons/fi"
 import { toast } from "sonner"
 import { getStatusBadge } from "@/utils/statusBadge"
+import React from "react"
 interface ContentCardProps {
   item: Content
   handleViewDetails: (item: Content) => void
@@ -19,7 +20,11 @@ const ContentCard: React.FC<ContentCardProps> = ({
   publishContent,
   fetchContent, 
 }) => {
+  const [confirmText, setConfirmText] = React.useState("");
+  const [deleteOpen,setDeleteOpen] = React.useState(false)
   return (
+
+    
     <div
       key={item.id}
       className="w-full bg-neutral-900 rounded-xs shadow-lg rounded-md flex flex-col  hover:shadow-2xl transition-all duration-300 border border-neutral-700"
@@ -61,12 +66,19 @@ const ContentCard: React.FC<ContentCardProps> = ({
                 <FiInfo size={18} />
               </button>
 
-              <button
+              {item.content_type!='trailer' && <button
                 onClick={() => handleEdit(item)}
                 className="p-2 bg-black/70 backdrop-blur-sm text-white 
             rounded-lg hover:bg-black transition"
               >
                 <BiEdit size={18} />
+              </button>}
+              <button
+                onClick={() => {setDeleteOpen(true)}}
+                className="p-2 bg-black/70 backdrop-blur-sm text-white 
+            rounded-lg hover:bg-black transition"
+              >
+                <BiTrash size={18} />
               </button>
             </div>
             {/* Left side — Publish button */}
@@ -183,7 +195,64 @@ const ContentCard: React.FC<ContentCardProps> = ({
         </details> */}
       </div>
 
-      {/* Right: Actions */}
+     {deleteOpen && (
+  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-md">
+    <div className="w-full max-w-md bg-neutral-900 border border-neutral-800 rounded-xl p-6 shadow-xl">
+      <h2 className="text-lg font-semibold text-white mb-2">
+        Confirm Delete Action 
+      </h2>
+
+      <p className="text-sm text-gray-400 mb-4">
+        Type <span className="text-white font-medium">"{item.title}"</span> to continue. (Cannot be undone)
+      </p>
+
+      <input
+        value={confirmText}
+        onChange={(e) => setConfirmText(e.target.value)}
+        placeholder="Type content name..."
+        className="w-full px-4 py-2 rounded-md bg-neutral-800 text-white border border-neutral-700 focus:outline-none focus:border-blue-500"
+      />
+
+      <div className="flex justify-end gap-3 mt-6">
+        <button
+          onClick={() => {
+            setDeleteOpen(false);
+            setConfirmText("");
+          }}
+          className="px-4 py-2 rounded-md bg-neutral-700 text-white hover:bg-neutral-600"
+        >
+          Cancel
+        </button>
+
+        <button
+          disabled={confirmText !== item.title}
+          onClick={async() => {
+            const delItem = await deleteContent(item.id)
+            if(delItem == 204){
+setDeleteOpen(false);
+            fetchContent()
+            setConfirmText("");
+            toast.success("Deletion Confirmed ✔");
+            }
+            else{
+            toast.error("Error Ocurred. Try Later :)");
+
+            }
+          }}
+          className={`px-4 py-2 rounded-md font-semibold transition
+            ${
+              confirmText === item.title
+                ? "bg-red-600 hover:bg-red-700 text-white"
+                : "bg-neutral-700 text-gray-400 cursor-not-allowed"
+            }`}
+        >
+          Continue
+        </button>
+      </div>
+    </div>
+  </div>
+)}
+
 
     </div>
   )

@@ -189,6 +189,41 @@ async function handleApiError(response: Response): Promise<ApiError> {
  * Create a new content record
  * POST /api/v1/content/contents/
  */
+export async function deleteContentContent(contentId): Promise<any> {
+  
+  
+  const token = getAccessToken();
+  if (!token) {
+    throw {
+      status: 401,
+      message: 'Not authenticated — please login',
+      needAuth: true,
+    } as ApiError;
+  }
+  
+  try {
+    const url = `${API_BASE}api/v1/content/contents/${contentId}`;
+    const response = await fetch(url, {
+      method: 'DELETE',
+      headers: getAuthHeaders(), 
+    });
+    
+    if (!response.ok) {
+      throw await handleApiError(response);
+    }
+    
+    return await response.json();
+  } catch (error) {
+    if ((error as ApiError).status) {
+      throw error;
+    }
+    throw {
+      status: 0,
+      message: 'Network error - please check your connection',
+      body: error,
+    } as ApiError;
+  }
+}
 export async function createContent(payload: CreateContentPayload): Promise<Content> {
   if (USE_MOCK_DATA) {
     logMockDataUsage('createContent');
@@ -1214,14 +1249,6 @@ export async function getRenditions(contentId: string): Promise<RenditionsListRe
   }
 }
 export async function getStreamingUrl(contentId: string): Promise<any> {
-  if (USE_MOCK_DATA) {
-    logMockDataUsage('getRenditions');
-    
-    return {
-      count: MOCK_RENDITIONS.length,
-      results: MOCK_RENDITIONS,
-    };
-  }
   
   const token = getAccessToken();
   if (!token) {
