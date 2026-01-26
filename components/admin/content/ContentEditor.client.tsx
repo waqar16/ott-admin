@@ -1561,7 +1561,16 @@ async function fetchVideo() {
                       >
                         Back
                       </button>
+                       <div className='flex flex-row items-center justify-end'>
+                        <button
 
+                        onClick={nextStep}
+ className="px-4 py-2 bg-gray-600 text-white rounded-lg mr-1"
+                      >
+                        Skip Trailer for now
+                      </button>
+ 
+                      
                       <button
                         onClick={async()=>{
  if(createdContent.trailer_id){
@@ -1603,6 +1612,7 @@ async function fetchVideo() {
                           'Save & Next'
                         )}
                       </button>
+                      </div>
                     </div>}
  
 {isTrailerContentData && <>{ trailerMode === "url" ? (
@@ -1720,7 +1730,14 @@ async function fetchVideo() {
                       >
                         Back
                       </button>
+                      <div className='flex flex-row items-center justify-end'>
+                        <button
 
+                        onClick={nextStep}
+ className="px-4 py-2 bg-gray-600 text-white rounded-lg mr-1"
+                      >
+                        Skip Trailer for now
+                      </button>
                       <button
                         onClick={handleTrailerUpload}
                         disabled={!trailerUploadFile || uploading || isTrailerContentData?.ingest_status === 'processing'}
@@ -1739,6 +1756,7 @@ async function fetchVideo() {
                           'Initialize Content'
                         )}
                       </button>
+                      </div>
                     </div>}
            </div></>
             )}
