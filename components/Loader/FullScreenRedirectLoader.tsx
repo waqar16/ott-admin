@@ -1,5 +1,17 @@
  
 'use client';
+import { createPortal } from "react-dom";
+
+// export default function FullScreenRedirectLoader({ message = "Redirecting" }) {
+//   if (typeof window === "undefined") return null;
+
+//   return createPortal(
+//     <div className="fixed inset-0 z-[999999] bg-black/80 backdrop-blur-lg flex flex-col items-center justify-center">
+//       {message}...
+//     </div>,
+//     document.body
+//   );
+// }
 
 import { motion } from 'framer-motion';
 import { useEffect, useState } from 'react';
@@ -21,15 +33,15 @@ export default function FullScreenRedirectLoader({
     return () => clearInterval(interval);
   }, []);
 
-  return (
-    <div className=" bg-black/80 backdrop-blur-lg flex flex-col items-center justify-center fixed inset-0 z-50 pointer-events-auto"
+  return createPortal(
+    <div className="  bg-black/80 backdrop-blur-lg flex flex-col items-center justify-center fixed inset-0 z-50 pointer-events-auto"
     
   >
       
      
 
 <motion.div
-  className="relative m-2 h-10 w-auto overflow-hidden z-[9999]"
+  className="relative m-2 h-10 w-auto overflow-hidden z-[9999999999999]"
 >
   {/* Your logo */}
   <img 
@@ -64,5 +76,7 @@ export default function FullScreenRedirectLoader({
       </div>
       
     </div>
-  );
+    ,
+    document.body)
+   
 }
