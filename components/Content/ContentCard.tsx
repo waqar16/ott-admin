@@ -22,6 +22,7 @@ const ContentCard: React.FC<ContentCardProps> = ({
 }) => {
   const [confirmText, setConfirmText] = React.useState("");
   const [deleteOpen,setDeleteOpen] = React.useState(false)
+  const [deleteLoading,setDeleteLoading] = React.useState(false)
   return (
 
     
@@ -225,19 +226,22 @@ const ContentCard: React.FC<ContentCardProps> = ({
         </button>
 
         <button
-          disabled={confirmText !== item.title}
+          disabled={confirmText !== item.title || deleteLoading}
           onClick={async() => {
+            setDeleteLoading(true)
             const delItem = await deleteContent(item.id)
             if(delItem == 204){
 setDeleteOpen(false);
             fetchContent()
             setConfirmText("");
-            toast.success("Deletion Confirmed ✔");
+            toast.success(`${item.title} Deleted ✔`);
             }
             else{
             toast.error("Error Ocurred. Try Later :)");
 
             }
+            setDeleteLoading(false)
+
           }}
           className={`px-4 py-2 rounded-md font-semibold transition
             ${
@@ -246,7 +250,7 @@ setDeleteOpen(false);
                 : "bg-neutral-700 text-gray-400 cursor-not-allowed"
             }`}
         >
-          Continue
+          {deleteLoading ? "Deleting..." : "Delete"}
         </button>
       </div>
     </div>
