@@ -1,11 +1,26 @@
 'use client';
-import React, { useEffect, useState } from 'react';
-import { toast } from 'sonner';
+import React, { useEffect, useState } from 'react'; 
 import RoundLoader from '../Loader/RoundLoader';
 import { Content } from '@/lib/types/content';
 import { getStreamingUrl } from '@/lib/contentApi';
-import ShakaPlayer from '../ShakaPlayer/ShakaPlayer';
-import VRAframePlayer from '../VrAframePlayer/VRAframePlayer';
+import dynamic from 'next/dynamic';
+
+const ShakaPlayer = dynamic(
+  () => import('../ShakaPlayer/ShakaPlayer'),
+  { ssr: false }
+);
+
+const VRAframePlayer = dynamic(
+  () => import('../VrAframePlayer/VRAframePlayer'),
+  { ssr: false }
+);
+
+// sonner MUST also be client-only
+const toastPromise = dynamic(
+  () => import('sonner').then(m => m.toast),
+  { ssr: false }
+);
+
 import "../ShakaPlayer/shaka.css"
  
  
@@ -30,14 +45,23 @@ const ContentDetailsModal: React.FC<ContentDetailsModalProps> = ({
   onClose, 
   publishContent, 
 }) => {
+  const [mounted,setMounted]=useState(false);
+  useEffect(()=>{
+    setMounted(true);
+  },[])   
+  if (!mounted) return null;
   if (!open || !detailContent) return null;
  useEffect(() => {
     // Disable background scroll when modal opens
-    document.body.style.overflow = "hidden";
+    if (typeof document !== "undefined") {
+      document.body.style.overflow = "hidden";
+    }
 
     return () => {
       // Restore scroll when modal closes
-      document.body.style.overflow = "auto";
+      if (typeof document !== "undefined") {
+        document.body.style.overflow = "auto";
+      }
     };
   }, []);
 
@@ -47,7 +71,7 @@ const ContentDetailsModal: React.FC<ContentDetailsModalProps> = ({
   const [hlsUrl, setHlsUrl] = useState('');
   const [dashToken, setDashToken] = useState('');
   const [hlsToken, setHlsToken] = useState('');
-    const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+    const isSafari = typeof navigator !== "undefined" && /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
   // const playbackUrl = isSafari ? hlsUrl : dashUrl;
   // const drmToken = isSafari ? hlsToken : dashToken;
 
@@ -224,10 +248,12 @@ useEffect(()=>{
               onClick={async () => {
                 const res = await publishContent(detailContent.id);
                 if (res.status === 'published') {
-                  toast.success(`Published ${detailContent.title}`);
-                  onClose();
+                  toastPromise.then(toast => toast.success(`Published ${detailContent.title}`))
+
+                      onClose();
                 } else {
-                  toast.error('Publishing failed');
+                  toastPromise.then(toast => toast.error('Publishing failed'))
+ 
                 }
               }}
             >
@@ -241,10 +267,12 @@ useEffect(()=>{
               onClick={async () => {
                 const res = await publishContent(detailContent.id,'inactive');
                 if (res.status == 'inactive') {
-                  toast.success(`${detailContent.title} is UnPublished`);
+                  toastPromise.then(toast => toast.success(`${detailContent.title} is UnPublished`))
+ 
                   onClose();
                 } else {
-                  toast.error('Publishing failed');
+                  toastPromise.then(toast => toast.error('Publishing failed'))
+ 
                 }
               }}
             >

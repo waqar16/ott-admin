@@ -1,6 +1,0 @@
-{
-  "extends": "@urview/typescript-config/react-library.json",
-  "compilerOptions": {},
-  "include": ["."],
-  "exclude": ["node_modules", "dist"]
-}

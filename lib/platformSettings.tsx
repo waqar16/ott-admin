@@ -118,6 +118,8 @@ function resolveColor(candidate?: string | null): string | null {
 }
 
 function applyBranding(primary?: string) {
+  if (typeof document === "undefined") return;
+  
   const root = document.documentElement;
   const primaryColor = resolveColor(primary) ?? DEFAULT_BRAND.primary_color;
   const hoverColor = shadeHexColor(primaryColor, -0.12);
@@ -128,6 +130,8 @@ function applyBranding(primary?: string) {
 }
 
 function applyDocumentTitle(siteName?: string) {
+  if (typeof document === "undefined") return;
+  
   const name = siteName?.trim() || DEFAULT_BRAND.site_name;
   document.title = `${name} Admin Panel`;
 }
