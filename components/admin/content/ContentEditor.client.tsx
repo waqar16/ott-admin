@@ -531,10 +531,7 @@ export const MEDIA_TYPES: Array<{ id: MediaType; name: string }> = [
 
 export default function ContentEditor(props: ContentEditorProps) {
    const [mounted,setMounted]=useState(false);
-    useEffect(()=>{
-      setMounted(true);
-    },[])   
-    if (!mounted) return null;
+   
   const [metaData, setMetaData] = useState<ContentMetadataPayload>({
     content: '',
     directors: [],
@@ -1116,6 +1113,10 @@ async function fetchVideo() {
 
   }
 },[step])
+ useEffect(()=>{
+      setMounted(true);
+    },[])   
+    if (!mounted) return null;
   return (
     <>
 

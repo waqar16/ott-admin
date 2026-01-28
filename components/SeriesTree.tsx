@@ -2,6 +2,7 @@
 import React, { useCallback, useEffect, useState } from "react";
 import Cookies from "js-cookie";
 import { API_BASE } from "@/lib/config";
+
 import {
   Content,
   CreateContentPayload,
@@ -30,6 +31,7 @@ import { BsTrash2 } from "react-icons/bs";
 import { toast } from "sonner";
 import ContentDetailsModal from "./Content/ContentDetailsModal";
 import { ApiError } from "@/lib/authApi";
+import EpisodePlayerModal from "./EpisodePlayerModal";
 export interface Episode {
   id: number;
   episode_number: number;
@@ -37,10 +39,7 @@ export interface Episode {
   children?: []
 }
 
-interface EpisodePlayerModalProps {
-  episode: any;
-  onClose: () => void;
-}
+
 
 export interface Season {
   id: number;
@@ -157,6 +156,26 @@ export function SeriesItem({ series, refresh, setSeriesList, editSeriesHandler, 
                       <BiPencil className="w-4 h-4" />
                       Edit
                     </button>
+                        {series.status!='published' && <button
+                                onClick={async (e) => {
+                                  e.stopPropagation();
+ 
+                                  let pc = await publishContent(openSeriesMenuId || "") 
+                                  if(pc.status == 'published'){
+                                    toast.success(`${series.title} is published successfully`)
+                                    setOpenSeriesMenuId(prev => (prev === prev.id ? null : prev.id));
+                                  }
+else{
+                                    toast.error(`Error publishing ${series.title}`)
+}
+
+
+                                }}
+                                className="flex items-center gap-2 w-full px-3 py-2 text-sm text-yellow-600 hover:bg-gray-800"
+                              >
+                                <BiCheck className="w-4 h-4" />
+                                Publish
+                              </button> }
  <button
                       onClick={(e) => {
                         e.stopPropagation();
@@ -975,190 +994,3 @@ function ContentEditor(props: any) {
   );
 }
 
-function EpisodePlayerModal({
-  episode,
-  onClose,
-}: EpisodePlayerModalProps) {
-  const [videoUrl, setVideoUrl] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [renditions, setRenditions] = useState<Rendition[]>([]);
-  const [loadingRenditions, setLoadingRenditions] = useState(false);
-  const [currentSrc, setCurrentSrc] = useState<string | null>(null);
-  const [showQualityMenu, setShowQualityMenu] = useState(false);
-
-  useEffect(() => {
-    async function fetchVideo() {
-      try {
-        const token = Cookies.get("access_token");
-
-        const res = await fetch(
-          `${API_BASE}api/v1/content/content/${episode.id}/stream/`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-
-        if (!res.ok) throw new Error("Failed to fetch video");
-        const renditionsResponse = await getRenditions(episode.id);
-        setRenditions(renditionsResponse.renditions)
-        const data = await res.json();
-        setVideoUrl(data.playback_url);
-        setCurrentSrc(data.playback_url);
-      } catch (e) {
-        console.error(e);
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    fetchVideo();
-  }, [episode.id]);
-
-  return (
-    <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4">
-      <div className="bg-gray-900 rounded-xl w-full max-w-5xl relative max-h-[90vh] flex flex-col">
-
-        {/* Close */}
-        <button
-          onClick={onClose}
-          className="absolute top-3 right-3 text-white text-xl z-10"
-        >
-          ✕
-        </button>
-
-        {/* Header */}
-        <div className="p-4 border-b border-gray-700 shrink-0">
-          <h2 className="text-xl font-semibold">{episode.title}</h2>
-          <p className="text-sm text-gray-400">
-            Episode {episode.episode_number}
-          </p>
-        </div>
-
-        {/* Scrollable Content */}
-        <div className="overflow-y-auto flex-1">
-
-          {/* 🎥 Player */}
-          <div className="aspect-video bg-black flex items-center justify-center p-4">
-            {loading && <span className="text-gray-400">Loading video…</span>}
-
-            {!loading && currentSrc && (
-              <div className="relative w-full h-full">
-                <HlsVideoPlayer src={currentSrc} />
-
-                {/* ⚙️ Gear */}
-                <button
-                  onClick={() => setShowQualityMenu((p) => !p)}
-                  className="absolute top-4 right-4 bg-black/70 p-2 rounded-full hover:bg-black"
-                >
-                  ⚙️
-                </button>
-
-                {/* 🎚️ Quality Menu */}
-                {showQualityMenu && (
-                  <div className="absolute bottom-16 right-4 bg-gray-900 rounded-lg shadow-lg overflow-hidden">
-                    <button
-                      className="block w-full px-4 py-2 text-left hover:bg-gray-700"
-                      onClick={() => {
-                        setCurrentSrc(videoUrl!); // auto / master
-                        setShowQualityMenu(false);
-                      }}
-                    >
-                      Auto
-                    </button>
-
-                    {renditions.map((r) => (
-                      <button
-                        key={r.id}
-                        className="block w-full px-4 py-2 text-left hover:bg-gray-700"
-                        onClick={() => {
-                          setCurrentSrc(r.stream_url);
-                          setShowQualityMenu(false);
-                        }}
-                      >
-                        {r.label}
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
-            )}
-
-
-            {!loading && !videoUrl && (
-              <span className="text-red-400">Video unavailable</span>
-            )}
-          </div>
-
-          {/* 📦 Renditions */}
-          <div className="p-4">
-            <h3 className="text-xl font-bold text-white mb-4">
-              Available Video Qualities{" "}
-              {renditions.length > 0 && `(${renditions.length})`}
-            </h3>
-
-            {loadingRenditions ? (
-              <div className="bg-gray-800 rounded-lg p-8 text-center">
-                <p className="text-gray-400">Loading renditions...</p>
-              </div>
-            ) : renditions.length === 0 ? (
-              <div className="bg-gray-800 rounded-lg p-8 text-center">
-                <p className="text-gray-400">No renditions available yet.</p>
-                <p className="text-sm text-gray-500 mt-2">
-                  Renditions will appear here once transcoding is complete.
-                </p>
-              </div>
-            ) : (
-              <div className="grid gap-4 grid-cols-2">
-                {renditions.map((rendition) => (
-                  <div
-                    key={rendition.id}
-                    className="bg-gray-800 rounded-lg p-4 hover:bg-gray-750 transition-colors"
-                  >
-                    <div className="flex items-start justify-between mb-3">
-                      <span className="px-3 py-1 rounded-full text-xs font-bold text-white bg-blue-600">
-                        {rendition.label}
-                      </span>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm w-full ">
-                      {rendition.width && rendition.height && (
-                        <div>
-                          <span className="text-gray-500">Resolution:</span>
-                          <span className="text-white ml-2">
-                            {rendition.width}x{rendition.height}
-                          </span>
-                        </div>
-                      )}
-
-                      {rendition.bitrate && (
-                        <div>
-                          <span className="text-gray-500">Bitrate:</span>
-                          <span className="text-white ml-2">
-                            {rendition.bitrate}
-                          </span>
-                        </div>
-                      )}
-                    </div>
-
-                    {rendition.stream_url && (
-                      <div className="mt-3 pt-3 border-t border-gray-700">
-                        <video
-                          src={rendition.stream_url}
-                          controls
-                          className="w-full rounded-lg bg-black"
-                        />
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-
-        </div>
-      </div>
-    </div>
-  );
-}
