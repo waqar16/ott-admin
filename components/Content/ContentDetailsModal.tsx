@@ -1,18 +1,13 @@
 'use client';
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import RoundLoader from '../Loader/RoundLoader';
 import { Content } from '@/lib/types/content';
-
-type Rendition = {
-  id: string;
-  label: string;
-  width?: number;
-  height?: number;
-  bitrate?: number;
-  stream_url?: string;
-};
-
+import { getStreamingUrl } from '@/lib/contentApi';
+import ShakaPlayer from '../ShakaPlayer/ShakaPlayer';
+import VRAframePlayer from '../VrAframePlayer/VRAframePlayer';
+import "../ShakaPlayer/shaka.css"
+ 
  
 
 interface ContentDetailsModalProps {
@@ -32,9 +27,7 @@ interface ContentDetailsModalProps {
 const ContentDetailsModal: React.FC<ContentDetailsModalProps> = ({
   open,
   detailContent,
-  onClose,
-  videoUrl,
-  videoUrlLoading, 
+  onClose, 
   publishContent, 
 }) => {
   if (!open || !detailContent) return null;
@@ -47,6 +40,43 @@ const ContentDetailsModal: React.FC<ContentDetailsModalProps> = ({
       document.body.style.overflow = "auto";
     };
   }, []);
+
+  const [videoUrl, setVideoUrl] = useState<string | null>(null);
+  const [videoUrlLoading, setVideoUrlLoading] = useState<boolean>(true);
+  const [dashUrl, setDashUrl] = useState('');
+  const [hlsUrl, setHlsUrl] = useState('');
+  const [dashToken, setDashToken] = useState('');
+  const [hlsToken, setHlsToken] = useState('');
+    const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+  // const playbackUrl = isSafari ? hlsUrl : dashUrl;
+  // const drmToken = isSafari ? hlsToken : dashToken;
+
+const isVR = detailContent.media_type.startsWith("vr_");
+const playbackUrl = isVR ? hlsUrl : (isSafari ? hlsUrl : dashUrl);
+const drmToken = isVR ? hlsToken : (isSafari ? hlsToken : dashToken);
+
+useEffect(()=>{
+    const fetchStreamingUrl = async () => {
+      try{ 
+ 
+        const urlPayload = await getStreamingUrl(detailContent.id);
+        
+        setVideoUrlLoading(false);
+        console.log("urlPayload.dash_url",urlPayload.dash_url)
+        setVideoUrl(urlPayload.dash_url);
+        setHlsUrl(urlPayload.hls_url);
+        setDashUrl(urlPayload.dash_url);
+        //  setHlsToken(urlPayload?.hls_token);
+        // setDashToken(urlPayload?.dash_token);
+      } catch (rendErr) {
+        console.error('Error fetching renditions:', rendErr);
+        // Don't fail the whole operation if renditions fail
+      }
+      setVideoUrlLoading(false)
+    }
+    fetchStreamingUrl()
+ 
+},[])
   return (
    <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 ">
 
@@ -64,7 +94,7 @@ const ContentDetailsModal: React.FC<ContentDetailsModalProps> = ({
         </div>
 
         {/* Body */}
-        <div className=" p-6 max-h-[calc(100vh-100px)] overflow-y-auto space-y-6">
+        <div className=" p-6 max-h-[calc(100vh-100px)] overflow-y-auto minimal-scrollbar space-y-6">
 
           {/* Basic Info */}
           <div>
@@ -162,18 +192,31 @@ const ContentDetailsModal: React.FC<ContentDetailsModalProps> = ({
           )}
 
           {/* Video */}
-          {videoUrlLoading && <RoundLoader />}
-        
+          {videoUrlLoading && <RoundLoader />} 
           {videoUrl && (
-            <div className='w-full flex flex-col items-center'>
-              <video src={videoUrl} controls className="w-full md:w-7/12  rounded-lg" />
-            </div>
+             <div className="watch-player-absolute">
+        {detailContent.media_type.startsWith('vr_') ? (
+          <VRAframePlayer src={playbackUrl} token={drmToken} autoplay={true} />
+        ) : (
+          <ShakaPlayer
+            src={playbackUrl}
+            drmToken={drmToken}
+            autoPlay={true}
+            t={0}
+            watermarkText=""
+          />
+
+        )}
+
+        {/* <div className="watch-title-netflix">{title}</div> */}
+      </div>
+            // <div className='w-full flex flex-col items-center'>
+            //   <video src={videoUrl} controls className="w-full md:w-7/12  rounded-lg" />
+            // </div>
           )}
 {!videoUrl && (
             <div className='  w-full p-8 flex flex-col items-center justify-center bg-neutral-700'> No VIdeo to show</div>         )}
-          {/* Renditions */}
-          
-
+ 
           {/* Publish Button */}
           {detailContent.ingest_status === 'ready' && detailContent.status != 'published' && (
             <button 

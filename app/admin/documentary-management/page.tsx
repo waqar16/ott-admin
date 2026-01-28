@@ -88,28 +88,15 @@ export default function ContentManagementPage() {
 
   async function handleViewDetails(item: Content) {
     try {
-      setVideoUrlLoading(true);
-      setLoadingRenditions(true);
-      setRenditions([]);
-      const details = await getContent(item.id);
+        
+      const details = await getContent(item.id); 
       setDetailContent(details);
-      setShowDetails(true);
-
-      // Fetch renditions
-      try {
-        const urlPayload = await getStreamingUrl(item.id);
-        setVideoUrlLoading(false);
-
-        setVideoUrl(urlPayload.playback_url);
-      } catch (rendErr) {
-        console.error('Error fetching renditions:', rendErr);
-        // Don't fail the whole operation if renditions fail
-      }
+      setShowDetails(true);  
+      
     } catch (err) {
       const apiError = err as ApiError;
       setError(apiError.message || 'Failed to load content details');
-    } finally {
-      setLoadingRenditions(false);
+    } finally { 
     }
   }
 
@@ -252,13 +239,9 @@ export default function ContentManagementPage() {
             setDetailContent(null);
             fetchContent()
           }}
-          videoUrl={videoUrl}
-          videoUrlLoading={videoUrlLoading}
-          renditions={renditions}
-          loadingRenditions={loadingRenditions}
-          publishContent={publishContent}
-          getQualityBadgeColor={getQualityBadgeColor}
-          formatBitrate={formatBitrate}
+          
+            
+          publishContent={publishContent}  
         />
       )}
     </div>

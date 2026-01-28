@@ -39,9 +39,7 @@ export default function ContentManagementPage() {
   const [selectedContent, setSelectedContent] = useState<Content | null>(null);
   const [detailContent, setDetailContent] = useState<Content | null>(null);
   const [showDetails, setShowDetails] = useState(false);
-  const [renditions, setRenditions] = useState<Rendition[]>([]);
-  const [videoUrl, setVideoUrl] = useState<string | null>(null);
-  const [videoUrlLoading, setVideoUrlLoading] = useState<boolean>(false);
+  const [renditions, setRenditions] = useState<Rendition[]>([]); 
   const [loadingRenditions, setLoadingRenditions] = useState(false);
 
   // Filter state
@@ -102,23 +100,13 @@ const [hasPrev, setHasPrev] = useState(false);
     setSelectedContent(item);
     setShowEditor(true);
   }
-
   async function handleViewDetails(item: Content) {
     try {
-      setVideoUrlLoading(true);  
+        
       const details = await getContent(item.id); 
       setDetailContent(details);
       setShowDetails(true);  
-      try {
-        const urlPayload = await getStreamingUrl(item.id);
-        setVideoUrlLoading(false);
-        console.log("urlPayload.dash_url",urlPayload.dash_url)
-        setVideoUrl(urlPayload.dash_url);
-      } catch (rendErr) {
-        console.error('Error fetching renditions:', rendErr);
-        // Don't fail the whole operation if renditions fail
-      }
-      setVideoUrlLoading(false)
+      
     } catch (err) {
       const apiError = err as ApiError;
       setError(apiError.message || 'Failed to load content details');
@@ -269,13 +257,9 @@ const [hasPrev, setHasPrev] = useState(false);
             setDetailContent(null);
             fetchContent()
           }}
-          videoUrl={videoUrl}
-          videoUrlLoading={videoUrlLoading}
-          renditions={renditions}
-          loadingRenditions={loadingRenditions}
-          publishContent={publishContent}
-          getQualityBadgeColor={getQualityBadgeColor}
-          formatBitrate={formatBitrate}
+          
+            
+          publishContent={publishContent}  
         />
       )}
     </div>

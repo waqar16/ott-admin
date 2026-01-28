@@ -1,4 +1,5 @@
-import { USE_MOCK_DATA, API_CONFIG, logMockDataUsage } from './config';
+import axios from 'axios';
+import { USE_MOCK_DATA, API_CONFIG, logMockDataUsage, API_BASE } from './config';
 
 // Mock mode active — replace with real API later
 if (USE_MOCK_DATA) {
@@ -14,6 +15,12 @@ export interface FetchOptions extends RequestInit {
 /**
  * Generic API fetch wrapper with error handling
  */
+export const apiClient = axios.create({
+	baseURL: API_BASE,
+	headers: {
+		'Content-Type': 'application/json',
+	},
+})
 export async function fetchAPI<T>(
   endpoint: string,
   options: FetchOptions = {}
