@@ -45,26 +45,9 @@ const ContentDetailsModal: React.FC<ContentDetailsModalProps> = ({
   onClose, 
   publishContent, 
 }) => {
+  
+  
   const [mounted,setMounted]=useState(false);
-  useEffect(()=>{
-    setMounted(true);
-  },[])   
-  if (!mounted) return null;
-  if (!open || !detailContent) return null;
- useEffect(() => {
-    // Disable background scroll when modal opens
-    if (typeof document !== "undefined") {
-      document.body.style.overflow = "hidden";
-    }
-
-    return () => {
-      // Restore scroll when modal closes
-      if (typeof document !== "undefined") {
-        document.body.style.overflow = "auto";
-      }
-    };
-  }, []);
-
   const [videoUrl, setVideoUrl] = useState<string | null>(null);
   const [videoUrlLoading, setVideoUrlLoading] = useState<boolean>(true);
   const [dashUrl, setDashUrl] = useState('');
@@ -101,6 +84,27 @@ useEffect(()=>{
     fetchStreamingUrl()
  
 },[])
+ useEffect(()=>{
+    setMounted(true);
+  },[])   
+ 
+ useEffect(() => {
+    // Disable background scroll when modal opens
+    if (typeof document !== "undefined") {
+      document.body.style.overflow = "hidden";
+    }
+
+    return () => {
+      // Restore scroll when modal closes
+      if (typeof document !== "undefined") {
+        document.body.style.overflow = "auto";
+      }
+    };
+  }, []);
+
+
+ if (!mounted) return null;
+  if (!open || !detailContent) return null;
   return (
    <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 ">
 
