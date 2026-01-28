@@ -161,6 +161,361 @@ let abnormalSteps = [
   title:'Upload Image'
 }, 
 ]
+
+const contentSteps= {
+  "series":[
+  {
+    title: "Create Content",
+    icon: (
+      <svg
+        className="w-5 h-5"
+        xmlns="http://www.w3.org/2000/svg"
+        fill="none"
+        viewBox="0 0 24 24"
+      >
+        <path
+          d="M4 5h16M4 12h16M4 19h16"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      </svg>
+    ),
+  },
+  {
+    title: "Add Metadata",
+    icon: (
+      <svg
+        className="w-5 h-5"
+        xmlns="http://www.w3.org/2000/svg"
+        fill="none"
+        viewBox="0 0 24 24"
+      >
+        <path
+          d="M12 11v6m0-10h.01M4 5h16v14H4z"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      </svg>
+    ),
+  },
+  {
+    title: "Upload Banner",
+    icon: (
+      <svg
+        className="w-5 h-5"
+        xmlns="http://www.w3.org/2000/svg"
+        fill="none"
+        viewBox="0 0 24 24"
+      >
+        <path
+          d="M4 5h16v14H4zM8 11l2 2 4-4 4 5"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      </svg>
+    ),
+  },
+  {
+    title: "Upload Trailer",
+    icon: (
+      <svg
+        className="w-5 h-5"
+        xmlns="http://www.w3.org/2000/svg"
+        fill="none"
+        viewBox="0 0 24 24"
+      >
+        <path
+          d="M5 4v16l14-8z"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      </svg>
+    ),
+  } 
+], 
+"movie":[
+  {
+    title: "Create Content",
+    icon: (
+      <svg
+        className="w-5 h-5"
+        xmlns="http://www.w3.org/2000/svg"
+        fill="none"
+        viewBox="0 0 24 24"
+      >
+        <path
+          d="M4 5h16M4 12h16M4 19h16"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      </svg>
+    ),
+  },
+  {
+    title: "Add Metadata",
+    icon: (
+      <svg
+        className="w-5 h-5"
+        xmlns="http://www.w3.org/2000/svg"
+        fill="none"
+        viewBox="0 0 24 24"
+      >
+        <path
+          d="M12 11v6m0-10h.01M4 5h16v14H4z"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      </svg>
+    ),
+  },
+  {
+    title: "Upload Image",
+    icon: (
+      <svg
+        className="w-5 h-5"
+        xmlns="http://www.w3.org/2000/svg"
+        fill="none"
+        viewBox="0 0 24 24"
+      >
+        <path
+          d="M4 5h16v14H4zM8 11l2 2 4-4 4 5"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      </svg>
+    ),
+  },
+  {
+    title: "Upload Trailer",
+    icon: (
+      <svg
+        className="w-5 h-5"
+        xmlns="http://www.w3.org/2000/svg"
+        fill="none"
+        viewBox="0 0 24 24"
+      >
+        <path
+          d="M5 4v16l14-8z"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      </svg>
+    ),
+  },
+  {
+    title: "Upload Video",
+    icon: (
+      <svg
+        className="w-5 h-5"
+        xmlns="http://www.w3.org/2000/svg"
+        fill="none"
+        viewBox="0 0 24 24"
+      >
+        <path
+          d="M15 9h3m-3 3h3m-3 3h3m-6 1c-.306-.613-.933-1-1.618-1H7.618c-.685 0-1.312.387-1.618 1M4 5h16a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1Zm7 5a2 2 0 1 1-4 0 2 2 0 0 1 4 0Z"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      </svg>
+    ),
+  },
+],
+"episode":[
+  {
+    title: "Create Content",
+    icon: (
+      <svg
+        className="w-5 h-5"
+        xmlns="http://www.w3.org/2000/svg"
+        fill="none"
+        viewBox="0 0 24 24"
+      >
+        <path
+          d="M4 5h16M4 12h16M4 19h16"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      </svg>
+    ),
+  },
+  {
+    title: "Upload Thumbnail",
+    icon: (
+      <svg
+        className="w-5 h-5"
+        xmlns="http://www.w3.org/2000/svg"
+        fill="none"
+        viewBox="0 0 24 24"
+      >
+        <path
+          d="M4 5h16v14H4zM8 11l2 2 4-4 4 5"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      </svg>
+    ),
+  }, 
+  {
+    title: "Upload Video",
+    icon: (
+      <svg
+        className="w-5 h-5"
+        xmlns="http://www.w3.org/2000/svg"
+        fill="none"
+        viewBox="0 0 24 24"
+      >
+        <path
+          d="M15 9h3m-3 3h3m-3 3h3m-6 1c-.306-.613-.933-1-1.618-1H7.618c-.685 0-1.312.387-1.618 1M4 5h16a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1Zm7 5a2 2 0 1 1-4 0 2 2 0 0 1 4 0Z"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      </svg>
+    ),
+  },
+],
+"season":[
+  {
+    title: "Create Content",
+    icon: (
+      <svg
+        className="w-5 h-5"
+        xmlns="http://www.w3.org/2000/svg"
+        fill="none"
+        viewBox="0 0 24 24"
+      >
+        <path
+          d="M4 5h16M4 12h16M4 19h16"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      </svg>
+    ),
+  }, 
+],
+"documentary":[
+  {
+    title: "Create Content",
+    icon: (
+      <svg
+        className="w-5 h-5"
+        xmlns="http://www.w3.org/2000/svg"
+        fill="none"
+        viewBox="0 0 24 24"
+      >
+        <path
+          d="M4 5h16M4 12h16M4 19h16"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      </svg>
+    ),
+  },
+  {
+    title: "Add Metadata",
+    icon: (
+      <svg
+        className="w-5 h-5"
+        xmlns="http://www.w3.org/2000/svg"
+        fill="none"
+        viewBox="0 0 24 24"
+      >
+        <path
+          d="M12 11v6m0-10h.01M4 5h16v14H4z"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      </svg>
+    ),
+  },
+  {
+    title: "Upload Image",
+    icon: (
+      <svg
+        className="w-5 h-5"
+        xmlns="http://www.w3.org/2000/svg"
+        fill="none"
+        viewBox="0 0 24 24"
+      >
+        <path
+          d="M4 5h16v14H4zM8 11l2 2 4-4 4 5"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      </svg>
+    ),
+  },
+  {
+    title: "Upload Trailer",
+    icon: (
+      <svg
+        className="w-5 h-5"
+        xmlns="http://www.w3.org/2000/svg"
+        fill="none"
+        viewBox="0 0 24 24"
+      >
+        <path
+          d="M5 4v16l14-8z"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      </svg>
+    ),
+  },
+  {
+    title: "Upload Video",
+    icon: (
+      <svg
+        className="w-5 h-5"
+        xmlns="http://www.w3.org/2000/svg"
+        fill="none"
+        viewBox="0 0 24 24"
+      >
+        <path
+          d="M15 9h3m-3 3h3m-3 3h3m-6 1c-.306-.613-.933-1-1.618-1H7.618c-.685 0-1.312.387-1.618 1M4 5h16a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1Zm7 5a2 2 0 1 1-4 0 2 2 0 0 1 4 0Z"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      </svg>
+    ),
+  },
+]
+}
 export const MEDIA_TYPES: Array<{ id: MediaType; name: string }> = [
   { id: 'flat', name: 'Standard Video (2D)' },
 
@@ -299,7 +654,7 @@ const [trailerContentDataFetching,setTrailerContentDataFetching] = React.useStat
         const updated = await updateContent(content.id, formData);
 
         nextStep();
-
+ 
         if (setContent && contentType != "season" && contentType != 'episode') {
           setContent(prev => [updated, ...prev]);
 
@@ -309,7 +664,8 @@ const [trailerContentDataFetching,setTrailerContentDataFetching] = React.useStat
 
             setContent(prev => updateNode(prev, updated)
             );
-
+     onClose()
+          return;
           }
         }
 
@@ -334,7 +690,8 @@ const [trailerContentDataFetching,setTrailerContentDataFetching] = React.useStat
                 : s
             )
           );
-
+          onClose()
+          return;
         }
         if (setContent && contentType === "episode") {
           setContent(prev =>
@@ -350,6 +707,9 @@ const [trailerContentDataFetching,setTrailerContentDataFetching] = React.useStat
               ),
             }))
           );
+         
+          
+    
         }
 
         toast.success(`Your ${contentType} is succesfully Created. Add Meta deta of Content i.e: Author, Director`)
@@ -457,7 +817,12 @@ async function handleTrailerUpload() {
       setTrailerUploadFile(null)
       setIsTrailerContentData(null)
 
-nextStep()
+if(contentType == 'series'){
+onClose()
+}
+else{
+  nextStep()
+}
     } catch (err) {
       const apiError = err as ApiError;
        toast.error(apiError.message || 'Upload failed');
@@ -741,7 +1106,7 @@ async function fetchVideo() {
         setTrailerFetchLoading(false)
       }
     }
-  if(step == 4 && isTrailerContentData?.ingest_status!='failed' && contentType !== 'series' && contentType !== 'trailer' && contentType !== 'season'){
+  if(step == 4 && isTrailerContentData?.ingest_status!='failed'   && contentType !== 'trailer' && contentType !== 'season'){
  fetchVideo()
 
   }
@@ -798,33 +1163,18 @@ async function fetchVideo() {
               </>}
             </div> */}
 <ol className="items-center w-full space-y-4 sm:flex sm:space-x-2 sm:space-y-0 rtl:space-x-reverse justify-between">
-   <>{contentType == 'series' || contentType == 'season' ?<>{
-    abnormalSteps.map((s,i)=>(
-      <li className="flex items-center text-fg-brand space-x-1 rtl:space-x-reverse ">
-        <span className="flex items-center justify-center   bg-brand-softer rounded-full lg:h-12 lg:w-12 shrink-0">
-            <svg className="w-5 h-5 text-fg-brand" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24"><path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 11.917 9.724 16.5 19 7.5"/></svg>
-        </span>
-        <span>
-            <h3 className="font-medium leading-tight">{`Step ${i+1 }`}</h3>
-            <p className="text-sm">{`${s.title}`}</p>
-        </span>
-    </li>
-  ))
-   } </>:
-   <>
-   {
-    normalSteps.map((s,i)=>(
-  
-       <li className="flex items-center text-fg-brand space-x-3 rtl:space-x-reverse w-full" key={i}>
+  {contentSteps[contentType].map((s, index) => (
+
+  <li className="flex items-center text-fg-brand space-x-3 rtl:space-x-reverse w-full" key={index }>
          
-        {step == (i+1)?
+        {step == (index+1)?
         <div className="flex items-center justify-center  bg-neutral-tertiary rounded-full   shrink-0 ">
 
          <RoundLoader className='text-blue-500 w-5 h-5'/>
 
         </div>
          :
-         step>i+1?
+         step>index+1?
          <span className="flex items-center justify-center w-10 h-10 text-green-700 rounded-full lg:h-12 lg:w-12 shrink-0">
             <svg className="w-5 h-5 text-fg-brand" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24"><path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 11.917 9.724 16.5 19 7.5"/></svg>
         </span>
@@ -836,15 +1186,11 @@ async function fetchVideo() {
         
       
         <span>
-            <h3 className={`  leading-tight font-medium text-sm ${step == (i+1) ? ' text-blue-600 font-bold':step < (i+1)?'':'text-green-600 font-bold'}`}>{`Step ${i+1 }`}</h3>
+            <h3 className={`  leading-tight font-medium text-sm ${step == (index+1) ? ' text-blue-600 font-bold':step < (index+1)?'':'text-green-600 font-bold'}`}>{`Step ${index+1 }`}</h3>
             <p className={`text-xs  `}>{`${s.title}`}</p>
         </span>
     </li>
-  
-    ))
-   } </>
-}
-</> 
+  ))} 
     
 </ol>
             {/* <p className="text-center text-gray-300 text-sm mt-2">
@@ -891,7 +1237,7 @@ async function fetchVideo() {
                   </div>
 
 
-                  {contentType != 'season' && contentType != 'episode' && <>
+                  {contentType != 'season' &&     <>
                     <MultiSelect
                       allGenre={allGenre}
                       formData={formData}
@@ -1006,8 +1352,10 @@ async function fetchVideo() {
                 </button></>
 
             )}
-            {step === 2 && createdContent && (
-              <div className="flex flex-col w-full">
+            {step === 2 && createdContent && 
+            <>
+            {contentType != 'episode'?
+            <div className="flex flex-col w-full">
 
             <div className='w-full space-y-6 overflow-y-auto minimal-scrollbar max-h-[55vh] md:max-h-[60]'>
                   <h3 className="text-xl text-white font-semibold">
@@ -1110,12 +1458,129 @@ async function fetchVideo() {
                     Save & Next
                   </button>
                 </div>
-              </div>
-            )}
+              </div>:
+              
+                 <div className="flex flex-col w-full">
+              <div className="space-y-2  w-full space-y-6 overflow-y-auto minimal-scrollbar max-h-[55vh] md:max-h-[60]">
+                <h3 className="text-xl text-white font-semibold">
+                  Upload Images 
+                </h3>
+ 
+                <div className='hidden md:grid grid-cols-7 w-full gap-2 '>
+                  
+                  <div className="col-span-5 space-y-3 ">
+                    <label className="  text-sm font-medium text-gray-300">
+                      Thumbnail Image
+                    </label>
+
+                    {/* Thumbnail Upload Area */}
+                    <div className="max-h-[50vh] relative w-full aspect-[4/6] rounded-xl border-2 border-dashed border-gray-600 bg-neutral-950 hover:border-blue-500 transition cursor-pointer overflow-hidden group">
+
+                      {/* Preview Priority: banner > thumbnail > selected file */}
+                      {createdContent.thumbnail_url ? (
+                        <img
+                          src={createdContent.thumbnail_url}
+                          alt="Thumbnail Preview"
+                          className="absolute inset-0 w-full h-full object-cover"
+                        />
+                      ) : bannerFile ? (
+                        <img
+                          src={URL.createObjectURL(bannerFile)}
+                          alt="Thumbnail Preview"
+                          className="absolute inset-0 w-full h-full object-cover"
+                        />
+                      ) : null}
+
+                      {/* Overlay Content */}
+                      <div className="absolute inset-0 bg-black/40 flex flex-col items-center justify-center text-center px-6 group-hover:bg-black/60 transition">
+                        <svg
+                          className="w-14 h-14 text-blue-400 mb-4"
+
+                          viewBox="0 0 24 24" version="1.1" xmlns="http://www.w3.org/2000/svg"  >
+                          <title>file_upload_fill</title>
+                          <g id="页面-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+                            <g id="File" transform="translate(-384.000000, -144.000000)">
+                              <g id="file_upload_fill" transform="translate(384.000000, 144.000000)">
+                                <path d="M24,0 L24,24 L0,24 L0,0 L24,0 Z M12.5934901,23.257841 L12.5819402,23.2595131 L12.5108777,23.2950439 L12.4918791,23.2987469 L12.4918791,23.2987469 L12.4767152,23.2950439 L12.4056548,23.2595131 C12.3958229,23.2563662 12.3870493,23.2590235 12.3821421,23.2649074 L12.3780323,23.275831 L12.360941,23.7031097 L12.3658947,23.7234994 L12.3769048,23.7357139 L12.4804777,23.8096931 L12.4953491,23.8136134 L12.4953491,23.8136134 L12.5071152,23.8096931 L12.6106902,23.7357139 L12.6232938,23.7196733 L12.6232938,23.7196733 L12.6266527,23.7031097 L12.609561,23.275831 C12.6075724,23.2657013 12.6010112,23.2592993 12.5934901,23.257841 L12.5934901,23.257841 Z M12.8583906,23.1452862 L12.8445485,23.1473072 L12.6598443,23.2396597 L12.6498822,23.2499052 L12.6498822,23.2499052 L12.6471943,23.2611114 L12.6650943,23.6906389 L12.6699349,23.7034178 L12.6699349,23.7034178 L12.678386,23.7104931 L12.8793402,23.8032389 C12.8914285,23.8068999 12.9022333,23.8029875 12.9078286,23.7952264 L12.9118235,23.7811639 L12.8776777,23.1665331 C12.8752882,23.1545897 12.8674102,23.1470016 12.8583906,23.1452862 L12.8583906,23.1452862 Z M12.1430473,23.1473072 C12.1332178,23.1423925 12.1221763,23.1452606 12.1156365,23.1525954 L12.1099173,23.1665331 L12.0757714,23.7811639 C12.0751323,23.7926639 12.0828099,23.8018602 12.0926481,23.8045676 L12.108256,23.8032389 L12.3092106,23.7104931 L12.3186497,23.7024347 L12.3186497,23.7024347 L12.3225043,23.6906389 L12.340401,23.2611114 L12.337245,23.2485176 L12.337245,23.2485176 L12.3277531,23.2396597 L12.1430473,23.1473072 Z" id="MingCute" fill-rule="nonzero">
+
+                                </path>
+                                <path d="M12,2 L12,8.5 C12,9.27969882 12.5949121,9.920449 13.3555442,9.99313345 L13.5,10 L20,10 L20,20 C20,21.0543909 19.18415,21.9181678 18.1492661,21.9945144 L18,22 L6,22 C4.94563773,22 4.08183483,21.18415 4.00548573,20.1492661 L4,20 L4,4 C4,2.94563773 4.81587733,2.08183483 5.85073759,2.00548573 L6,2 L12,2 Z M11.2929,11.1729 L9.17157,13.2942 C8.78105,13.6847 8.78105,14.3179 9.17157,14.7084 C9.5621,15.099 10.1953,15.099 10.5858,14.7084 L11,14.2942 L11,17 C11,17.5523 11.4477,18 12,18 C12.5523,18 13,17.5523 13,17 L13,14.2942 L13.4142,14.7084 C13.8047,15.099 14.4379,15.099 14.8284,14.7084 C15.219,14.3179 15.219,13.6847 14.8284,13.2942 L12.7071,11.1729 C12.3166,10.7824 11.6834,10.7824 11.2929,11.1729 Z M14,2.04336 C14.3222,2.11158 14.624049,2.25868408 14.8774606,2.47305359 L15,2.58579 L19.4142,7 C19.6506857,7.23646857 19.8218571,7.52605551 19.9160012,7.8407123 L19.9566,8 L14,8 L14,2.04336 Z" id="形状" fill="#09244B">
+
+                                </path>
+                              </g>
+                            </g>
+                          </g>
+                        </svg>
+
+                        <p className="text-white font-semibold text-lg">
+                          {createdContent.banner_url || bannerFile
+                            ? 'Change Thumbnail Image'
+                            : 'Click to Upload Thumbnail'}
+                        </p>
+
+                        <p className="text-xs text-gray-300 mt-1">
+                          16:9 ratio · Recommended 1920×1080 · Hero Thumbnail
+                        </p>
+                      </div>
+
+                      {/* Invisible File Input */}
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleBannerUpload}
+
+                        disabled={uploadingImage === 'banner'}
+                        className="absolute inset-0 opacity-0 cursor-pointer"
+                      />
+                    </div>
+
+                    {/* Upload Button */}
+                    <button
+                      onClick={() =>
+                        handleImageUpload('episode-thumbnail') 
+                      }
+                      disabled={!bannerFile || uploadingImage === 'banner'}
+                      className="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 transition-colors"
+                    >
+                      {uploadingImage === 'banner' ? 'Uploading...' : 'Upload Banner'}
+                    </button>
+                  </div>
+
+                </div>
+ 
+                
+              </div> 
+              <div className="flex justify-between mt-6">
+                  <button
+                    onClick={prevStep}
+                    className="px-4 py-2 bg-gray-600 text-white rounded"
+                  >
+                    Back
+                  </button>
+                  {
+                    (  contentType !== 'season') ?
+                      <button
+                        onClick={nextStep}
+                        className="px-6 py-2 bg-blue-600 text-white rounded"
+                      >
+                        Save & Next
+                      </button> :
+                      <button
+                        onClick={onClose}
+                        className="px-6 py-2 bg-blue-600 text-white rounded"
+                      >
+                        Finish
+                      </button>
+                  }
+
+                </div>
+              </div> 
+              }
+            </>}
 
             {/* -------------------- STEP 2 -------------------- */}
-            {step === 3 && createdContent && (
-            <div className="flex flex-col w-full">
+            {step === 3 && createdContent &&  
+           <>{ contentType !='episode'?<>  <div className="flex flex-col w-full">
               <div className="space-y-2  w-full space-y-6 overflow-y-auto minimal-scrollbar max-h-[55vh] md:max-h-[60]">
                 <h3 className="text-xl text-white font-semibold">
                   Upload Images 
@@ -1492,7 +1957,7 @@ async function fetchVideo() {
                     Back
                   </button>
                   {
-                    (contentType !== 'series' && contentType !== 'season') ?
+                    (  contentType !== 'season') ?
                       <button
                         onClick={nextStep}
                         className="px-6 py-2 bg-blue-600 text-white rounded"
@@ -1508,9 +1973,137 @@ async function fetchVideo() {
                   }
 
                 </div>
-              </div> 
-            )}
- {step === 4 && createdContent && contentType !== 'series' && contentType !== 'trailer' && contentType !== 'season' && (
+              </div></>:
+                  <div className="flex flex-col w-full">
+              <div className="space-y-2  w-full space-y-6 overflow-y-auto minimal-scrollbar max-h-[55vh] md:max-h-[60]"> 
+            
+ 
+{videoFetchLoading ? (
+                  <SkeletonLoader className="w-full h-[40vh] bg-gray-700 rounded-xl" />
+                ) : (
+                  <>
+                    {/* Status Heading */}
+                    <h3 className="text-xl text-white font-semibold">
+                      {content?.ingest_status === 'processing'
+                        ? 'Content is uploading to cloud (this may take a while)'
+                        : 'Upload Episide File'}
+                    </h3>
+
+                    {/* Media Upload Area */}
+                    <div className="relative max-h-[30vh] w-full aspect-video rounded-xl border-2 border-dashed border-gray-600 bg-neutral-900 hover:border-blue-500 transition cursor-pointer overflow-hidden group">
+
+                      {/* Video Preview */}
+                      {!videoFetchLoading && videoUrl && isEditing ? (
+                        <div className="absolute inset-0">
+                          <HlsVideoPlayer src={videoUrl} />
+                        </div>
+                      ) : uploadFile ? (
+                        <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-6 bg-black/60">
+                          <svg
+                            className="w-12 h-12 text-orange-400 mb-3"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth={1.5}
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              d="M3 16.5V19a2 2 0 002 2h14a2 2 0 002-2v-2.5M7 10l5-5 5 5M12 5v14"
+                            />
+                          </svg>
+
+                          <p className="text-white font-medium">
+                            {uploadFile.name}
+                          </p>
+                          <p className="text-xs text-gray-300 mt-1">
+                            {formatFileSize(uploadFile.size)}
+                          </p>
+                        </div>
+                      ) : (
+                        <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-6 bg-black/40 group-hover:bg-black/60 transition">
+                          <svg
+                            className="w-14 h-14 text-blue-400 mb-4"
+
+                            viewBox="0 0 24 24" version="1.1" xmlns="http://www.w3.org/2000/svg"  >
+                            <title>file_upload_fill</title>
+                            <g id="页面-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+                              <g id="File" transform="translate(-384.000000, -144.000000)">
+                                <g id="file_upload_fill" transform="translate(384.000000, 144.000000)">
+                                  <path d="M24,0 L24,24 L0,24 L0,0 L24,0 Z M12.5934901,23.257841 L12.5819402,23.2595131 L12.5108777,23.2950439 L12.4918791,23.2987469 L12.4918791,23.2987469 L12.4767152,23.2950439 L12.4056548,23.2595131 C12.3958229,23.2563662 12.3870493,23.2590235 12.3821421,23.2649074 L12.3780323,23.275831 L12.360941,23.7031097 L12.3658947,23.7234994 L12.3769048,23.7357139 L12.4804777,23.8096931 L12.4953491,23.8136134 L12.4953491,23.8136134 L12.5071152,23.8096931 L12.6106902,23.7357139 L12.6232938,23.7196733 L12.6232938,23.7196733 L12.6266527,23.7031097 L12.609561,23.275831 C12.6075724,23.2657013 12.6010112,23.2592993 12.5934901,23.257841 L12.5934901,23.257841 Z M12.8583906,23.1452862 L12.8445485,23.1473072 L12.6598443,23.2396597 L12.6498822,23.2499052 L12.6498822,23.2499052 L12.6471943,23.2611114 L12.6650943,23.6906389 L12.6699349,23.7034178 L12.6699349,23.7034178 L12.678386,23.7104931 L12.8793402,23.8032389 C12.8914285,23.8068999 12.9022333,23.8029875 12.9078286,23.7952264 L12.9118235,23.7811639 L12.8776777,23.1665331 C12.8752882,23.1545897 12.8674102,23.1470016 12.8583906,23.1452862 L12.8583906,23.1452862 Z M12.1430473,23.1473072 C12.1332178,23.1423925 12.1221763,23.1452606 12.1156365,23.1525954 L12.1099173,23.1665331 L12.0757714,23.7811639 C12.0751323,23.7926639 12.0828099,23.8018602 12.0926481,23.8045676 L12.108256,23.8032389 L12.3092106,23.7104931 L12.3186497,23.7024347 L12.3186497,23.7024347 L12.3225043,23.6906389 L12.340401,23.2611114 L12.337245,23.2485176 L12.337245,23.2485176 L12.3277531,23.2396597 L12.1430473,23.1473072 Z" id="MingCute" fill-rule="nonzero">
+
+                                  </path>
+                                  <path d="M12,2 L12,8.5 C12,9.27969882 12.5949121,9.920449 13.3555442,9.99313345 L13.5,10 L20,10 L20,20 C20,21.0543909 19.18415,21.9181678 18.1492661,21.9945144 L18,22 L6,22 C4.94563773,22 4.08183483,21.18415 4.00548573,20.1492661 L4,20 L4,4 C4,2.94563773 4.81587733,2.08183483 5.85073759,2.00548573 L6,2 L12,2 Z M11.2929,11.1729 L9.17157,13.2942 C8.78105,13.6847 8.78105,14.3179 9.17157,14.7084 C9.5621,15.099 10.1953,15.099 10.5858,14.7084 L11,14.2942 L11,17 C11,17.5523 11.4477,18 12,18 C12.5523,18 13,17.5523 13,17 L13,14.2942 L13.4142,14.7084 C13.8047,15.099 14.4379,15.099 14.8284,14.7084 C15.219,14.3179 15.219,13.6847 14.8284,13.2942 L12.7071,11.1729 C12.3166,10.7824 11.6834,10.7824 11.2929,11.1729 Z M14,2.04336 C14.3222,2.11158 14.624049,2.25868408 14.8774606,2.47305359 L15,2.58579 L19.4142,7 C19.6506857,7.23646857 19.8218571,7.52605551 19.9160012,7.8407123 L19.9566,8 L14,8 L14,2.04336 Z" id="形状" fill="#09244B">
+
+                                  </path>
+                                </g>
+                              </g>
+                            </g>
+                          </svg>
+
+                          <p className="text-white font-semibold text-lg">
+                            Click to Upload Video for {content?.content_type || createdContent.content_type}
+                          </p>
+                          <p className="text-xs text-gray-300 mt-1">
+                            MP4, MOV, MKV, MP3 · Large files supported
+                          </p>
+                        </div>
+                      )}
+
+                      {/* Invisible Input */}
+                      <input
+                        type="file"
+                        accept="video/*,audio/*"
+                        onChange={(e) => setUploadFile(e.target.files?.[0] || null)}
+                        disabled={uploading || content?.ingest_status === 'processing'}
+                        className="absolute inset-0 opacity-0 cursor-pointer"
+                      />
+                    </div>
+
+                    {/* Large File Warning */}
+                    {uploadFile && uploadFile.size >= 1024 * 1024 * 1024 && (
+                      <p className="text-xs text-amber-500">
+                        Large file detected. Upload may take time — keep this tab open.
+                      </p>
+                    )}
+
+                    {/* Actions */}
+                    
+                  </>
+                )}
+           </div>   
+           <div className="flex justify-between mt-6">
+                      <button
+                        onClick={prevStep}
+                        className="px-4 py-2 bg-gray-600 text-white rounded-lg"
+                      >
+                        Back
+                      </button>
+
+                      <button
+                        onClick={handleFileUpload}
+                        disabled={!uploadFile || uploading || content?.ingest_status === 'processing'}
+                        className="px-6 py-2 bg-orange-600 text-white rounded-lg flex items-center gap-2 disabled:opacity-50"
+                      >
+                        {uploading || content?.ingest_status === 'processing' ? (
+                          <>
+                            <RoundLoader />
+                            <span>
+                              {content?.ingest_status === 'processing'
+                                ? 'Initializing Content'
+                                : 'Uploading'}
+                            </span>
+                          </>
+                        ) : (
+                          'Initialize Content'
+                        )}
+                      </button>
+                    </div>
+           </div>
+                 
+                 }  </> 
+             }
+ {step === 4 && createdContent   && contentType !== 'trailer' && contentType !== 'season' && (
           <>  
             <div className="flex flex-col w-full">
               <div className="space-y-2  w-full space-y-6 overflow-y-auto minimal-scrollbar max-h-[55vh] md:max-h-[60] min-h-[40vh]"> 

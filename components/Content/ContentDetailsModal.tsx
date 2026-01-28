@@ -1,5 +1,5 @@
 'use client';
-import React from 'react';
+import React, { useEffect } from 'react';
 import { toast } from 'sonner';
 import RoundLoader from '../Loader/RoundLoader';
 import { Content } from '@/lib/types/content';
@@ -23,14 +23,10 @@ interface ContentDetailsModalProps {
 
   videoUrl?: string | null;
   videoUrlLoading?: boolean;
-
-  renditions: Rendition[];
-  loadingRenditions: boolean;
+ 
 
   publishContent: (id: string,status?:string) => Promise<{ status: string }>;
-
-  getQualityBadgeColor: (label: string) => string;
-  formatBitrate: (bitrate: number) => string;
+ 
 }
 
 const ContentDetailsModal: React.FC<ContentDetailsModalProps> = ({
@@ -38,18 +34,23 @@ const ContentDetailsModal: React.FC<ContentDetailsModalProps> = ({
   detailContent,
   onClose,
   videoUrl,
-  videoUrlLoading,
-  renditions,
-  loadingRenditions,
-  publishContent,
-  getQualityBadgeColor,
-  formatBitrate,
+  videoUrlLoading, 
+  publishContent, 
 }) => {
   if (!open || !detailContent) return null;
+ useEffect(() => {
+    // Disable background scroll when modal opens
+    document.body.style.overflow = "hidden";
 
+    return () => {
+      // Restore scroll when modal closes
+      document.body.style.overflow = "auto";
+    };
+  }, []);
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4 overflow-y-auto">
-      <div className="bg-neutral-800 rounded-lg max-w-6xl w-full my-8">
+   <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 ">
+
+      <div className="bg-neutral-800 rounded-lg   w-full my-8">
  
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-gray-700">
@@ -63,7 +64,7 @@ const ContentDetailsModal: React.FC<ContentDetailsModalProps> = ({
         </div>
 
         {/* Body */}
-        <div className="p-6 max-h-[calc(100vh-200px)] overflow-y-auto space-y-6">
+        <div className=" p-6 max-h-[calc(100vh-100px)] overflow-y-auto space-y-6">
 
           {/* Basic Info */}
           <div>
@@ -145,15 +146,15 @@ const ContentDetailsModal: React.FC<ContentDetailsModalProps> = ({
                   className="rounded-lg col-span-2 w-auto h-[70vh] object-cover"
                 />
               ):
-              <div className='h-full col-span-5 w-full flex flex-col items-center justify-center'>No Poster Uploaded Yet</div>
+              <div className='h-full col-span-2 w-full flex flex-col items-center justify-center bg-neutral-950 rounded-lg '>No Poster Uploaded Yet</div>
               }
               {detailContent.banner_url ? (
                 <img
                   src={detailContent.banner_url}
                   alt="Banner"
-                  className="rounded-lg col-span-5 w-auto h-[70vh] object-cover"
+                  className="rounded-lg col-span-5 w-full h-[70vh] object-cover "
                 />):
-                            <div className='h-full col-span-5 w-full flex flex-col items-center justify-center'>No Banner Uploaded Yet</div>
+                            <div className='h-full col-span-5 w-full flex flex-col items-center justify-center bg-neutral-950 rounded-lg'>No Banner Uploaded Yet</div>
 
 
               }
@@ -164,7 +165,9 @@ const ContentDetailsModal: React.FC<ContentDetailsModalProps> = ({
           {videoUrlLoading && <RoundLoader />}
         
           {videoUrl && (
-            <video src={videoUrl} controls className=" w-full rounded-lg" />
+            <div className='w-full flex flex-col items-center'>
+              <video src={videoUrl} controls className="w-full md:w-7/12  rounded-lg" />
+            </div>
           )}
 {!videoUrl && (
             <div className='  w-full p-8 flex flex-col items-center justify-center bg-neutral-700'> No VIdeo to show</div>         )}

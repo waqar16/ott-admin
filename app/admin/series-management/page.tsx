@@ -641,7 +641,11 @@ let pathname = usePathname()
            <ContentEditor
            setContent={setSeriesList}
              content={selectedContent} 
-             onClose={()=>setShowAddSeries(false)}
+             onClose={()=>{
+              
+              setShowAddSeries(false)
+            fetchSeries()
+            }}
              onSuccess={()=>setShowAddSeries(false)}
              contentType={'series'}
            />

@@ -16,16 +16,20 @@ import {
   uploadImageForEpisode,
   getRenditions,
   deleteContent,
+  getContent,
+  getStreamingUrl,
 } from '@/lib/contentApi';
 import { uploadWithCallback, validateFile, formatFileSize } from '@/lib/uploadHelper';
 import CE from "./admin/content/ContentEditor.client";
 import { CONTENT_TYPES, ContentEditorProps, MEDIA_TYPES } from "./admin/content/ContentEditor.client";
 import { formatBitrate, getQualityBadgeColor } from "@/lib/utils";
 import HlsVideoPlayer from "@/players/HLSPlayer";
-import { BiCheck, BiPencil } from "react-icons/bi";
+import { BiCheck, BiInfoCircle, BiPencil } from "react-icons/bi";
 import { FiMoreVertical } from "react-icons/fi";
 import { BsTrash2 } from "react-icons/bs";
 import { toast } from "sonner";
+import ContentDetailsModal from "./Content/ContentDetailsModal";
+import { ApiError } from "@/lib/authApi";
 export interface Episode {
   id: number;
   episode_number: number;
@@ -79,9 +83,7 @@ export default function SeriesTree({
   );
 }
 
-/* -----------------------------------------------------
-   SERIES ITEM
------------------------------------------------------ */
+ 
 export function SeriesItem({ series, refresh, setSeriesList, editSeriesHandler, setSelectedContent }: SeriesItemProps) {
   const [open, setOpen] = useState(false);
   const [selectedSeasonContent, setSelectedSeasonContent] = useState<Content | null>(null);
@@ -91,7 +93,30 @@ export function SeriesItem({ series, refresh, setSeriesList, editSeriesHandler, 
     const [seriesToDelete, setSeriesToDelete] = useState<Content | null>(null);
   const [editSeries, setEditSeries] = useState<Content | null>(null); 
   const [openSeriesMenuId, setOpenSeriesMenuId] = useState<string | null>(null);
-
+  const [showSeriesDetails, setShowSeriesDetails] = useState(false);
+  const [trailerUrlLoading, setTrailerUrlLoading] = useState(false);
+  const [trailerUrl, setTrailerUrl] = useState(null);
+  const [error,setError] = useState<string | null>(null);
+  async function handleViewDetails(item: Content) {
+    try {
+      setTrailerUrlLoading(true);   
+      setShowSeriesDetails(true);  
+      try {
+        const urlPayload = await getStreamingUrl(item.trailer_id || "");
+        setTrailerUrlLoading(false);
+        console.log("urlPayload.dash_url",urlPayload.hls_url)
+        setTrailerUrl(urlPayload.hls_url);
+      } catch (rendErr) {
+        console.error('Error fetching renditions:', rendErr);
+        // Don't fail the whole operation if renditions fail
+      }
+      setTrailerUrlLoading(false)
+    } catch (err) {
+      const apiError = err as ApiError;
+      setError(apiError.message || 'Failed to load content details');
+    } finally { 
+    }
+  }
   return (
     <div className="bg-neutral-800 rounded-lg p-4">
       {/* Series Header */}
@@ -131,6 +156,17 @@ export function SeriesItem({ series, refresh, setSeriesList, editSeriesHandler, 
                     >
                       <BiPencil className="w-4 h-4" />
                       Edit
+                    </button>
+ <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setOpenSeriesMenuId(null);
+                       handleViewDetails(series);
+                      }}
+                      className="flex items-center gap-2 w-full px-3 py-2 text-sm hover:bg-gray-800"
+                    >
+                      <BiInfoCircle className="w-4 h-4" />
+                      Details
                     </button>
 
                     <button
@@ -228,7 +264,18 @@ export function SeriesItem({ series, refresh, setSeriesList, editSeriesHandler, 
           </div>
         </div>
       )}
-
+{showSeriesDetails  && (
+        <ContentDetailsModal
+          open={showSeriesDetails}
+          detailContent={series}
+          onClose={() => {
+            refresh();
+          }}
+          videoUrl={trailerUrl}
+          videoUrlLoading={trailerUrlLoading} 
+          publishContent={publishContent}  
+        />
+      )}
     </div>
   );
 }
