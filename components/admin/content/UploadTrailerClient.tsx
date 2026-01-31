@@ -259,8 +259,8 @@ onClick={()=>setOpen(false)}
         <div className='w-full flex flex-col max-h-[70vh] '>
   {isTrailerContentData ? (
             <div className="flex flex-col items-start w-full rounded-lg w-fit overflow-y-auto minimal-scrollbar">
-              {/* Trailer Upload Mode - Uncomment if needed */}
-              {/*
+            
+              
               <label className="block text-sm font-medium text-neutral-300 mb-2">
                 Trailer Upload Mode
               </label>
@@ -286,7 +286,7 @@ onClick={()=>setOpen(false)}
                   Use Trailer URL
                 </button>
               </div>
-              */}
+             
             </div>
           ) :  
             <div className=" flex flex-col items-start w-full rounded-lg w-fit overflow-y-auto minimal-scrollbar">
@@ -333,7 +333,7 @@ onClick={()=>setOpen(false)}
           }
 
           {!isTrailerContentData && (
-            <div className="flex justify-end mt-6">
+            <div className="flex justify-end mt-6 mb-3">
          
               <div className='flex flex-row items-center justify-end'>
                 <button
@@ -501,7 +501,7 @@ onClick={()=>setOpen(false)}
         </div>
 
         {isTrailerContentData && (
-          <div className="flex justify-between mt-6">
+          <div className="flex justify-between mt-6 mb-3">
             <button
               onClick={() => { setIsTrailerContentData(null) }}
               className="px-4 py-2 bg-neutral-600 text-white rounded-lg"
