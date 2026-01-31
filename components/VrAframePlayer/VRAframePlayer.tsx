@@ -114,7 +114,7 @@ const VRAframePlayer: React.FC<VRAframePlayerProps> = ({
       hls.loadSource(src);
       hls.attachMedia(video);
 
-      hls.on(Hls.Events.MANIFEST_PARSED, () => {
+      hls.on(Hls.Events.MANIFEST_PARSED, async() => {
         setIsLoaded(true);
         
         // Get quality levels
@@ -128,6 +128,14 @@ const VRAframePlayer: React.FC<VRAframePlayerProps> = ({
         if (resumeTime > 0) {
           video.currentTime = resumeTime;
         }
+         if (autoplay) {
+    video.muted = true; // must be muted
+    try {
+      await video.play();
+    } catch (e) {
+      console.warn('Autoplay blocked, waiting for user gesture');
+    }
+  }
       });
 
       hls.on(Hls.Events.LEVEL_SWITCHED, (_, data) => {
@@ -443,15 +451,16 @@ const VRAframePlayer: React.FC<VRAframePlayerProps> = ({
         </div>
       )}
 
-      <video
-        ref={videoRef}
-        id="vr-video"
-        className="vr-video-hidden"
-        crossOrigin="anonymous"
-        playsInline
-        loop
-        muted
-      />
+    <video
+  ref={videoRef}
+  id="vr-video"
+  crossOrigin="anonymous"
+  playsInline
+  webkit-playsinline="true"
+  muted
+  loop
+/>
+
 
       <a-scene embedded vr-mode-ui="enabled: false" className="vr-scene">
         <a-assets />

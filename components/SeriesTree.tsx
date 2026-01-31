@@ -334,7 +334,7 @@ export function SeasonItem({ season, refresh, series, setSeriesList }) {
   const [editEpisode, setEditEpisode] = useState<Content | null>(null);
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
   const [openSeasonMenuId, setOpenSeasonMenuId] = useState<string | null>(null);
-
+  const [deleting,setDeleting] = useState(false);
   return (
     <div className="border-l border-gray-700 pl-4 ">
       {/* Season Header */}
@@ -581,7 +581,7 @@ export function SeasonItem({ season, refresh, series, setSeriesList }) {
       />}
       {episodeToDelete && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70">
-          <div className="bg-gray-900 rounded-xl p-6 w-full max-w-sm">
+          <div className="bg-neutral-900 rounded-xl p-6 w-full max-w-sm">
             <h3 className="text-lg font-semibold mb-2">
               Delete Episode?
             </h3>
@@ -601,8 +601,12 @@ export function SeasonItem({ season, refresh, series, setSeriesList }) {
                 Cancel
               </button>
               <button
+              disabled={deleting}
                 onClick={async () => {
+                  setDeleting(true)
                   let contentDeletion = await deleteContent(episodeToDelete.id)
+                  setDeleting(false)
+                  
                   if (contentDeletion == 204) {
                     setSeriesList((prev: Content[]) =>
                       prev.map((series: Content) => ({
@@ -630,7 +634,7 @@ export function SeasonItem({ season, refresh, series, setSeriesList }) {
                 }}
                 className="px-4 py-2 rounded bg-red-600 hover:bg-red-700"
               >
-                Delete
+                {deleting?'Deleting...':'Delete'}
               </button>
             </div>
           </div>

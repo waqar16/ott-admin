@@ -305,9 +305,10 @@ onClick={()=>setOpen(false)}
                         {playbackUrl && !videoUrlLoading &&  <div className='flex flex-col items-start w-full'>
 
                         <h2 className='mt-2 mb-1 text-sm text-neutral-300'>Trailer Preview</h2>
-
+ 
              <div className=" w-full h-auto  ">
-                         <> {trailerMediaType.startsWith('vr_') ? 
+              
+                         <> {trailerData?.media_type.startsWith('vr_') ? 
           <VRAframePlayer src={playbackUrl} token={drmToken} autoplay={true} />
           : 
          <>  
