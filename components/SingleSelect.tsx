@@ -1,6 +1,7 @@
 import { API_BASE } from "@/lib/config";
 import axios from "axios";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 
 type Option = {
   id: string;
@@ -34,15 +35,26 @@ export default function SingleSelect({
     }
     fetch()
   }, [])
+
+  const buttonRef = useRef<HTMLDivElement>(null);
+const [buttonRect, setButtonRect] = useState<DOMRect | null>(null);
+
+const toggle = () => {
+  if (buttonRef.current) {
+    setButtonRect(buttonRef.current.getBoundingClientRect());
+  }
+  setOpen((o) => !o);
+};
   return (
-    <div className="relative">
+    <div className="relative w-full">
       <label className="block text-sm font-medium text-gray-300 mb-2">
         {label}
       </label>
 
       {/* Dropdown Button */}
       <div
-        onClick={() => setOpen(!open)}
+      ref={buttonRef}
+        onClick={toggle}
         className="w-full px-4 py-2 bg-gray-700 text-white rounded-lg cursor-pointer border border-gray-600 flex justify-between items-center"
       >
         <span className={selected ? "" : "text-gray-400"}>
@@ -52,25 +64,30 @@ export default function SingleSelect({
       </div>
 
       {/* Dropdown Panel */}
-      {open && (
-        <div className="absolute z-20 w-full mt-2 bg-neutral-950 rounded-lg shadow-lg border border-gray-700 max-h-48 overflow-y-auto">
-          {options.map((opt) => {
-            const isSelected = opt.id === value;
-
-            return (
-              <div
-                key={opt.id}
-                onClick={() => selectOption(opt.id)}
-                className={`flex items-center px-4 py-2 cursor-pointer hover:bg-gray-700 ${isSelected ? "bg-gray-700" : ""
-                  }`}
-              >
-
-                {opt.name}
-              </div>
-            );
-          })}
+     {open &&
+  typeof window !== "undefined" &&
+  createPortal(
+    <div
+      className="bottom-0 fixed z-[9999] bg-neutral-950 rounded-lg shadow-lg border border-gray-700 max-h-48 overflow-y-auto minimal-scrollbar"
+      style={{
+        top: buttonRect?.bottom ,
+        left: buttonRect?.left,
+        width: buttonRect?.width,
+      }}
+    >
+      {options.map((opt) => (
+        <div
+          key={opt.id}
+          onClick={() => selectOption(opt.id)}
+          className="px-4 py-2 cursor-pointer hover:bg-gray-700 text-neutral-200"
+        >
+          {opt.name}
         </div>
-      )}
+      ))}
+    </div>,
+    document.body
+  )}
+
     </div>
   );
 }

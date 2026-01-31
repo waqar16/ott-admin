@@ -1,11 +1,12 @@
 
 import { deleteContent, retryTranscoding } from "@/lib/contentApi"
 import { Content, ContentStatus } from "@/lib/types/content"
-import { BiEdit, BiLoaderAlt, BiTrash } from "react-icons/bi"
+import { BiCheck, BiEdit, BiLink, BiLoaderAlt, BiTrash } from "react-icons/bi"
 import { FiChevronDown, FiInfo, FiLoader, FiRotateCw, FiTablet } from "react-icons/fi"
 import { toast } from "sonner"
 import { getStatusBadge } from "@/utils/statusBadge"
 import React from "react"
+import UploadTrailerClient from "../admin/content/UploadTrailerClient"
 interface ContentCardProps {
   item: Content
   handleViewDetails: (item: Content) => void
@@ -23,6 +24,8 @@ const ContentCard: React.FC<ContentCardProps> = ({
   const [confirmText, setConfirmText] = React.useState("");
   const [deleteOpen,setDeleteOpen] = React.useState(false)
   const [deleteLoading,setDeleteLoading] = React.useState(false)
+  const [trailerOpen,setTrailerOpen] = React.useState(false)
+  
   return (
 
     
@@ -31,7 +34,7 @@ const ContentCard: React.FC<ContentCardProps> = ({
       className="w-full bg-neutral-900 rounded-xs shadow-lg rounded-md flex flex-col  hover:shadow-2xl transition-all duration-300 border border-neutral-700"
     >
       {/* Left: Thumbnail / Type */}
-      <div className=" relative   z-0 w-full h-48 sm:h-32 md:h-36  rounded-t-md overflow-hidden shadow-xl bg-neutral-900  ">
+      <div className=" relative   z-0 w-full h-48 sm:h-32 md:h-36  rounded-t-md   shadow-xl bg-neutral-900  ">
 
         {/* ===== BACKGROUND IMAGE (FULL CARD) ===== */}
         {  item.banner_url ? (
@@ -58,37 +61,96 @@ const ContentCard: React.FC<ContentCardProps> = ({
        
           {/* Bottom Row — Buttons */}
           <div className="flex justify-between items-end">
-            <div className="flex gap-1">
-              <button
-                onClick={() => handleViewDetails(item)}
-                className="p-2 bg-black/70 backdrop-blur-sm text-white 
-            rounded-lg hover:bg-black transition"
-              >
-                <FiInfo size={18} />
-              </button>
+           <div className="flex gap-1">
+  {/* View Details */}
+  <div className="relative group">
+    <button
+      onClick={() => handleViewDetails(item)}
+      className="p-2 bg-black/70 backdrop-blur-sm text-white 
+      rounded-lg hover:bg-black transition"
+    >
+      <FiInfo size={18} />
+    </button>
 
-              {item.content_type!='trailer' && <button
-                onClick={() => handleEdit(item)}
-                className="p-2 bg-black/70 backdrop-blur-sm text-white 
-            rounded-lg hover:bg-black transition"
-              >
-                <BiEdit size={18} />
-              </button>}
-              <button
-                onClick={() => {setDeleteOpen(true)}}
-                className="p-2 bg-black/70 backdrop-blur-sm text-white 
-            rounded-lg hover:bg-black transition"
-              >
-                <BiTrash size={18} />
-              </button>
-            </div>
-            {/* Left side — Publish button */}
-            <div>
-              {(item.ingest_status === 'ready' &&
+    <span
+      className="text-center w-[100px] pointer-events-none absolute  -top-9 left-1/2 -translate-x-1/2
+      rounded-md bg-neutral-600 px-2 py-1 text-xs text-white
+      opacity-0 scale-95 translate-y-1
+      transition-all duration-200 ease-out
+      group-hover:opacity-100 group-hover:scale-100 group-hover:translate-y-0"
+    >
+      View details
+    </span>
+  </div>
+
+  {/* Edit */}
+  {item.content_type !== 'trailer' && (
+    <div className="relative group">
+      <button
+        onClick={() => handleEdit(item)}
+        className="p-2 bg-black/70 backdrop-blur-sm text-white 
+        rounded-lg hover:bg-black transition"
+      >
+        <BiEdit size={18} />
+      </button>
+
+      <span
+        className="text-center w-[100px] pointer-events-none absolute -top-9 left-1/2 -translate-x-1/2
+        rounded-md bg-neutral-600 px-2 py-1 text-xs text-white
+        opacity-0 scale-95 translate-y-1
+        transition-all duration-200 ease-out
+        group-hover:opacity-100 group-hover:scale-100 group-hover:translate-y-0"
+      >
+        Edit
+      </span>
+    </div>
+  )}
+
+  {/* Delete */}
+  <div className="relative group">
+    <button
+      onClick={() => setDeleteOpen(true)}
+      className="p-2 bg-black/70 backdrop-blur-sm text-white 
+      rounded-lg hover:bg-black transition"
+    >
+      <BiTrash size={18} />
+    </button>
+
+    <span
+      className="text-center w-[100px] pointer-events-none absolute -top-9 left-1/2 -translate-x-1/2
+      rounded-md bg-red-600 px-2 py-1 text-xs text-white
+      opacity-0 scale-95 translate-y-1
+      transition-all duration-200 ease-out
+      group-hover:opacity-100 group-hover:scale-100 group-hover:translate-y-0"
+    >
+      Delete
+    </span>
+  </div>
+  <div className="relative group">
+    <button
+      onClick={() => setTrailerOpen(true)}
+      className="p-2 bg-black/70 backdrop-blur-sm text-white 
+      rounded-lg hover:bg-black transition"
+    >
+      <BiLink size={18} />
+    </button>
+
+    <span
+      className=" text-center w-[100px] pointer-events-none absolute -top-9 left-1/2 -translate-x-1/2
+      rounded-md bg-neutral-600 px-2 py-1 text-xs text-white
+      opacity-0 scale-95 translate-y-1
+      transition-all duration-200 ease-out
+      group-hover:opacity-100 group-hover:scale-100 group-hover:translate-y-0"
+    >
+      Attach Trailer
+    </span>
+  </div>
+  {(item.ingest_status === 'ready' &&
                 item.status !== 'published' &&
-                item.status !== 'inactive') && (
-                  <button
-                    onClick={async () => {
+                item.status !== 'inactive') &&
+   <div className="relative group">
+    <button
+          onClick={async () => {
                       const res = await publishContent(item.id);
                       if (res.status === 'published') {
                         toast.success(`Published ${item.title}`);
@@ -97,13 +159,26 @@ const ContentCard: React.FC<ContentCardProps> = ({
                         toast.error('Publishing failed');
                       }
                     }}
-                    className="text-sm px-3 py-2 bg-yellow-700 text-white rounded-lg 
-              hover:bg-black hover:text-yellow-500 transition-colors"
-                  >
-                    Publish
-                  </button>
-                )}
-            </div>
+      className="p-2 bg-black/70 backdrop-blur-sm text-white 
+      rounded-lg hover:bg-black transition"
+    >
+      <BiCheck size={18} />
+    </button>
+
+    <span
+      className=" text-center w-[100px] pointer-events-none absolute -top-9 left-1/2 -translate-x-1/2
+      rounded-md bg-neutral-600 px-2 py-1 text-xs text-white
+      opacity-0 scale-95 translate-y-1
+      transition-all duration-200 ease-out
+      group-hover:opacity-100 group-hover:scale-100 group-hover:translate-y-0"
+    >
+      Publish Content
+    </span>
+  </div>
+  }
+</div>
+
+           
 
             {/* Right side — Icon buttons */}
 
@@ -256,7 +331,14 @@ setDeleteOpen(false);
     </div>
   </div>
 )}
+{trailerOpen && 
+<UploadTrailerClient trailer_id={item.trailer_id}
+content={item}
+trailer_url={item.trailer_url || ""}
+setOpen={setTrailerOpen}
 
+
+/>}
 
     </div>
   )

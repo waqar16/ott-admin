@@ -25,13 +25,14 @@ import CE from "./admin/content/ContentEditor.client";
 import { CONTENT_TYPES, ContentEditorProps, MEDIA_TYPES } from "./admin/content/ContentEditor.client";
 import { formatBitrate, getQualityBadgeColor } from "@/lib/utils";
 import HlsVideoPlayer from "@/players/HLSPlayer";
-import { BiCheck, BiInfoCircle, BiPencil } from "react-icons/bi";
+import { BiCheck, BiInfoCircle, BiLink, BiPencil } from "react-icons/bi";
 import { FiMoreVertical } from "react-icons/fi";
 import { BsTrash2 } from "react-icons/bs";
 import { toast } from "sonner";
 import ContentDetailsModal from "./Content/ContentDetailsModal";
 import { ApiError } from "@/lib/authApi";
 import EpisodePlayerModal from "./EpisodePlayerModal";
+import UploadTrailerClient from "./admin/content/UploadTrailerClient";
 export interface Episode {
   id: number;
   episode_number: number;
@@ -86,7 +87,7 @@ export default function SeriesTree({
 export function SeriesItem({ series, refresh, setSeriesList, editSeriesHandler, setSelectedContent }: SeriesItemProps) {
   const [open, setOpen] = useState(false);
   const [selectedSeasonContent, setSelectedSeasonContent] = useState<Content | null>(null);
-
+  const [trailerOpen,setTrailerOpen] = useState(false);
   const [showAddSeason, setShowAddSeason] = useState(false);
   const [seasonNumber, setSeasonNumber] = useState("");
     const [seriesToDelete, setSeriesToDelete] = useState<Content | null>(null);
@@ -187,7 +188,17 @@ else{
                       <BiInfoCircle className="w-4 h-4" />
                       Details
                     </button>
-
+ <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setOpenSeriesMenuId(null);
+                       setTrailerOpen(true);
+                      }}
+                      className="flex items-center gap-2 w-full px-3 py-2 text-sm hover:bg-gray-800"
+                    >
+                      <BiLink className="w-4 h-4" />
+                      Trailer
+                    </button>
                     <button
                       onClick={(e) => {
                         e.stopPropagation(); 
@@ -295,6 +306,15 @@ else{
           publishContent={publishContent}  
         />
       )}
+
+      {trailerOpen && 
+      <UploadTrailerClient trailer_id={series.trailer_id}
+      content={series}
+      trailer_url={series.trailer_url || ""}
+      setOpen={setTrailerOpen}
+      
+      
+      />}
     </div>
   );
 }

@@ -43,6 +43,7 @@ export type ContentMetadataPayload = {
 export interface Content {
   id: string;
   trailer_id?:string;
+  trailer_youtube_url?:string;
   transcoding_progress?: number;
   ingest_status?: IngestStatus;
   is_demo_content?:boolean;
@@ -88,6 +89,8 @@ export interface CreateContentPayload {
   price_cents?: number;
   genres?: string[];
   duration_seconds?: number;
+  trailer_youtube_url?: string;
+
   release_date?: string;
   rating?: string;
   director?: string;
@@ -101,6 +104,7 @@ export interface UpdateContentPayload {
   description?: string;
   content_type?: ContentType;
   media_type?: MediaType;
+  trailer_youtube_url?: string;
   status?: ContentStatus;
   is_kid_safe?: boolean;
   is_ppv?: boolean;

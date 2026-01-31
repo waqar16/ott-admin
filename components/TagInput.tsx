@@ -29,9 +29,9 @@ export default function TagInput({
 
   return (
     <div>
-      <label className="block text-sm text-gray-300 mb-2">{label}</label>
+      <label className="block text-sm text-gray-300 ">{label}</label>
 
-      <div className="flex flex-wrap gap-2 mb-2">
+      <div className="flex flex-wrap gap-2 mb-3">
         {values.map((tag) => (
           <span
             key={tag}

@@ -214,7 +214,7 @@ const ShakaPlayer = ({
         <div className="shaka-watermark">{watermarkText}</div>
       ) : null}
 
-      <video ref={videoRef} className="shaka-video" controls={false} playsInline />
+      <video ref={videoRef} autoPlay={true} className="shaka-video" controls={false} playsInline />
     </div>
   );
 };

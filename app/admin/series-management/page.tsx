@@ -20,7 +20,7 @@ const [creatingSeries, setCreatingSeries] = useState(false);
 const [seriesTitle, setSeriesTitle] = useState("");
 const [seriesDescription, setSeriesDescription] = useState("");
    const [selectedContent, setSelectedContent] = useState<Content | null>(null);
- 
+  const [open,setOpen] = useState(false);
 function openAddSeriesModal() {
   setShowAddSeries(true);
 }

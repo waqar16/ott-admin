@@ -323,8 +323,7 @@ export async function updateContent(
     
     if (!response.ok) {
       throw await handleApiError(response);
-    }
-    
+    } 
     return await response.json();
   } catch (error) {
     if ((error as ApiError).status) {
