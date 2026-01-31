@@ -258,7 +258,7 @@ onClick={()=>setOpen(false)}
        
         <div className='w-full flex flex-col max-h-[70vh] '>
   {isTrailerContentData ? (
-            <div className="flex flex-col items-start w-full rounded-lg w-fit overflow-y-auto minimal-scrollbar">
+            <div className="flex flex-col items-start w-full rounded-lg w-fit  mb-4">
             
               
               <label className="block text-sm font-medium text-neutral-300 mb-2">
@@ -404,7 +404,11 @@ onClick={()=>setOpen(false)}
                     placeholder="https://example.com/trailer.mp4"
                     value={videoUrlInput}
                     onChange={(e) => setVideoUrlInput(e.target.value)}
-                    className="w-full p-3 rounded-lg bg-neutral-900 text-white border border-neutral-700"
+                    className="w-full p-3 rounded-lg bg-neutral-900 text-white border border-neutral-700
+                     outline-none ring-0 
+           focus:outline-none focus:ring-0 
+           focus-visible:outline-none focus-visible:ring-0
+                    "
                   />
                 </div>
               ) : (
@@ -414,20 +418,13 @@ onClick={()=>setOpen(false)}
                   ) : (
                     <>
                     
-                      <h3 className="text-xl text-white font-semibold">
-                        {isTrailerContentData?.ingest_status === 'processing'
-                          ? 'Trailer is uploading to cloud (this may take a while)'
-                          : 'Upload Trailer File'}
-                      </h3>
-                      <p className="text-sm text-neutral-300 mt-1">
-                        Upload a promotional trailer video for your content
-                      </p>
+                     
 
                       {/* Media Upload Area */}
                     <div className="w-full space-y-4 ">
 
   {/* PREVIEW AREA */}
-  <div className="max-h-[40vh] relative w-full aspect-video rounded-xl bg-black overflow-hidden border border-neutral-700">
+  <div className="max-h-[30vh] relative w-full aspect-video rounded-xl bg-black overflow-hidden border border-neutral-700">
 
     {!trailerFetchLoading && trailerUrl ? (
       trailerMediaType.startsWith("vr_") ? (

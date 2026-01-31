@@ -1065,7 +1065,9 @@ console.log(file,"file")
                       type="text"
                       value={formData.title}
                       onChange={(e) => handleChange('title', e.target.value)}
-                      className="w-full px-4 py-2 bg-gray-700 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-4 py-2 bg-gray-700 text-white rounded-lg  outline-none ring-0 
+           focus:outline-none focus:ring-0 
+           focus-visible:outline-none focus-visible:ring-0"
                       placeholder="Enter content title"
                       required
                     />
@@ -1079,7 +1081,9 @@ console.log(file,"file")
                       value={formData.description}
                       onChange={(e) => handleChange('description', e.target.value)}
                       rows={3}
-                      className="w-full px-4 py-2 bg-gray-700 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-4 py-2 bg-gray-700 text-white rounded-lg  outline-none ring-0 
+           focus:outline-none focus:ring-0 
+           focus-visible:outline-none focus-visible:ring-0"
                       placeholder="Enter content description"
                       required
                     />
@@ -1175,7 +1179,9 @@ console.log(file,"file")
                           onChange={(e) => handleChange('price_cents', parseInt(e.target.value) || 0)}
                           min="0"
                           step="1"
-                          className="w-full px-4 py-2 bg-gray-700 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          className="w-full px-4 py-2 bg-gray-700 text-white rounded-lg  outline-none ring-0 
+           focus:outline-none focus:ring-0 
+           focus-visible:outline-none focus-visible:ring-0"
                           placeholder="599 = $5.99"
                         />
                         <p className="text-xs text-gray-400 mt-1">

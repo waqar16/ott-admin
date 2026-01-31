@@ -11,6 +11,7 @@ import ContentEditor from "@/components/admin/content/ContentEditor.client";
 import { Content } from "@/lib/types/content";
 import { usePathname } from "next/navigation";
 import { BiRefresh } from "react-icons/bi";
+import UploadTrailerClient from "@/components/admin/content/UploadTrailerClient";
 export default function SeriesPage() {
   const [seriesList, setSeriesList] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);

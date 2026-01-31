@@ -55,7 +55,9 @@ export default function TagInput({
         onChange={(e) => setInput(e.target.value)}
         onKeyDown={(e) => e.key === "Enter" && addTag()}
         placeholder={placeholder}
-        className="w-full px-3 py-2 bg-gray-700 text-white rounded"
+        className="w-full px-3 py-2 bg-gray-700 text-white rounded  outline-none ring-0 
+           focus:outline-none focus:ring-0 
+           focus-visible:outline-none focus-visible:ring-0"
       />
     </div>
   );
