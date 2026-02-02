@@ -29,12 +29,7 @@ export default function SingleSelect({
     onChange(id);
     setOpen(false); // close after select
   };
-  useEffect(() => {
-    let fetch = async () => {
-      let fetchUnattachedTrailers = await axios.get(`${API_BASE}/api/v1/content/frontend/search?q=the`)
-    }
-    fetch()
-  }, [])
+  
 
   const buttonRef = useRef<HTMLDivElement>(null);
 const [buttonRect, setButtonRect] = useState<DOMRect | null>(null);

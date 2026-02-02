@@ -33,6 +33,7 @@ import ContentDetailsModal from "./Content/ContentDetailsModal";
 import { ApiError } from "@/lib/authApi";
 import EpisodePlayerModal from "./EpisodePlayerModal";
 import UploadTrailerClient from "./admin/content/UploadTrailerClient";
+import RoundLoader from "./Loader/RoundLoader";
 export interface Episode {
   id: number;
   episode_number: number;
@@ -422,9 +423,11 @@ export function SeasonItem({ season, refresh, series, setSeriesList }) {
                   return (
                     <div
                       key={ep.id}
-                      className="group cursor-pointer"
+                      className={`group ${ep.ingest_status == 'ready' ? 'cursor-pointer' : ''}  `}
                       onClick={() => {
-                        setPlayingEpisode(ep)
+                        if(ep.ingest_status == 'ready'){
+                          setPlayingEpisode(ep)
+                        }
                       }}
                     >
                       {/* Thumbnail */}
@@ -437,9 +440,13 @@ export function SeasonItem({ season, refresh, series, setSeriesList }) {
 
                         {/* Play Button */}
                         <div className="absolute inset-0 flex items-center justify-center bg-black/30 opacity-0 group-hover:opacity-100 transition">
+                          {ep.ingest_status == 'processing' ? <div className="text-xs flex flex-col items-center">
+<RoundLoader/>
+<span className="text-center">Processing</span>
+                          </div>:
                           <div className="w-14 h-14 rounded-full bg-black/70 flex items-center justify-center">
                             ▶
-                          </div>
+                          </div>}
                         </div>
 
                         {/* Episode Number */}
@@ -701,320 +708,6 @@ export function SeasonItem({ season, refresh, series, setSeriesList }) {
 
 
 
-function Modal({ children, title, onClose }) {
-  return (
-    <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 p-4">
-      <div className="bg-gray-800 rounded-lg w-full max-w-md p-6">
-        <div className="flex justify-between mb-4">
-          <h2 className="text-xl font-bold">{title}</h2>
-          <button className="text-gray-400 hover:text-white" onClick={onClose}>
-            ✕
-          </button>
-        </div>
-
-        {children}
-      </div>
-    </div>
-  );
-}
-function ContentEditor(props: any) {
-  const { content, onClose, onSuccess, setContent, series, setSeriesList, season } = props;
-
-  const isEditing = !!content;
-  const [step, setStep] = useState(1);
-
-  const nextStep = () => setStep((p) => p + 1);
-  const prevStep = () => setStep((p) => p - 1);
-
-  const [formData, setFormData] = useState<CreateContentPayload>({
-    title: content?.title || "",
-    description: content?.description || "",
-    content_type: "episode",
-    media_type: content?.media_type || "flat",
-    status: content?.status || "draft",
-    is_kid_safe: content?.is_kid_safe || false,
-    is_ppv: content?.is_ppv || false,
-    price_cents: content?.price_cents || 0,
-    genres: content?.genres || [],
-  });
-
-  const [loading, setLoading] = useState(false);
-  const [createdContent, setCreatedContent] = useState<Content | null>(content || null);
-
-  const [posterFile, setPosterFile] = useState<File | null>(null);
-  const [bannerFile, setBannerFile] = useState<File | null>(null);
-  const [imageUploading, setImageUploading] = useState<string | null>(null);
-  const [epNumber, setEpNumber] = useState("")
-  const [epTitle, setEpTitle] = useState("")
-  const [uploadFile, setUploadFile] = useState<File | null>(null);
-  const [uploadingMedia, setUploadingMedia] = useState(false);
-  const [uploadProgress, setUploadProgress] = useState(0);
-
-  function handleChange(field: keyof CreateContentPayload, value: any) {
-    setFormData((p) => ({ ...p, [field]: value }));
-  }
-
-  // ---------------- STEP 1 SUBMIT ----------------
-  async function handleSubmit() {
-    if (!formData.title.trim()) return alert("Title required");
-    if (!formData.description.trim()) return alert("Description required");
-
-    try {
-      setLoading(true);
-
-      if (isEditing && content) {
-        const updated = await updateContent(content.id, formData);
-        setCreatedContent(updated);
-        setContent((prev) =>
-          prev.map((c) => (c.id === content.id ? updated : c))
-        );
-      } else {
-        // console.log('object')
-        const created = await createContent(formData);
-        //   const res = await fetch(`${API_BASE}api/v1/content/episodes/`, {
-        //   method: "POST",
-        //   headers: {
-        //     "Content-Type": "application/json",
-        //     Authorization: `Bearer ${Cookies.get("access_token")}`,
-        //   },
-        //   body: JSON.stringify({
-        //     season: season.id,
-        //     content: created.id,
-        //     episode_number: Number(epNumber),
-        //     title: epTitle,
-        //   }),
-        // });
-
-        // if (!res.ok) throw new Error("Failed to create episode");
-        //  const newSeason = await res.json();
-        setCreatedContent(created);
-
-      }
-
-      nextStep();
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  // ---------------- STEP 2 IMAGE UPLOAD ----------------
-  async function uploadImageHandler(type: "poster" | "banner") {
-    const file = type === "poster" ? posterFile : bannerFile;
-    if (!file || !createdContent) return;
-
-    setImageUploading(type);
-
-    const res = await uploadImageForEpisode(createdContent.id, file, type);
-
-    setCreatedContent((prev) =>
-      prev ? { ...prev, [`${type}_url`]: res.thumbnail_url } : prev
-    );
-
-    setImageUploading(null);
-  }
-
-  // ---------------- STEP 3 MEDIA UPLOAD ----------------
-  async function uploadMediaHandler() {
-    if (!uploadFile || !createdContent) return;
-
-    setUploadingMedia(true);
-
-    const init = await initUpload(createdContent.id, uploadFile.name);
-
-    await uploadWithCallback(init, uploadFile, {
-      onProgress: (p) => setUploadProgress(p.percentage),
-    });
-
-    setUploadingMedia(false);
-  }
-
-  // ---------------- PUBLISH ----------------
-  async function handlePublish() {
-    if (!createdContent) return;
-
-    const pub = await publishContent(createdContent.id);
-    onSuccess(pub);
-  }
-
-  return (
-    <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-8">
-      <div className="bg-gray-800 rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto">
-
-        {/* HEADER */}
-        <div className="flex items-center justify-between p-6 border-b border-gray-700">
-          <h2 className="text-2xl font-bold text-white">
-            {isEditing ? "Edit Content" : "Create Content"}
-          </h2>
-          <button onClick={onClose} className="text-gray-300 hover:text-white">
-            ✕
-          </button>
-        </div>
-
-        {/* STEPPER */}
-        <div className="border-b border-gray-700 px-6 py-4">
-          <div className="flex gap-2">
-            {[1, 2, 3].map((s) => (
-              <div
-                key={s}
-                onClick={() => (createdContent || s === 1) && setStep(s)}
-                className={`flex-1 h-2 rounded-full cursor-pointer transition 
-                  ${step >= s ? "bg-blue-500" : "bg-gray-600"}
-                `}
-              />
-            ))}
-          </div>
-          <p className="text-center text-sm text-gray-400 mt-2">
-            {step === 1 && "Step 1: Content Details"}
-            {step === 2 && "Step 2: Upload Images"}
-            {step === 3 && "Step 3: Upload Media File"}
-          </p>
-        </div>
-
-        <div className="p-6">
-          {/* -------------------------------- STEP 1 -------------------------------- */}
-          {step === 1 && (
-            <>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <label className="block text-gray-300">Episode Number</label> <input type="number" value={epNumber} onChange={(e) => setEpNumber(e.target.value)} className="w-full bg-gray-700 border border-gray-600 rounded px-3 py-2" /> <label className="block text-gray-300">Episode Title</label> <input type="text" value={epTitle} onChange={(e) => setEpTitle(e.target.value)} className="w-full bg-gray-700 border border-gray-600 rounded px-3 py-2" />
-                <div className="md:col-span-2">
-                  <label className="block text-sm text-gray-300">Title *</label>
-                  <input
-                    className="w-full bg-gray-700 px-4 py-2 rounded"
-                    value={formData.title}
-                    onChange={(e) => handleChange("title", e.target.value)}
-                  />
-                </div>
-
-                <div className="md:col-span-2">
-                  <label className="block text-sm text-gray-300">Description *</label>
-                  <textarea
-                    rows={3}
-                    className="w-full bg-gray-700 px-4 py-2 rounded"
-                    value={formData.description}
-                    onChange={(e) => handleChange("description", e.target.value)}
-                  />
-                </div>
-
-
-
-
-
-                {formData.is_ppv && (
-                  <input
-                    type="number"
-                    className="bg-gray-700 px-4 py-2 rounded"
-                    value={formData.price_cents}
-                    onChange={(e) =>
-                      handleChange("price_cents", parseInt(e.target.value) || 0)
-                    }
-                  />
-                )}
-              </div>
-
-              <button
-                onClick={handleSubmit}
-                className="mt-6 w-full bg-blue-600 py-3 rounded text-white"
-              >
-                {loading ? "Saving..." : "Continue"}
-              </button>
-            </>
-          )}
-
-          {/* -------------------------------- STEP 2 -------------------------------- */}
-          {step === 2 && createdContent && (
-            <>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-
-                {/* Poster */}
-                <div>
-                  <label className="text-gray-300">Poster Image</label>
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={(e) => setPosterFile(e.target.files?.[0] || null)}
-                    className="w-full bg-gray-700 px-4 py-2 rounded"
-                  />
-                  <button
-                    className="w-full mt-2 bg-purple-600 py-2 rounded text-white"
-                    onClick={() => uploadImageHandler("poster")}
-                    disabled={!posterFile || imageUploading === "poster"}
-                  >
-                    {imageUploading === "poster" ? "Uploading..." : "Upload Poster"}
-                  </button>
-                </div>
-
-                {/* Banner */}
-                <div>
-                  <label className="text-gray-300">Banner Image</label>
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={(e) => setBannerFile(e.target.files?.[0] || null)}
-                    className="w-full bg-gray-700 px-4 py-2 rounded"
-                  />
-                  <button
-                    className="w-full mt-2 bg-purple-600 py-2 rounded text-white"
-                    onClick={() => uploadImageHandler("banner")}
-                    disabled={!bannerFile || imageUploading === "banner"}
-                  >
-                    {imageUploading === "banner" ? "Uploading..." : "Upload Banner"}
-                  </button>
-                </div>
-              </div>
-
-              <div className="flex gap-4 mt-6">
-                <button
-                  className="flex-1 py-3 bg-gray-600 rounded text-white"
-                  onClick={prevStep}
-                >
-                  Back
-                </button>
-                <button
-                  className="flex-1 py-3 bg-blue-600 rounded text-white"
-                  onClick={nextStep}
-                >
-                  Continue
-                </button>
-              </div>
-            </>
-          )}
-
-          {/* -------------------------------- STEP 3 -------------------------------- */}
-          {step === 3 && createdContent && (
-            <>
-              <label className="text-gray-300">Upload Media File</label>
-              <input
-                type="file"
-                accept="video/*,audio/*"
-                onChange={(e) => setUploadFile(e.target.files?.[0] || null)}
-                className="w-full bg-gray-700 px-4 py-2 rounded"
-              />
-
-              <button
-                onClick={uploadMediaHandler}
-                disabled={!uploadFile || uploadingMedia}
-                className="w-full mt-3 bg-green-600 py-3 rounded text-white"
-              >
-                {uploadingMedia ? "Uploading..." : "Upload Media"}
-              </button>
-
-              {uploadingMedia && (
-                <div className="text-center text-gray-300 mt-3">
-                  {uploadProgress}%
-                </div>
-              )}
-
-              <button
-                onClick={handlePublish}
-                className="mt-6 w-full bg-orange-600 py-3 rounded text-white"
-              >
-                Publish
-              </button>
-            </>
-          )}
-        </div>
-      </div>
-    </div>
-  );
-}
+ 
+ 
 
