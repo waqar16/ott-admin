@@ -32,6 +32,7 @@ import SkeletonLoader from '@/components/Loader/SkeletonLoader';
 import FullScreenLoader from '@/components/Loader/FullScreenLoader'; 
 import SingleSelect from '@/components/SingleSelect';
 import SearchableSingleSelect from '@/components/SearchableSingleSelect';
+import { UploadToastProgress } from './UploadToastProgress';
 
 
 export interface ContentEditorProps {
@@ -568,6 +569,17 @@ const [videoUrlInput, setVideoUrlInput] = useState("");
       return;
     }
 
+  const toastId = toast.custom(
+    () => (
+      <UploadToastProgress
+        progress={0}
+        status="Initializing upload…"
+      />
+    ),
+    {
+      duration: Infinity, // 🔑 stays until we dismiss/update
+    }
+  );
     const validation = validateFile(uploadFile, { 
       allowedTypes: ['video/*', 'audio/*'],
     });
@@ -583,11 +595,32 @@ const [videoUrlInput, setVideoUrlInput] = useState("");
       setUploadStatus('Initializing upload...');
 
       const uploadInit = await initUpload(createdContent.id, uploadFile.name);
+   
+    if(uploadInit.s3_key){
+        onClose()
 
+    }
       const result = await uploadWithCallback(uploadInit, uploadFile, {
         onProgress: (progress) => {
           setUploadProgress(progress.percentage);
           setUploadStatus(`Uploading: ${progress.percentage}% (${formatFileSize(progress.loaded)} / ${formatFileSize(progress.total)})`);
+          toast.custom(
+      () => (
+        <UploadToastProgress
+          progress={progress.percentage}
+          status={`Uploading ${progress.percentage}%`}
+        />
+      ),
+      {
+        id: toastId, // 🔑 update same toast
+      }
+    );
+if (progress.percentage >= 100) {
+      toast.dismiss(toastId); // hide the progress toast
+      toast.success(
+        "Upload completed. Please wait for processing before publishing."
+      );
+    }
         },
       });
 
@@ -595,8 +628,7 @@ const [videoUrlInput, setVideoUrlInput] = useState("");
       setContent(prevContents => {
         return prevContents.map(c => c.id === createdContent.id ? { ...c, status: 'processing', ingest_status: 'processing' } : c);
       });
-      onClose()
-      toast.info("Your Video Content upload wait for the processing to comlete then proceed to publish");
+      // toast.info("Your Video Content upload wait for the processing to comlete then proceed to publish");
 
       setSuccess('File uploaded successfully! Waiting for transcoding to start...');
       setUploadStatus('Upload complete - Asset created. Transcoding will begin shortly.');
@@ -889,14 +921,14 @@ console.log(file,"file")
           </div>
 
           {/* Upload progress & status for large files */}
-          {(uploading || uploadProgress > 0) && (
+          {/* {(uploading || uploadProgress > 0) && (
             <div className="px-6 mt-4">
               <UploadProgress
                 progress={uploadProgress}
                 status={uploadStatus || 'Preparing upload…'}
               />
             </div>
-          )}
+          )} */}
 
           {/* STEPPER */}
           {contentType!='season' &&

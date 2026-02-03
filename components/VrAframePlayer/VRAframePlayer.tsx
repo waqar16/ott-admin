@@ -31,6 +31,7 @@ const VRAframePlayer: React.FC<VRAframePlayerProps> = ({
   const router = useRouter();
   const videoRef = useRef<HTMLVideoElement>(null);
   const hlsRef = useRef<Hls | null>(null); 
+const seekBarRef = useRef<HTMLInputElement>(null);
 
   const [isLoaded, setIsLoaded] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -52,6 +53,8 @@ const VRAframePlayer: React.FC<VRAframePlayerProps> = ({
   const progressUpdateRef = useRef<NodeJS.Timeout | null>(null);
   const indicatorTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
+
+  
   // Extract contentId from src (prefer full UUID if present)
   let contentId: string | number | undefined = undefined;
   try {
@@ -442,6 +445,26 @@ const VRAframePlayer: React.FC<VRAframePlayerProps> = ({
       startControlsTimeout();
     }
   };
+useEffect(() => {
+  const resize = () => {
+    const scene = document.querySelector('a-scene') as any;
+    if (scene?.renderer) {
+      scene.renderer.setSize(window.innerWidth, window.innerHeight);
+    }
+  };
+
+  window.addEventListener('resize', resize);
+  resize();
+
+  return () => window.removeEventListener('resize', resize);
+}, []);
+useEffect(() => {
+  const seekBar = seekBarRef.current;
+  if (!seekBar || !duration) return;
+
+  const progress = (currentTime / duration) * 100;
+  seekBar.style.setProperty('--progress', `${progress}%`);
+}, [currentTime, duration]);
 
   return (
     <div className="vr-aframe-container" onClick={handleContainerClick}>
@@ -465,7 +488,13 @@ const VRAframePlayer: React.FC<VRAframePlayerProps> = ({
       <a-scene embedded vr-mode-ui="enabled: false" className="vr-scene">
         <a-assets />
 
-        <a-videosphere src="#vr-video" rotation="0 90 0" segments-width="64" segments-height="64" />
+        <a-videosphere
+  src="#vr-video"
+  rotation="0 -90 0"
+  segments-width="128"
+  segments-height="64"
+  radius="500"
+/>
 
         <a-camera>
         </a-camera>
@@ -516,15 +545,18 @@ const VRAframePlayer: React.FC<VRAframePlayerProps> = ({
         >
           {/* Seek bar */}
           <div className="vr-seek-bar-container" onClick={(e) => e.stopPropagation()}>
-            <input
-              type="range"
-              min="0"
-              max={duration || 0}
-              value={currentTime}
-              step="0.01"
-              className="vr-seek-bar"
-              onChange={handleSeek}
-            />
+         <input
+  ref={seekBarRef}
+  type="range"
+  min="0"
+  max={duration || 0}
+  value={currentTime}
+  step="0.01"
+  className="vr-seek-bar"
+  onChange={handleSeek}
+/>
+
+
             <div className="vr-time-display">
               <span>{formatTime(currentTime)}</span>
               <span>{formatTime(duration)}</span>

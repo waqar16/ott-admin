@@ -11,12 +11,14 @@ import { formatFileSize, uploadWithCallback, validateFile } from '@/lib/uploadHe
 import { MEDIA_TYPES } from './ContentEditor.client';
 import { updateContent,createContent, initUpload, getContent, getStreamingUrl } from '@/lib/contentApi';
 import { ApiError } from '@/lib/authApi';
-import { API_BASE } from '@/lib/config';
+import { API_BASE, FRONTEND_BASE } from '@/lib/config';
 import { GrClose } from 'react-icons/gr';
  import '@/components/ShakaPlayer/shaka.css'
 import dynamic from 'next/dynamic';
 import UploadProgress from './UploadProgress.client';
 import { BiLink } from 'react-icons/bi';
+import Link from 'next/link';
+import { FiExternalLink } from 'react-icons/fi';
 const ShakaPlayer = dynamic(
   () => import('@/components/ShakaPlayer/ShakaPlayer'),
   { ssr: false }
@@ -305,11 +307,21 @@ onClick={()=>setOpen(false)}
                         {playbackUrl && !videoUrlLoading &&  <div className='flex flex-col items-start w-full'>
 
                         <h2 className='mt-2 mb-1 text-sm text-neutral-300'>Trailer Preview</h2>
- 
-             <div className=" w-full h-auto  ">
+                          <Link
+                          href={`${FRONTEND_BASE}admin/watch/${trailer_id}?media_type=${trailerMediaType}`}
+                           target="_blank"
+                           className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-700 font-medium"
+
+                           >Watch Trailer
+                            <FiExternalLink size={16} className="opacity-80" />
+                           </Link>
+             {/* <div className=" w-full h-auto  ">
               
                          <> {trailerData?.media_type.startsWith('vr_') ? 
-          <VRAframePlayer src={playbackUrl} token={drmToken} autoplay={true} />
+          
+      
+          <VRAframePlayer src={playbackUrl} token={drmToken} autoplay={false} />
+       
           : 
          <>  
           <ShakaPlayer
@@ -323,7 +335,7 @@ onClick={()=>setOpen(false)}
 
                         
                           } </>
-                          </div>
+                          </div> */}
 
                         </div>
                         }
@@ -360,6 +372,7 @@ onClick={()=>setOpen(false)}
                     } else {
                       const created = await createContent({
                         ...formData,
+                        media_type: trailerMediaType,
                         parent: content.id ,
                         content_type: 'trailer'
                       });

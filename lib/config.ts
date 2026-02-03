@@ -6,6 +6,7 @@
  */
 // API Base URL for backend authentication and content APIs
 export const API_BASE = process.env.NEXT_PUBLIC_API_BASE ?? 'https://cmy7tz9t49.execute-api.us-east-1.amazonaws.com/';
+export const FRONTEND_BASE = process.env.NEXT_PUBLIC_FRONTEND_BASE ?? 'http://localhost:3000/';
 // export const API_BASE = process.env.NEXT_PUBLIC_API_BASE ?? 'http://localhost:8000/';
 
 // Mock mode flag - set to true to use dummy data instead of real APIs
