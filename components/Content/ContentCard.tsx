@@ -24,6 +24,8 @@ const ContentCard: React.FC<ContentCardProps> = ({
   const [confirmText, setConfirmText] = React.useState("");
   const [deleteOpen,setDeleteOpen] = React.useState(false)
   const [deleteLoading,setDeleteLoading] = React.useState(false)
+    const [publishOpen,setPublishOpen] = React.useState(false)
+  const [publishLoading,setPublishLoading] = React.useState(false)
   const [trailerOpen,setTrailerOpen] = React.useState(false)
   
   return (
@@ -150,15 +152,7 @@ const ContentCard: React.FC<ContentCardProps> = ({
                 item.status !== 'inactive') &&
    <div className="relative group">
     <button
-          onClick={async () => {
-                      const res = await publishContent(item.id);
-                      if (res.status === 'published') {
-                        toast.success(`Published ${item.title}`);
-                        fetchContent();
-                      } else {
-                        toast.error('Publishing failed');
-                      }
-                    }}
+          onClick={()=>setPublishOpen(true)}
       className="p-2 bg-black/70 backdrop-blur-sm text-white 
       rounded-lg hover:bg-black transition"
     >
@@ -271,6 +265,64 @@ const ContentCard: React.FC<ContentCardProps> = ({
         </details> */}
       </div>
 
+                     {publishOpen && (
+  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-md">
+    <div className="w-full max-w-md bg-neutral-900 border border-neutral-800 rounded-xl p-6 shadow-xl">
+      <h2 className="text-lg font-semibold text-white mb-2">
+        Confirm Publish Action 
+      </h2>
+
+      <p className="text-sm text-gray-400 mb-4">
+        Type <span className="text-white font-medium">"{item.title}"</span> to continue. 
+      </p>
+
+      <input
+        value={confirmText}
+        onChange={(e) => setConfirmText(e.target.value)}
+        placeholder="Type content name..."
+        className="w-full px-4 py-2 rounded-md bg-neutral-800 text-white border border-neutral-700 focus:outline-none focus:border-blue-500"
+      />
+
+      <div className="flex justify-end gap-3 mt-6">
+        <button
+          onClick={() => {
+            setPublishOpen(false);
+            setConfirmText("");
+          }}
+          className="px-4 py-2 rounded-md bg-neutral-700 text-white hover:bg-neutral-600"
+        >
+          Cancel
+        </button>
+
+        <button
+          disabled={confirmText !== item.title || publishLoading}
+          onClick={async () => {
+            setPublishLoading(true)
+                      const res = await publishContent(item.id);
+                      if (res.status === 'published') {
+                        toast.success(`Published ${item.title}`);
+                        setPublishOpen(false)
+                        fetchContent();
+                      } else {
+                        toast.error('Publishing failed');
+                      }
+                      setConfirmText("")
+            setPublishLoading(false)
+
+                    }}
+          className={`px-4 py-2 rounded-md font-semibold transition
+            ${
+              confirmText === item.title
+                ? "bg-yellow-600 hover:bg-yellow-700 text-white"
+                : "bg-neutral-700 text-gray-400 cursor-not-allowed"
+            }`}
+        >
+          {publishLoading ? "Publishing..." : "Publish"}
+        </button>
+      </div>
+    </div>
+  </div>
+)}
      {deleteOpen && (
   <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-md">
     <div className="w-full max-w-md bg-neutral-900 border border-neutral-800 rounded-xl p-6 shadow-xl">
