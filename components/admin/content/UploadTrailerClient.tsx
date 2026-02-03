@@ -19,6 +19,7 @@ import UploadProgress from './UploadProgress.client';
 import { BiLink } from 'react-icons/bi';
 import Link from 'next/link';
 import { FiExternalLink } from 'react-icons/fi';
+import { UploadToastProgress } from './UploadToastProgress';
 const ShakaPlayer = dynamic(
   () => import('@/components/ShakaPlayer/ShakaPlayer'),
   { ssr: false }
@@ -98,6 +99,17 @@ const [trailerContentDataFetching,setTrailerContentDataFetching] = React.useStat
              toast.error(validation.error || 'Invalid file');
             return;
           }
+            const toastId = toast.custom(
+              () => (
+                <UploadToastProgress
+                  progress={0}
+                  status="Initializing upload…"
+                />
+              ),
+              {
+                duration: Infinity, // 🔑 stays until we dismiss/update
+              }
+            );
           try {
             setLoading(true)
             setUploading(true);
@@ -105,11 +117,32 @@ const [trailerContentDataFetching,setTrailerContentDataFetching] = React.useStat
             setUploadStatus('Initializing upload...');
       
             const uploadInit = await initUpload(isTrailerContentData?.id || "", trailerUploadFile.name);
-      
+       
+    if(uploadInit.s3_key){
+        setOpen(false)
+
+    }
             const result = await uploadWithCallback(uploadInit, trailerUploadFile, {
-              onProgress: (progress) => {
-                setUploadProgress(progress.percentage);
-                setUploadStatus(`Uploading: ${progress.percentage}% (${formatFileSize(progress.loaded)} / ${formatFileSize(progress.total)})`);
+                   onProgress: (progress) => {
+                     setUploadProgress(progress.percentage);
+                     setUploadStatus(`Uploading: ${progress.percentage}% (${formatFileSize(progress.loaded)} / ${formatFileSize(progress.total)})`);
+                     toast.custom(
+                 () => (
+                   <UploadToastProgress
+                     progress={progress.percentage}
+                     status={`Uploading ${progress.percentage}%`}
+                   />
+                 ),
+                 {
+                   id: toastId, // 🔑 update same toast
+                 }
+               );
+           if (progress.percentage >= 100) {
+                 toast.dismiss(toastId); // hide the progress toast
+                 toast.success(
+                   "Upload completed. Please wait for processing before publishing."
+                 );
+               }
               },
             });
       
@@ -249,14 +282,7 @@ onClick={()=>setOpen(false)}
 >
     <GrClose/>
     </button></div>
-     {(uploading || uploadProgress > 0) && (
-                   <div className="px-6 mt-4 w-full">
-                     <UploadProgress
-                       progress={uploadProgress}
-                       status={uploadStatus || 'Preparing upload…'}
-                     />
-                   </div>
-                 )}
+ 
        
         <div className='w-full flex flex-col max-h-[70vh] '>
   {isTrailerContentData ? (
