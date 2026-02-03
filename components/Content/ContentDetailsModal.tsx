@@ -25,6 +25,7 @@ import "../ShakaPlayer/shaka.css"
 import Link from 'next/link';
 import { FRONTEND_BASE } from '@/lib/config';
 import { FiExternalLink } from 'react-icons/fi';
+import { toast } from 'sonner';
  
  
 
@@ -51,7 +52,9 @@ const ContentDetailsModal: React.FC<ContentDetailsModalProps> = ({
   
    
  
-
+const [confirmText, setConfirmText] = React.useState("");  
+    const [publishOpen,setPublishOpen] = React.useState(false)
+  const [publishLoading,setPublishLoading] = React.useState(false)
  
  
  useEffect(() => {
@@ -202,17 +205,7 @@ const ContentDetailsModal: React.FC<ContentDetailsModalProps> = ({
           {detailContent.ingest_status === 'ready' && detailContent.status != 'published' && (
             <button 
               className="bg-yellow-600 px-4 py-2 rounded-md text-black"
-              onClick={async () => {
-                const res = await publishContent(detailContent.id);
-                if (res.status === 'published') {
-                  toastPromise.then(toast => toast.success(`Published ${detailContent.title}`))
-
-                      onClose();
-                } else {
-                  toastPromise.then(toast => toast.error('Publishing failed'))
- 
-                }
-              }}
+              onClick={()=>setPublishOpen(true)}
             >
               {'Publish Content'}
             </button>
@@ -239,6 +232,64 @@ const ContentDetailsModal: React.FC<ContentDetailsModalProps> = ({
           )}
         </div>
       </div>
+        {publishOpen && (
+  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-md">
+    <div className="w-full max-w-md bg-neutral-900 border border-neutral-800 rounded-xl p-6 shadow-xl">
+      <h2 className="text-lg font-semibold text-white mb-2">
+        Confirm Publish Action 
+      </h2>
+
+      <p className="text-sm text-gray-400 mb-4">
+        Type <span className="text-white font-medium">"{detailContent.title}"</span> to continue. 
+      </p>
+
+      <input
+        value={confirmText}
+        onChange={(e) => setConfirmText(e.target.value)}
+        placeholder="Type content name..."
+        className="w-full px-4 py-2 rounded-md bg-neutral-800 text-white border border-neutral-700 focus:outline-none focus:border-blue-500"
+      />
+
+      <div className="flex justify-end gap-3 mt-6">
+        <button
+          onClick={() => {
+            setPublishOpen(false);
+            setConfirmText("");
+          }}
+          className="px-4 py-2 rounded-md bg-neutral-700 text-white hover:bg-neutral-600"
+        >
+          Cancel
+        </button>
+
+        <button
+          disabled={confirmText !== detailContent.title || publishLoading}
+          onClick={async () => {
+            setPublishLoading(true)
+                      const res = await publishContent(detailContent.id);
+                      if (res.status === 'published') {
+                        toast.success(`Published ${detailContent.title}`);
+                        setPublishOpen(false)
+                        onClose();
+                      } else {
+                        toast.error('Publishing failed');
+                      }
+                      setConfirmText("")
+            setPublishLoading(false)
+
+                    }}
+          className={`px-4 py-2 rounded-md font-semibold transition
+            ${
+              confirmText === detailContent.title
+                ? "bg-yellow-600 hover:bg-yellow-700 text-white"
+                : "bg-neutral-700 text-gray-400 cursor-not-allowed"
+            }`}
+        >
+          {publishLoading ? "Publishing..." : "Publish"}
+        </button>
+      </div>
+    </div>
+  </div>
+)}
     </div>
   );
 };
