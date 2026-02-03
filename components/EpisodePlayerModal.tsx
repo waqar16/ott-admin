@@ -19,8 +19,7 @@ const toastPromise = dynamic(
   () => import('sonner').then(m => m.toast),
   { ssr: false }
 );
-
-import "../components/ShakaPlayer/shaka.css"
+ 
 import RoundLoader from './Loader/RoundLoader';
 interface EpisodePlayerModalProps {
   episode: any;
@@ -88,61 +87,54 @@ useEffect(()=>{
  if (!mounted) return null;
  
   return (
-    <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center ">
-      <div className="bg-neutral-900   w-full   relative max-h-[calc(100vh)] overflow-y-auto minimal-scrollbar flex flex-col">
-
-        {/* Close */}
-        <button
-          onClick={onClose}
-          className="absolute top-3 right-3 text-white text-xl z-10"
-        >
-          ✕
-        </button>
-
-        {/* Header */}
-        <div className="p-4 border-b border-neutral-700 shrink-0">
-          <h2 className="text-xl font-semibold">{episode.title}</h2>
-          <p className="text-sm text-neutral-400">
-            Episode {episode.episode_number}
-          </p>
+    <div className="fixed inset-0 bg-black/90 z-50 flex justify-start items-center">
+      <div className="bg-neutral-900 w-full   h-full flex flex-col">
+        {/* Close Button */}
+        <div className="flex justify-end p-4">
+          <button
+            onClick={onClose}
+            className="text-white text-2xl hover:text-gray-300 transition-colors"
+          >
+            ✕
+          </button>
         </div>
 
-        {/* Scrollable Content */}
-        <div className="overflow-y-auto flex-1">
-
-          {/* 🎥 Player */}
-          <div className="aspect-video bg-black flex items-center justify-center p-4">
-            
-
-            {videoUrlLoading && <RoundLoader />} 
-          {videoUrl && (
-             <div className="watch-player-absolute">
-        {episode.media_type.startsWith('vr_') ? (
-          <VRAframePlayer src={playbackUrl} token={drmToken} autoplay={true} />
-        ) : (
-          <ShakaPlayer
-            src={playbackUrl}
-            drmToken={drmToken}
-            autoPlay={true}
-            t={0}
-            watermarkText=""
-          />
-
-        )}
-
-        {/* <div className="watch-title-netflix">{title}</div> */}
-      </div>
-            // <div className='w-full flex flex-col items-center'>
-            //   <video src={videoUrl} controls className="w-full md:w-7/12  rounded-lg" />
-            // </div>
+        {/* Player Section */}
+        <div className="flex-1 px-4 pb-4">
+          {videoUrlLoading && (
+            <div className="flex justify-center items-center h-full">
+              <RoundLoader />
+            </div>
           )}
+          {videoUrl && (
+            <div className="w-full h-full flex  items-start">
+              <div className="w-11/12  aspect-video  flex flex-row items-start overflow-hidden">
+                {episode.media_type.startsWith('vr_') ? (
+                  <VRAframePlayer src={playbackUrl} token={drmToken} autoplay={true} />
+                ) : (
+                  <ShakaPlayer
+                    src={playbackUrl}
+                    drmToken={drmToken}
+                    autoPlay={true}
+                    t={0}
+                    watermarkText=""
+                  />
+                )}
+                <div className='  flex flex-col items-start w-3/12 ml-4'>
+                <h1 className="capitalize text-white text-xl font-bold">{episode.title}</h1>
+                <p className="text-gray-300">{episode.description}</p>
+                <div className='mt-4'>
+                  <h2 className='text-white font-semibold mb-2'>Episode Details:</h2>
+                  <p className='text-gray-300'><span className='font-semibold'>Duration:</span> {Math.floor(episode.duration / 60)} mins {episode.duration % 60} secs</p>
+                  <p className='text-gray-300'><span className='font-semibold'>Media Type:</span> {episode.media_type}</p>
+                  <p className='text-gray-300'><span className='font-semibold'>Ingest Status:</span> {episode.ingest_status}</p>
 
-
-           
-          </div>
-
-     
-
+                </div>
+                </div>
+              </div>
+              
+            </div>
+          )}
         </div>
       </div>
     </div>

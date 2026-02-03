@@ -32,6 +32,7 @@ import SkeletonLoader from '@/components/Loader/SkeletonLoader';
 import FullScreenLoader from '@/components/Loader/FullScreenLoader'; 
 import SingleSelect from '@/components/SingleSelect';
 import SearchableSingleSelect from '@/components/SearchableSingleSelect';
+import { UploadToastProgress } from './UploadToastProgress';
 
 
 export interface ContentEditorProps {
@@ -52,103 +53,7 @@ export const CONTENT_TYPES: Array<{ value: ContentType; label: string }> = [
   { value: 'trailer', label: 'trailer - Promotional trailer' },
   { value: 'documentary', label: 'documentary - Documentary content' },
 ];
-const normalSteps = [
-  {
-    title: "Create Content",
-    icon: (
-      <svg
-        className="w-5 h-5"
-        xmlns="http://www.w3.org/2000/svg"
-        fill="none"
-        viewBox="0 0 24 24"
-      >
-        <path
-          d="M4 5h16M4 12h16M4 19h16"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-      </svg>
-    ),
-  },
-  {
-    title: "Add Metadata",
-    icon: (
-      <svg
-        className="w-5 h-5"
-        xmlns="http://www.w3.org/2000/svg"
-        fill="none"
-        viewBox="0 0 24 24"
-      >
-        <path
-          d="M12 11v6m0-10h.01M4 5h16v14H4z"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-      </svg>
-    ),
-  },
-  {
-    title: "Upload Image",
-    icon: (
-      <svg
-        className="w-5 h-5"
-        xmlns="http://www.w3.org/2000/svg"
-        fill="none"
-        viewBox="0 0 24 24"
-      >
-        <path
-          d="M4 5h16v14H4zM8 11l2 2 4-4 4 5"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-      </svg>
-    ),
-  },
-  {
-    title: "Upload Trailer",
-    icon: (
-      <svg
-        className="w-5 h-5"
-        xmlns="http://www.w3.org/2000/svg"
-        fill="none"
-        viewBox="0 0 24 24"
-      >
-        <path
-          d="M5 4v16l14-8z"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-      </svg>
-    ),
-  },
-  {
-    title: "Upload Video",
-    icon: (
-      <svg
-        className="w-5 h-5"
-        xmlns="http://www.w3.org/2000/svg"
-        fill="none"
-        viewBox="0 0 24 24"
-      >
-        <path
-          d="M15 9h3m-3 3h3m-3 3h3m-6 1c-.306-.613-.933-1-1.618-1H7.618c-.685 0-1.312.387-1.618 1M4 5h16a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1Zm7 5a2 2 0 1 1-4 0 2 2 0 0 1 4 0Z"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-      </svg>
-    ),
-  },
-];
+ 
 
  
 
@@ -664,6 +569,17 @@ const [videoUrlInput, setVideoUrlInput] = useState("");
       return;
     }
 
+  const toastId = toast.custom(
+    () => (
+      <UploadToastProgress
+        progress={0}
+        status="Initializing upload…"
+      />
+    ),
+    {
+      duration: Infinity, // 🔑 stays until we dismiss/update
+    }
+  );
     const validation = validateFile(uploadFile, { 
       allowedTypes: ['video/*', 'audio/*'],
     });
@@ -679,11 +595,32 @@ const [videoUrlInput, setVideoUrlInput] = useState("");
       setUploadStatus('Initializing upload...');
 
       const uploadInit = await initUpload(createdContent.id, uploadFile.name);
+   
+    if(uploadInit.s3_key){
+        onClose()
 
+    }
       const result = await uploadWithCallback(uploadInit, uploadFile, {
         onProgress: (progress) => {
           setUploadProgress(progress.percentage);
           setUploadStatus(`Uploading: ${progress.percentage}% (${formatFileSize(progress.loaded)} / ${formatFileSize(progress.total)})`);
+          toast.custom(
+      () => (
+        <UploadToastProgress
+          progress={progress.percentage}
+          status={`Uploading ${progress.percentage}%`}
+        />
+      ),
+      {
+        id: toastId, // 🔑 update same toast
+      }
+    );
+if (progress.percentage >= 100) {
+      toast.dismiss(toastId); // hide the progress toast
+      toast.success(
+        "Upload completed. Please wait for processing before publishing."
+      );
+    }
         },
       });
 
@@ -691,8 +628,7 @@ const [videoUrlInput, setVideoUrlInput] = useState("");
       setContent(prevContents => {
         return prevContents.map(c => c.id === createdContent.id ? { ...c, status: 'processing', ingest_status: 'processing' } : c);
       });
-      onClose()
-      toast.info("Your Video Content upload wait for the processing to comlete then proceed to publish");
+      // toast.info("Your Video Content upload wait for the processing to comlete then proceed to publish");
 
       setSuccess('File uploaded successfully! Waiting for transcoding to start...');
       setUploadStatus('Upload complete - Asset created. Transcoding will begin shortly.');
@@ -712,8 +648,8 @@ const [videoUrlInput, setVideoUrlInput] = useState("");
     const file = imageType === 'poster' ? posterFile : bannerFile;
 
     if (!file || !createdContent) {
-      toast.error(`Please select a ${imageType} image`);
-      return;
+      
+      return {status:400,message:`Please select a ${imageType} image`};
     }
 
     const validation = validateFile(file, {
@@ -722,8 +658,9 @@ const [videoUrlInput, setVideoUrlInput] = useState("");
     });
 
     if (!validation.valid) {
-      toast.error(validation.error || 'Invalid image');
-      return;
+      
+            return {status:400,message:validation.error || 'Invalid image'};
+
     }
 
     try {
@@ -743,10 +680,14 @@ console.log("file",file)
         } : null);
       }
       toast.success(`${imageType.charAt(0).toUpperCase() + imageType.slice(1)} uploaded successfully!`);
+      setPosterFile(null);
+      setBannerFile(null);     
+      return {status:200,message:'Image uploaded successfully'};
 
     } catch (err) {
       const apiError = err as ApiError;
-      toast.error(apiError.message || `Failed to upload ${imageType}`);
+       
+      return err;
     } finally {
       setUploadingImage(null);
     }
@@ -965,9 +906,9 @@ console.log(file,"file")
 
       <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 py-2 sm:p-2 md:p-8">
         {loading && !uploading && <FullScreenLoader />}
-        <div className="bg-neutral-900 sm:rounded-lg max-w-4xl w-full h-[100vh]  md:max-h-[95vh]">
+        <div className="bg-neutral-900 sm:rounded-lg max-w-4xl w-full h-[100vh]  md:max-h-[95vh] md:h-auto">
 
-          <div className="md:mt-0 mt-8 flex items-center justify-between p-6 border-b border-gray-700">
+          <div className="md:mt-0 mt-8 flex items-center justify-between p-6 border-b border-gray-700 h-[10vh]">
             <h2 className="text-2xl font-bold text-white capitalize">
               {isEditing ? "Edit Content" : `Create ${contentType}`}
             </h2>
@@ -980,37 +921,19 @@ console.log(file,"file")
           </div>
 
           {/* Upload progress & status for large files */}
-          {(uploading || uploadProgress > 0) && (
+          {/* {(uploading || uploadProgress > 0) && (
             <div className="px-6 mt-4">
               <UploadProgress
                 progress={uploadProgress}
                 status={uploadStatus || 'Preparing upload…'}
               />
             </div>
-          )}
+          )} */}
 
           {/* STEPPER */}
-          <div className="border-b border-gray-700 px-6 py-4">
-            {/* <div className="flex items-center justify-between">
-              {<>{contentType == 'series' || contentType == 'season' ?
-                <>{[1, 2, 3].map((num) => (
-                  <div
-                    key={num}
-                    // onClick={() => { setStep(num) }}
-                    className={`flex-1 h-2 mx-1 rounded-full ${step >= num ? "bg-blue-500" : "bg-gray-600"
-                      }`}
-                  ></div>
-                ))}</> :
-                <>{[1, 2, 3, 4,5].map((num) => (
-                  <div
-                    key={num}
-                    // onClick={() => { setStep(num) }}
-                    className={`flex-1 h-2 mx-1 rounded-full ${step >= num ? "bg-blue-500" : "bg-gray-600"
-                      }`}
-                  ></div>
-                ))}</>}
-              </>}
-            </div> */}
+          {contentType!='season' &&
+          <div className="border-b border-gray-700 px-6 py-2 h-[10vh] flex flex-row items-center justify-center">
+            
 <ol className="items-center w-full space-y-4 sm:flex sm:space-x-2 sm:space-y-0 rtl:space-x-reverse justify-between">
   {contentSteps[contentType].map((s, index) => (
 
@@ -1042,21 +965,15 @@ console.log(file,"file")
   ))} 
     
 </ol>
-            {/* <p className="text-center text-gray-300 text-sm mt-2">
-              {step === 1 && "Step 1: Create Content"}
-              {step === 2 && "Step 2: Content Metadata"}
-              {step === 3 && "Step 3: Upload Images"} 
-              {step === 4 && "Step 4: Upload Trailer (If Any)"}
-              {step === 5 && "Step 5: Upload Media File"}
-            </p> */}
-          </div>
+           
+          </div>}
 
-          <div className="p-6  ">
+          <div className="p-4  ">
             {step === 1 && (
 
               <>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-2  overflow-y-auto minimal-scrollbar max-h-[55vh] md:max-h-[55vh]">
+                <div className="  grid grid-cols-1 md:grid-cols-2 gap-2  overflow-y-auto minimal-scrollbar max-h-[55vh] md:max-h-[60vh]">
                   <div className="md:col-span-2">
                     <label className="block text-sm font-medium text-gray-300 mb-2">
                       Title *
@@ -1196,15 +1113,19 @@ console.log(file,"file")
                 </div>
 
 
-                <button
+                <div className='w-full flex flex-row items-end justify-end h-[10vh]'>
+                  <button
                   onClick={async (e) => {
                     await handleSubmit(e);
 
                   }}
-                  className="mb-2 mt-4 w-full py-3 bg-blue-600 text-white rounded hover:bg-blue-700"
+                  disabled={loading}
+                  className="px-3 mt-4 w-auto py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50  "
                 >
                   Save & Next
-                </button></>
+                </button>
+                </div>
+                </>
 
             )}
             {step === 2 && createdContent && 
@@ -1212,7 +1133,7 @@ console.log(file,"file")
             {contentType != 'episode'?
             <div className="flex flex-col w-full">
 
-            <div className='w-full space-y-2 overflow-y-auto minimal-scrollbar max-h-[55vh] md:max-h-[45vh]'>
+            <div className='w-full space-y-2 overflow-y-auto minimal-scrollbar max-h-[55vh] md:max-h-[60vh]'>
                   <h3 className="text-xl text-white font-semibold">
                   Content Metadata
                 </h3>
@@ -1316,10 +1237,8 @@ console.log(file,"file")
               </div>:
               
                  <div className="flex flex-col w-full">
-              <div className="space-y-2  w-full space-y-6 overflow-y-auto minimal-scrollbar max-h-[55vh] md:max-h-[60]">
-                <h3 className="text-xl text-white font-semibold">
-                  Upload Images 
-                </h3>
+              <div className="space-y-2  w-full space-y-6 overflow-y-auto minimal-scrollbar max-h-[55vh] md:max-h-[60vh]">
+                
  
                 <div className='hidden md:grid grid-cols-7 w-full gap-2 '>
                   
@@ -1347,7 +1266,7 @@ console.log(file,"file")
                       ) : null}
 
                       {/* Overlay Content */}
-                      <div className="absolute inset-0 bg-black/40 flex flex-col items-center justify-center text-center px-6 group-hover:bg-black/60 transition">
+                      <div className="absolute inset-0 bg-black/60 flex flex-col items-center justify-center text-center px-6 group-hover:bg-black/60 transition">
                         <svg
                           className="w-14 h-14 text-blue-400 mb-4"
 
@@ -1390,7 +1309,7 @@ console.log(file,"file")
                     </div>
 
                     {/* Upload Button */}
-                    <button
+                    {/* <button
                       onClick={() =>
                         handleImageUpload('episode-thumbnail') 
                       }
@@ -1398,7 +1317,7 @@ console.log(file,"file")
                       className="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 transition-colors"
                     >
                       {uploadingImage === 'banner' ? 'Uploading...' : 'Upload Banner'}
-                    </button>
+                    </button> */}
                   </div>
 
                 </div>
@@ -1415,7 +1334,24 @@ console.log(file,"file")
                   {
                     (  contentType !== 'season') ?
                       <button
-                        onClick={nextStep}
+                      
+                        onClick={
+                        async()=>{
+                          if(bannerFile){
+                            console.log('object')
+                            let uploadImage = await handleImageUpload( 'episode-thumbnail')
+                            if(uploadImage.status ==400){
+                              toast.error(uploadImage.message || "Failed to upload banner image");
+                              return;
+                            }
+                              
+                          } 
+                          
+                          
+                            nextStep() 
+                        }
+                          
+                          }
                         className="px-6 py-2 bg-blue-600 text-white rounded"
                       >
                         Save & Next
@@ -1436,17 +1372,11 @@ console.log(file,"file")
             {/* -------------------- STEP 2 -------------------- */}
             {step === 3 && createdContent &&  
            <>{ contentType !='episode'?<>  <div className="flex flex-col w-full">
-              <div className="space-y-2  w-full space-y-6 overflow-y-auto minimal-scrollbar max-h-[55vh] md:max-h-[47vh]">
-                <h3 className="text-xl text-white font-semibold">
-                  Upload Images 
-                </h3>
-<p className="  text-neutral-400 text-sm leading-relaxed"> 
-  • Banner: Landscape orientation (recommended 16:9). <br />
-  • Poster: Portrait orientation (recommended 2:3).
-</p>
-                {/* Poster */}
+              <div className="space-y-2  w-full space-y-6 overflow-y-auto minimal-scrollbar max-h-[55vh] md:max-h-[60vh]">
+               
+                
                 <div className='hidden md:grid grid-cols-7 w-full gap-2 '>
-                  {contentType != "episode" &&
+                  
                     <div className="space-y-3 col-span-2">
                       <label className=" font-medium text-gray-300 text-sm md:mt-0 mt-4">Poster Image</label>
 
@@ -1469,7 +1399,7 @@ console.log(file,"file")
                         ) : null}
 
                         {/* Overlay */}
-                        <div className="absolute inset-0 bg-black/40 flex flex-col items-center justify-center text-center px-4 opacity-100 group-hover:bg-black/60 transition">
+                        <div className="absolute inset-0 bg-black/60 flex flex-col items-center justify-center text-center px-4 opacity-100 group-hover:bg-black/60 transition">
                           <svg
                             className="w-14 h-14 text-blue-400 mb-4"
 
@@ -1510,7 +1440,7 @@ console.log(file,"file")
                       </div>
 
                       {/* Upload Button */}
-                      <button
+                      {/* <button
                         onClick={() =>
                           handleImageUpload(
                             contentType === 'episode' ? 'episode-thumbnail' : 'poster'
@@ -1520,9 +1450,9 @@ console.log(file,"file")
                         className="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 transition-colors"
                       >
                         {uploadingImage === 'poster' ? 'Uploading...' : 'Upload Poster'}
-                      </button>
+                      </button> */}
                     </div>
-                  }
+                   
 
                   {/* Banner */}
                   <div className="col-span-5 space-y-3 ">
@@ -1555,7 +1485,7 @@ console.log(file,"file")
                       ) : null}
 
                       {/* Overlay Content */}
-                      <div className="absolute inset-0 bg-black/40 flex flex-col items-center justify-center text-center px-6 group-hover:bg-black/60 transition">
+                      <div className="absolute inset-0 bg-black/60 flex flex-col items-center justify-center text-center px-6 group-hover:bg-black/60 transition">
                         <svg
                           className="w-14 h-14 text-blue-400 mb-4"
 
@@ -1585,8 +1515,7 @@ console.log(file,"file")
                           16:9 ratio · Recommended 1920×1080 · Hero banner
                         </p>
                       </div>
-
-                      {/* Invisible File Input */}
+ 
                       <input
                         type="file"
                         accept="image/*"
@@ -1598,7 +1527,7 @@ console.log(file,"file")
                     </div>
 
                     {/* Upload Button */}
-                    <button
+                    {/* <button
                       onClick={() =>
                         handleImageUpload(
                           contentType === 'episode' ? 'episode-thumbnail' : 'banner'
@@ -1607,8 +1536,8 @@ console.log(file,"file")
                       disabled={!bannerFile || uploadingImage === 'banner'}
                       className="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 transition-colors"
                     >
-                      {uploadingImage === 'banner' ? 'Uploading...' : 'Upload Banner'}
-                    </button>
+                      {uploadingImage === 'banner' ? 'Uploading...' : 'Uplssoad Banner'}
+                    </button> */}
                   </div>
 
                 </div>
@@ -1659,7 +1588,7 @@ console.log(file,"file")
                         ) : null}
 
                         {/* Overlay */}
-                        <div className="absolute inset-0 bg-black/40 flex flex-col items-center justify-center text-center px-4 opacity-100 group-hover:bg-black/60 transition">
+                        <div className="absolute inset-0 bg-black/60 flex flex-col items-center justify-center text-center px-4 opacity-100 group-hover:bg-black/60 transition">
                           <svg
                             className="w-14 h-14 text-blue-400 mb-4"
 
@@ -1745,7 +1674,7 @@ console.log(file,"file")
                       ) : null}
 
                       {/* Overlay Content */}
-                      <div className="absolute inset-0 bg-black/40 flex flex-col items-center justify-center text-center px-6 group-hover:bg-black/60 transition">
+                      <div className="absolute inset-0 bg-black/60 flex flex-col items-center justify-center text-center px-6 group-hover:bg-black/60 transition">
                         <svg
                           className="w-14 h-14 text-blue-400 mb-4"
 
@@ -1814,7 +1743,37 @@ console.log(file,"file")
                   {
                     (  contentType !== 'season') ?
                       <button
-                        onClick={nextStep}
+                        onClick={
+                        async()=>{
+                          if(bannerFile){
+                            console.log('object')
+                            let uploadImage = await handleImageUpload( 'banner')
+                            if(uploadImage.status ==400){
+                              toast.error(uploadImage.message || "Failed to upload banner image");
+                              return;
+                            }
+                              
+                          } 
+                          if(posterFile){
+                            console.log('object')
+                            let uploadImage = await handleImageUpload( 'poster')
+                            if(uploadImage.status ==400){
+                                 toast.error(uploadImage.message || "Failed to upload banner image");
+
+                              return;
+
+                            }
+                             
+                          }
+                          if(contentType=='series'){
+                            onClose()
+                          }
+                          else{
+                            nextStep()
+                          }
+                        }
+                          
+                          }
                         className="px-6 py-2 bg-blue-600 text-white rounded"
                       >
                         Save & Next
@@ -1841,7 +1800,7 @@ console.log(file,"file")
                     <h3 className="text-xl text-white font-semibold">
                       {content?.ingest_status === 'processing'
                         ? 'Content is uploading to cloud (this may take a while)'
-                        : 'Upload Episide File'}
+                        : 'Upload Episode File'}
                     </h3>
 
                     {/* Media Upload Area */}
@@ -1876,7 +1835,7 @@ console.log(file,"file")
                           </p>
                         </div>
                       ) : (
-                        <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-6 bg-black/40 group-hover:bg-black/60 transition">
+                        <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-6 bg-black/60 group-hover:bg-black/60 transition">
                           <svg
                             className="w-14 h-14 text-blue-400 mb-4"
 
@@ -1963,7 +1922,7 @@ console.log(file,"file")
             {step === 4 && createdContent && contentType !== 'series' && contentType !== 'season' && (
           <>  
             <div className="flex flex-col w-full">
-              <div className="space-y-2  w-full space-y-6 overflow-y-auto minimal-scrollbar max-h-[55vh] md:max-h-[60]"> 
+              <div className="space-y-2  w-full space-y-6 overflow-y-auto minimal-scrollbar max-h-[55vh] md:max-h-[60vh]"> 
             
 {contentType === "trailer" && (
   <div className="flex items-center gap-3 bg-neutral-800 p-2 rounded-lg w-fit">
@@ -2078,7 +2037,7 @@ console.log(file,"file")
                           </p>
                         </div>
                       ) : (
-                        <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-6 bg-black/40 group-hover:bg-black/60 transition">
+                        <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-6 bg-black/60 group-hover:bg-black/60 transition">
                           <svg
                             className="w-14 h-14 text-blue-400 mb-4"
 

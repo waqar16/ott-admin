@@ -1,7 +1,7 @@
 "use client";
 import React, { useCallback, useEffect, useState } from "react";
 import Cookies from "js-cookie";
-import { API_BASE } from "@/lib/config";
+import { API_BASE, FRONTEND_BASE } from "@/lib/config";
 
 import {
   Content,
@@ -25,7 +25,7 @@ import CE from "./admin/content/ContentEditor.client";
 import { CONTENT_TYPES, ContentEditorProps, MEDIA_TYPES } from "./admin/content/ContentEditor.client";
 import { formatBitrate, getQualityBadgeColor } from "@/lib/utils";
 import HlsVideoPlayer from "@/players/HLSPlayer";
-import { BiCheck, BiInfoCircle, BiLink, BiPencil } from "react-icons/bi";
+import { BiCheck, BiInfoCircle, BiLink, BiPencil, BiRefresh } from "react-icons/bi";
 import { FiMoreVertical } from "react-icons/fi";
 import { BsTrash2 } from "react-icons/bs";
 import { toast } from "sonner";
@@ -33,6 +33,8 @@ import ContentDetailsModal from "./Content/ContentDetailsModal";
 import { ApiError } from "@/lib/authApi";
 import EpisodePlayerModal from "./EpisodePlayerModal";
 import UploadTrailerClient from "./admin/content/UploadTrailerClient";
+import RoundLoader from "./Loader/RoundLoader";
+import Link from "next/link";
 export interface Episode {
   id: number;
   episode_number: number;
@@ -71,14 +73,19 @@ export default function SeriesTree({
   setSelectedContent
 }: SeriesTreeProps) {
   return (
-    <div className="space-y-4">
-      {seriesList.length>0?
-      <>{seriesList.map((series) => (
-        <SeriesItem key={series.id} series={series} refresh={refresh} setSelectedContent={setSelectedContent} setSeriesList={setSeriesList} editSeriesHandler={editSeriesHandler} />
-      ))}
-      
-      </>:
-      <p>No series found. Create One!</p>}
+    <div className="space-y-6">
+      {seriesList.length > 0 ? (
+        <>
+          {seriesList.map((series) => (
+            <SeriesItem key={series.id} series={series} refresh={refresh} setSelectedContent={setSelectedContent} setSeriesList={setSeriesList} editSeriesHandler={editSeriesHandler} />
+          ))}
+        </>
+      ) : (
+        <div className="text-center py-12">
+          <div className="text-gray-400 text-lg mb-4">No series found.</div>
+          <div className="text-gray-500">Create your first series to get started!</div>
+        </div>
+      )}
     </div>
   );
 }
@@ -97,6 +104,7 @@ export function SeriesItem({ series, refresh, setSeriesList, editSeriesHandler, 
   const [trailerUrlLoading, setTrailerUrlLoading] = useState(false);
   const [trailerUrl, setTrailerUrl] = useState(null);
   const [error,setError] = useState<string | null>(null);
+  const [deleting,setDeleting] = useState(false);
   async function handleViewDetails(item: Content) {
     try {
       setTrailerUrlLoading(true);   
@@ -118,119 +126,116 @@ export function SeriesItem({ series, refresh, setSeriesList, editSeriesHandler, 
     }
   }
   return (
-    <div className="bg-neutral-800 rounded-lg p-4">
+    <div className="bg-neutral-800 rounded-lg p-4 shadow-md border border-neutral-700">
       {/* Series Header */}
       <div
-        className="flex justify-between items-center cursor-pointer"
+        className="flex justify-between items-center cursor-pointer hover:bg-neutral-700 rounded-md p-2 transition-colors"
         onClick={() => setOpen(!open)}
       >
-        <h2 className="text-xl font-bold flex items-center gap-2">
-          <span>{open ? "▼" : "▶"} </span> {series.title}
+        <h2 className="text-xl font-bold flex items-center gap-3 text-white">
+          <span className="text-blue-400 text-lg">{open ? "▼" : "▶"}</span>
+          <span className="truncate">{series.title}</span>
+          <span className={`text-xs px-2 py-1 rounded-full ${series.status === 'published' ? 'bg-green-600 text-white' : 'bg-yellow-600 text-black'}`}>
+            {series.status}
+          </span>
         </h2>
-<div className="relative">
+        <div className="relative">
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              setOpenSeriesMenuId(prev => (prev === series.id ? null : series.id));
+            }}
+            className="p-2 rounded-full hover:bg-neutral-600 transition-colors"
+            title="More options"
+          >
+            <FiMoreVertical className="w-5 h-5 text-gray-300" />
+          </button>
+
+          {openSeriesMenuId == series.id && (
+            <div className="absolute right-0 mt-2 w-40 bg-neutral-700 border border-gray-600 rounded-md shadow-lg z-50">
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setOpenSeriesMenuId(null);
+                  editSeriesHandler?.();
+                  if (setSelectedContent) {
+                    setSelectedContent(series);
+                  }
+                }}
+                className="flex items-center gap-2 w-full px-3 py-2 text-sm hover:bg-neutral-600 transition-colors"
+              >
+                <BiPencil className="w-4 h-4" />
+                Edit Series
+              </button>
+              {series.status !== 'published' && (
                 <button
-                  onClick={(e) => {
+                  onClick={async (e) => {
                     e.stopPropagation();
-                    setOpenSeriesMenuId(prev => (prev === series.id ? null : series.id));
-
+                    let pc = await publishContent(openSeriesMenuId || "");
+                    if (pc.status === 'published') {
+                      toast.success(`${series.title} is published successfully`);
+                      setOpenSeriesMenuId(null);
+                    } else {
+                      toast.error(`Error publishing ${series.title}`);
+                    }
                   }}
-                  className="p-1 rounded hover:bg-gray-800"
+                  className="flex items-center gap-2 w-full px-3 py-2 text-sm text-yellow-400 hover:bg-neutral-600 transition-colors"
                 >
-
-                  <FiMoreVertical className="w-4 h-4 text-gray-300" />
+                  <BiCheck className="w-4 h-4" />
+                  Publish
                 </button>
-
-                {openSeriesMenuId == series.id && (
-                  <div className="absolute right-0 mt-1 w-32 bg-neutral-700 border border-gray-800 rounded-md shadow-lg z-20">
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setOpenSeriesMenuId(null);
-
-                         editSeriesHandler?.();
-          if (setSelectedContent) {
-            setSelectedContent(series)
-          };
-                      }}
-                      className="flex items-center gap-2 w-full px-3 py-2 text-sm hover:bg-gray-800"
-                    >
-                      <BiPencil className="w-4 h-4" />
-                      Edit
-                    </button>
-                        {series.status!='published' && <button
-                                onClick={async (e) => {
-                                  e.stopPropagation();
- 
-                                  let pc = await publishContent(openSeriesMenuId || "") 
-                                  if(pc.status == 'published'){
-                                    toast.success(`${series.title} is published successfully`)
-                                    setOpenSeriesMenuId(prev => (prev === prev.id ? null : prev.id));
-                                  }
-else{
-                                    toast.error(`Error publishing ${series.title}`)
-}
-
-
-                                }}
-                                className="flex items-center gap-2 w-full px-3 py-2 text-sm text-yellow-600 hover:bg-gray-800"
-                              >
-                                <BiCheck className="w-4 h-4" />
-                                Publish
-                              </button> }
- <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setOpenSeriesMenuId(null);
-                       handleViewDetails(series);
-                      }}
-                      className="flex items-center gap-2 w-full px-3 py-2 text-sm hover:bg-gray-800"
-                    >
-                      <BiInfoCircle className="w-4 h-4" />
-                      Details
-                    </button>
- <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setOpenSeriesMenuId(null);
-                       setTrailerOpen(true);
-                      }}
-                      className="flex items-center gap-2 w-full px-3 py-2 text-sm hover:bg-gray-800"
-                    >
-                      <BiLink className="w-4 h-4" />
-                      Trailer
-                    </button>
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation(); 
-                        setOpenSeriesMenuId(null);
-
-                        setSeriesToDelete(series) 
-                      }}
-                      className="flex items-center gap-2 w-full px-3 py-2 text-sm text-red-400 hover:bg-gray-800"
-                    >
-                      <BsTrash2 className="w-4 h-4" />
-                      Delete
-                    </button>
-                      
-                  </div>
-                )}
-              </div>
-         
+              )}
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setOpenSeriesMenuId(null);
+                  handleViewDetails(series);
+                }}
+                className="flex items-center gap-2 w-full px-3 py-2 text-sm hover:bg-neutral-600 transition-colors"
+              >
+                <BiInfoCircle className="w-4 h-4" />
+                View Details
+              </button>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setOpenSeriesMenuId(null);
+                  setTrailerOpen(true);
+                }}
+                className="flex items-center gap-2 w-full px-3 py-2 text-sm hover:bg-neutral-600 transition-colors"
+              >
+                <BiLink className="w-4 h-4" />
+                Manage Trailer
+              </button>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setOpenSeriesMenuId(null);
+                  setSeriesToDelete(series);
+                }}
+                className="flex items-center gap-2 w-full px-3 py-2 text-sm text-red-400 hover:bg-neutral-600 transition-colors"
+              >
+                <BsTrash2 className="w-4 h-4" />
+                Delete Series
+              </button>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Seasons */}
       {open && (
-        <div className="mt-3 ml-6 space-y-3">
-          {series.children?.map((season,index) => (
+        <div className="mt-4 ml-6 space-y-4">
+          {series.children?.map((season, index) => (
             <SeasonItem setSeriesList={setSeriesList} key={index} season={season} refresh={refresh} series={series} />
           ))}
 
           {/* Add Season */}
           <button
-            className="mt-2 text-left text-blue-400 hover:text-blue-300"
+            className="mt-4 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors flex items-center gap-2"
             onClick={() => setShowAddSeason(true)}
           >
-            + Add Season
+            <span>+</span> Add New Season
           </button>
 
           {/* Add Season Modal */}
@@ -249,7 +254,7 @@ else{
       )}
  {seriesToDelete && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70">
-          <div className="bg-gray-900 rounded-xl p-6 w-full max-w-sm">
+          <div className="bg-neutral-900 rounded-xl p-6 w-full max-w-sm">
             <h3 className="text-lg font-semibold mb-2">
               Delete Series?
             </h3>
@@ -264,12 +269,14 @@ else{
             <div className="flex justify-end gap-3">
               <button
                 onClick={() => setSeriesToDelete(null)}
-                className="px-4 py-2 rounded bg-gray-800 hover:bg-gray-700"
+                className="px-4 py-2 rounded bg-neutral-800 hover:bg-gray-700"
               >
                 Cancel
               </button>
               <button
+                disabled={deleting}
                 onClick={async () => {
+                  setDeleting(true)
                   let contentDeletion = await deleteContent(seriesToDelete.id)
                   if (contentDeletion == 204) {
                     setSeriesList((prev: Content[]) =>
@@ -285,6 +292,7 @@ else{
 
                   }
                   setSeriesToDelete(null);
+                  setDeleting(false)
                 }}
                 className="px-4 py-2 rounded bg-red-600 hover:bg-red-700"
               >
@@ -336,194 +344,214 @@ export function SeasonItem({ season, refresh, series, setSeriesList }) {
   const [openSeasonMenuId, setOpenSeasonMenuId] = useState<string | null>(null);
   const [deleting,setDeleting] = useState(false);
   return (
-    <div className="border-l border-gray-700 pl-4 ">
+    <div className="border-l-2 border-blue-500 pl-4 bg-neutral-700 rounded-lg p-4 shadow-sm">
       {/* Season Header */}
       <div
-        className="cursor-pointer flex items-center gap-2 "
+        className="cursor-pointer flex items-center justify-between hover:bg-neutral-600 rounded-md p-2 transition-colors"
         onClick={() => setOpen(!open)}
       >
-        <span>{open ? "▼" : "▶"}</span>
-        <span className="font-medium">Season {season.season_number}</span>
+        <div className="flex items-center gap-3">
+          <span className="text-blue-400 text-lg">{open ? "▼" : "▶"}</span>
+          <span className="font-semibold text-lg text-white">Season {season.season_number}</span>
+          <span className="text-sm text-gray-300">- {season.title}</span>
+        </div>
+        <div className="relative">
+          <button
+            onClick={(e) => {
+              refresh();
+            }}
+            className="p-2 rounded-full hover:bg-neutral-500 transition-colors"
+            title="Season options"
+          >
+            <BiRefresh className="w-5 h-5 text-gray-300" />
+          </button>
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              setOpenSeasonMenuId(prev => (prev === season.id ? null : season.id));
+            }}
+            className="p-2 rounded-full hover:bg-neutral-500 transition-colors"
+            title="Season options"
+          >
+            <FiMoreVertical className="w-5 h-5 text-gray-300" />
+          </button>
+
+          {openSeasonMenuId == season.id && (
+            <div className="absolute right-0 mt-2 w-40 bg-neutral-600 border border-gray-500 rounded-md shadow-lg z-[9999999]">
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setOpenSeasonMenuId(null);
+                  setEditSeason(season);
+                }}
+                className="flex items-center gap-2 w-full px-3 py-2 text-sm hover:bg-neutral-500 transition-colors"
+              >
+                <BiPencil className="w-4 h-4" />
+                Edit Season
+              </button>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setOpenSeasonMenuId(null);
+                  setSeasonToDelete(season);
+                }}
+                className="flex items-center gap-2 w-full px-3 py-2 text-sm text-red-400 hover:bg-neutral-500 transition-colors"
+              >
+                <BsTrash2 className="w-4 h-4" />
+                Delete Season
+              </button>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Episodes */}
       {open && (
-        <div className="mt-2 flex flex-col items-start w-11/12 ml-6 w-auto p-2 rounded-sm  ">
-          <div className="flex flex-col items-start w-full bg-neutral-700 rounded-md p-2">
-            <div className="flex flex-row items-start w-full justify-between">
-             <div className="w-full flex flex-row items-center ">
-               <span className="font-bold text-lg capitalize"> {season.title}</span>
-              
-                              
-             </div>
-              <div className="relative">
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setOpenSeasonMenuId(prev => (prev === season.id ? null : season.id));
-
-                  }}
-                  className="p-1 rounded hover:bg-neutral-800"
-                >
-
-                  <FiMoreVertical className="w-4 h-4 text-gray-300" />
-                </button>
-
-                {openSeasonMenuId == season.id && (
-                  <div className="absolute right-0 mt-1 w-32 bg-neutral-700 border border-gray-800 rounded-md shadow-lg z-20">
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setOpenSeasonMenuId(null);
-
-                        setEditSeason(season)
-                        // onEdit();
-                      }}
-                      className="flex items-center gap-2 w-full px-3 py-2 text-sm hover:bg-gray-800"
-                    >
-                      <BiPencil className="w-4 h-4" />
-                      Edit
-                    </button>
-
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setOpenSeasonMenuId(null);
-                        setOpenSeasonMenuId(null);
-
-                        setSeasonToDelete(season)
-                        // onDelete();
-                      }}
-                      className="flex items-center gap-2 w-full px-3 py-2 text-sm text-red-400 hover:bg-gray-800"
-                    >
-                      <BsTrash2 className="w-4 h-4" />
-                      Delete
-                    </button>
-                      
-                  </div>
-                )}
+        <div className="mt-4 ml-6">
+          <div className="bg-neutral-600 rounded-lg p-4">
+            <div className="flex flex-row items-start w-full justify-between mb-4">
+              <div className="w-full flex flex-row items-center">
+                <span className="font-bold text-lg capitalize text-white">{season.title}</span>
               </div>
-              
             </div>
-            <span className="font-medium text-gray-500 text-xs">{season.description}</span>
-
-          </div>
-          <div className=" mt-2 space-y-1  w-full   ">
-
+            <span className="font-medium text-gray-400 text-sm block mb-4">{season.description}</span>
 
             {season.children?.length > 0 && (
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mt-4w-full">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                 {season.children.map((ep) => {
                   const thumbnail =
                     ep.thumbnail_url ||
                     ep.banner_url ||
-                    "/placeholder-video.jpg"; // add a fallback image
+                    "/placeholder-video.jpg";
 
                   return (
                     <div
                       key={ep.id}
-                      className="group cursor-pointer"
-                      onClick={() => {
-                        setPlayingEpisode(ep)
-                      }}
+                      className={`group relative bg-neutral-700   shadow-md hover:shadow-lg transition-shadow ${ep.ingest_status === 'ready' ? 'cursor-pointer' : ''}`}
+                      // onClick={() => {
+                      //   if (ep.ingest_status === 'ready') {
+                      //     setPlayingEpisode(ep);
+                      //   }
+                      // }}
                     >
-                      {/* Thumbnail */}
-                      <div className="relative aspect-video rounded-lg overflow-hidden bg-gray-700">
-                        <img
-                          src={thumbnail}
-                          alt={ep.title}
-                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                        />
+                 
+<Link
+  href={`${FRONTEND_BASE}admin/watch/${ep.id}?media_type=episode`}
+  className="group block cursor-pointer"
+                               target="_blank"
 
-                        {/* Play Button */}
-                        <div className="absolute inset-0 flex items-center justify-center bg-black/30 opacity-0 group-hover:opacity-100 transition">
-                          <div className="w-14 h-14 rounded-full bg-black/70 flex items-center justify-center">
-                            ▶
+>
+  <div className="relative aspect-video bg-gray-700 overflow-hidden rounded-lg">
+    <img
+      src={thumbnail}
+      alt={ep.title}
+      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+    />
+
+    {/* Play Button Overlay */}
+    <div className="absolute inset-0 flex items-center justify-center bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity">
+      {ep.ingest_status === "processing" ? (
+        <div className="text-xs flex flex-col items-center text-white">
+          <RoundLoader />
+          <span className="text-center mt-1">Processing</span>
+        </div>
+      ) : (
+        <div className="w-12 h-12 rounded-full bg-black/70 flex items-center justify-center">
+          <span className="text-white text-xl">▶</span>
+        </div>
+      )}
+    </div>
+
+    {/* Episode Number */}
+    <span className="absolute top-2 left-2 text-xs bg-black/70 px-2 py-1 rounded text-white">
+      Ep {ep.episode_number}
+    </span>
+
+    {/* Status Badge */}
+    <div className="absolute top-2 right-2">
+      {ep.ingest_status !== "ready" ? (
+        <span className="text-xs bg-orange-600 text-white rounded-full px-2 py-1">
+          {ep.ingest_status}
+        </span>
+      ) : (
+        <span
+          className={`text-xs rounded-full px-2 py-1 ${
+            ep.status === "published"
+              ? "bg-green-600 text-white"
+              : "bg-yellow-600 text-black"
+          }`}
+        >
+          {ep.status === "published" ? "Published" : "Ready"}
+        </span>
+      )}
+    </div>
+  </div>
+</Link>
+
+
+                      {/* Title and Info */}
+                      <div className="p-3">
+                        <div className="flex justify-between items-start">
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-medium text-white line-clamp-2 mb-1">
+                              {ep.title}
+                            </p>
+                            <p className="text-xs text-gray-400">
+                              Season {season.season_number}
+                            </p>
                           </div>
-                        </div>
+                          <div className="relative ml-2">
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setOpenMenuId(prev => (prev === ep.id ? null : ep.id));
+                              }}
+                              className="p-1 rounded hover:bg-neutral-500 transition-colors"
+                              title="Episode options"
+                            >
+                              <FiMoreVertical className="w-4 h-4 text-gray-300" />
+                            </button>
 
-                        {/* Episode Number */}
-                        <span className="absolute top-2 left-2 text-xs bg-black/70 px-2 py-1 rounded">
-                          Ep {ep.episode_number}
-                        </span>
-                      </div>
-
-                      {/* Title */}
-                      <div className="flex flex-row items-center justify-between w-full">
-                        <div className="mt-2">
-                          <p className="text-sm font-medium text-white line-clamp-2">
-                            {ep.title}
-                          </p>
-                          <p className="text-xs text-gray-400">
-                            Season {season.season_number}
-                          </p>
-                          <div className="flex flex-row items-center w-full">
-                            {ep.ingest_status != 'ready' ? <p className="text-xs   bg-gray-700 text-white rounded-full p-1">
-                              {`${ep.ingest_status}`}
-                            </p> :
-                              <p className={`mt-1 text-[9px] ${ep.status=='published'?'bg-green-700':'bg-gray-700'}   text-white rounded-full px-[4px] py-[2px]`}>
-                                {`${ep.status=='published'?'published':'Ready to Publish'}`}
-                              </p>}
-
+                            {openMenuId === ep.id && (
+                              <div className="absolute right-0 mt-1 w-40 bg-neutral-600 border border-gray-500 rounded-md shadow-lg z-50">
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setOpenMenuId(null);
+                                    setEditEpisode(ep);
+                                  }}
+                                  className="flex items-center gap-2 w-full px-3 py-2 text-sm hover:bg-neutral-500 transition-colors"
+                                >
+                                  <BiPencil className="w-4 h-4" />
+                                  Edit Episode
+                                </button>
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setOpenMenuId(null);
+                                    setEpisodeToDelete(ep);
+                                  }}
+                                  className="flex items-center gap-2 w-full px-3 py-2 text-sm text-red-400 hover:bg-neutral-500 transition-colors"
+                                >
+                                  <BsTrash2 className="w-4 h-4" />
+                                  Delete Episode
+                                </button>
+                                {ep.ingest_status === 'ready' && ep.status !== 'published' && (
+                                  <button
+                                    onClick={async (e) => {
+                                      e.stopPropagation();
+                                      let pc = await publishContent(ep.id);
+                                      setOpenMenuId(null);
+                                    }}
+                                    className="flex items-center gap-2 w-full px-3 py-2 text-sm text-yellow-400 hover:bg-neutral-500 transition-colors"
+                                  >
+                                    <BiCheck className="w-4 h-4" />
+                                    Publish
+                                  </button>
+                                )}
+                              </div>
+                            )}
                           </div>
-                        </div>
-                        <div className="relative">
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setOpenMenuId(prev => (prev === ep.id ? null : ep.id));
-
-                            }}
-                            className="p-1 rounded hover:bg-gray-800"
-                          >
-                            <FiMoreVertical className="w-4 h-4 text-gray-300" />
-                          </button>
-
-                          {openMenuId === ep.id && (
-                            <div className="absolute right-0 mt-1 w-32 bg-neutral-700 border border-neutral-800 rounded-md shadow-lg z-20">
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  setOpenMenuId(prev => (prev === ep.id ? null : ep.id));
-                                  setEditEpisode(ep)
-                                }}
-                                className="flex items-center gap-2 w-full px-3 py-2 text-sm hover:bg-gray-800"
-                              >
-                                <BiPencil className="w-4 h-4" />
-                                Edit
-                              </button>
-
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  setOpenMenuId(prev => (prev === ep.id ? null : ep.id));
-
-                                  setEpisodeToDelete(ep)
-
-                                }}
-                                className="flex items-center gap-2 w-full px-3 py-2 text-sm text-red-400 hover:bg-gray-800"
-                              >
-                                <BsTrash2 className="w-4 h-4" />
-                                Delete
-                              </button>
-                              {ep.ingest_status == 'ready' && ep.status != 'published' &&  <button
-                                onClick={async (e) => {
-                                  e.stopPropagation();
-
-                                  console.log(openMenuId, "openMenuId")
-                                  let pc = await publishContent(openMenuId || "")
-                                  setOpenMenuId(prev => (prev === ep.id ? null : ep.id));
-
-
-
-                                }}
-                                className="flex items-center gap-2 w-full px-3 py-2 text-sm text-yellow-600 hover:bg-gray-800"
-                              >
-                                <BiCheck className="w-4 h-4" />
-                                Publish
-                              </button>}
-                            </div>
-                          )}
                         </div>
                       </div>
                     </div>
@@ -534,26 +562,30 @@ export function SeasonItem({ season, refresh, series, setSeriesList }) {
 
             {/* Add Episode */}
             <button
-              className="mt-1 text-blue-400 hover:text-blue-300"
+              className="mt-4 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-md transition-colors flex items-center gap-2"
               onClick={() => setShowAddEpisode(true)}
             >
-              + Add Episode
+              <span>+</span> Add New Episode
             </button>
 
             {/* Add Episode Modal */}
             {showAddEpisode && (
-              //  <ContentEditor series={series} setSeriesList={setSeriesList} season={season}/>
               <CE
                 setContent={setSeriesList}
                 content={null}
-                onClose={() => setShowAddEpisode(false)}
-                onSuccess={() => setShowAddEpisode(false)}
+                onClose={() => {
+                  refresh();
+                  setShowAddEpisode(false)}}
+                onSuccess={() => {
+                  refresh();
+                  setShowAddEpisode(false)}}
                 contentType={'episode'}
                 parentId={season?.id}
                 seasonNumber={(Number(season?.children?.length) || 0) + 1}
               />
             )}
-          </div></div>
+          </div>
+        </div>
       )}
       {playingEpisode && (
         <EpisodePlayerModal
@@ -596,7 +628,7 @@ export function SeasonItem({ season, refresh, series, setSeriesList }) {
             <div className="flex justify-end gap-3">
               <button
                 onClick={() => setEpisodeToDelete(null)}
-                className="px-4 py-2 rounded bg-gray-800 hover:bg-gray-700"
+                className="px-4 py-2 rounded bg-neutral-800 hover:bg-gray-700"
               >
                 Cancel
               </button>
@@ -642,7 +674,7 @@ export function SeasonItem({ season, refresh, series, setSeriesList }) {
       )}
       {seasonToDelete && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70">
-          <div className="bg-gray-900 rounded-xl p-6 w-full max-w-sm">
+          <div className="bg-neutral-900 rounded-xl p-6 w-full max-w-sm">
             <h3 className="text-lg font-semibold mb-2">
               Delete Season?
             </h3>
@@ -657,7 +689,7 @@ export function SeasonItem({ season, refresh, series, setSeriesList }) {
             <div className="flex justify-end gap-3">
               <button
                 onClick={() => setSeasonToDelete(null)}
-                className="px-4 py-2 rounded bg-gray-800 hover:bg-gray-700"
+                className="px-4 py-2 rounded bg-neutral-800 hover:bg-gray-700"
               >
                 Cancel
               </button>
@@ -701,320 +733,6 @@ export function SeasonItem({ season, refresh, series, setSeriesList }) {
 
 
 
-function Modal({ children, title, onClose }) {
-  return (
-    <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 p-4">
-      <div className="bg-gray-800 rounded-lg w-full max-w-md p-6">
-        <div className="flex justify-between mb-4">
-          <h2 className="text-xl font-bold">{title}</h2>
-          <button className="text-gray-400 hover:text-white" onClick={onClose}>
-            ✕
-          </button>
-        </div>
-
-        {children}
-      </div>
-    </div>
-  );
-}
-function ContentEditor(props: any) {
-  const { content, onClose, onSuccess, setContent, series, setSeriesList, season } = props;
-
-  const isEditing = !!content;
-  const [step, setStep] = useState(1);
-
-  const nextStep = () => setStep((p) => p + 1);
-  const prevStep = () => setStep((p) => p - 1);
-
-  const [formData, setFormData] = useState<CreateContentPayload>({
-    title: content?.title || "",
-    description: content?.description || "",
-    content_type: "episode",
-    media_type: content?.media_type || "flat",
-    status: content?.status || "draft",
-    is_kid_safe: content?.is_kid_safe || false,
-    is_ppv: content?.is_ppv || false,
-    price_cents: content?.price_cents || 0,
-    genres: content?.genres || [],
-  });
-
-  const [loading, setLoading] = useState(false);
-  const [createdContent, setCreatedContent] = useState<Content | null>(content || null);
-
-  const [posterFile, setPosterFile] = useState<File | null>(null);
-  const [bannerFile, setBannerFile] = useState<File | null>(null);
-  const [imageUploading, setImageUploading] = useState<string | null>(null);
-  const [epNumber, setEpNumber] = useState("")
-  const [epTitle, setEpTitle] = useState("")
-  const [uploadFile, setUploadFile] = useState<File | null>(null);
-  const [uploadingMedia, setUploadingMedia] = useState(false);
-  const [uploadProgress, setUploadProgress] = useState(0);
-
-  function handleChange(field: keyof CreateContentPayload, value: any) {
-    setFormData((p) => ({ ...p, [field]: value }));
-  }
-
-  // ---------------- STEP 1 SUBMIT ----------------
-  async function handleSubmit() {
-    if (!formData.title.trim()) return alert("Title required");
-    if (!formData.description.trim()) return alert("Description required");
-
-    try {
-      setLoading(true);
-
-      if (isEditing && content) {
-        const updated = await updateContent(content.id, formData);
-        setCreatedContent(updated);
-        setContent((prev) =>
-          prev.map((c) => (c.id === content.id ? updated : c))
-        );
-      } else {
-        // console.log('object')
-        const created = await createContent(formData);
-        //   const res = await fetch(`${API_BASE}api/v1/content/episodes/`, {
-        //   method: "POST",
-        //   headers: {
-        //     "Content-Type": "application/json",
-        //     Authorization: `Bearer ${Cookies.get("access_token")}`,
-        //   },
-        //   body: JSON.stringify({
-        //     season: season.id,
-        //     content: created.id,
-        //     episode_number: Number(epNumber),
-        //     title: epTitle,
-        //   }),
-        // });
-
-        // if (!res.ok) throw new Error("Failed to create episode");
-        //  const newSeason = await res.json();
-        setCreatedContent(created);
-
-      }
-
-      nextStep();
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  // ---------------- STEP 2 IMAGE UPLOAD ----------------
-  async function uploadImageHandler(type: "poster" | "banner") {
-    const file = type === "poster" ? posterFile : bannerFile;
-    if (!file || !createdContent) return;
-
-    setImageUploading(type);
-
-    const res = await uploadImageForEpisode(createdContent.id, file, type);
-
-    setCreatedContent((prev) =>
-      prev ? { ...prev, [`${type}_url`]: res.thumbnail_url } : prev
-    );
-
-    setImageUploading(null);
-  }
-
-  // ---------------- STEP 3 MEDIA UPLOAD ----------------
-  async function uploadMediaHandler() {
-    if (!uploadFile || !createdContent) return;
-
-    setUploadingMedia(true);
-
-    const init = await initUpload(createdContent.id, uploadFile.name);
-
-    await uploadWithCallback(init, uploadFile, {
-      onProgress: (p) => setUploadProgress(p.percentage),
-    });
-
-    setUploadingMedia(false);
-  }
-
-  // ---------------- PUBLISH ----------------
-  async function handlePublish() {
-    if (!createdContent) return;
-
-    const pub = await publishContent(createdContent.id);
-    onSuccess(pub);
-  }
-
-  return (
-    <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-8">
-      <div className="bg-gray-800 rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto">
-
-        {/* HEADER */}
-        <div className="flex items-center justify-between p-6 border-b border-gray-700">
-          <h2 className="text-2xl font-bold text-white">
-            {isEditing ? "Edit Content" : "Create Content"}
-          </h2>
-          <button onClick={onClose} className="text-gray-300 hover:text-white">
-            ✕
-          </button>
-        </div>
-
-        {/* STEPPER */}
-        <div className="border-b border-gray-700 px-6 py-4">
-          <div className="flex gap-2">
-            {[1, 2, 3].map((s) => (
-              <div
-                key={s}
-                onClick={() => (createdContent || s === 1) && setStep(s)}
-                className={`flex-1 h-2 rounded-full cursor-pointer transition 
-                  ${step >= s ? "bg-blue-500" : "bg-gray-600"}
-                `}
-              />
-            ))}
-          </div>
-          <p className="text-center text-sm text-gray-400 mt-2">
-            {step === 1 && "Step 1: Content Details"}
-            {step === 2 && "Step 2: Upload Images"}
-            {step === 3 && "Step 3: Upload Media File"}
-          </p>
-        </div>
-
-        <div className="p-6">
-          {/* -------------------------------- STEP 1 -------------------------------- */}
-          {step === 1 && (
-            <>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <label className="block text-gray-300">Episode Number</label> <input type="number" value={epNumber} onChange={(e) => setEpNumber(e.target.value)} className="w-full bg-gray-700 border border-gray-600 rounded px-3 py-2" /> <label className="block text-gray-300">Episode Title</label> <input type="text" value={epTitle} onChange={(e) => setEpTitle(e.target.value)} className="w-full bg-gray-700 border border-gray-600 rounded px-3 py-2" />
-                <div className="md:col-span-2">
-                  <label className="block text-sm text-gray-300">Title *</label>
-                  <input
-                    className="w-full bg-gray-700 px-4 py-2 rounded"
-                    value={formData.title}
-                    onChange={(e) => handleChange("title", e.target.value)}
-                  />
-                </div>
-
-                <div className="md:col-span-2">
-                  <label className="block text-sm text-gray-300">Description *</label>
-                  <textarea
-                    rows={3}
-                    className="w-full bg-gray-700 px-4 py-2 rounded"
-                    value={formData.description}
-                    onChange={(e) => handleChange("description", e.target.value)}
-                  />
-                </div>
-
-
-
-
-
-                {formData.is_ppv && (
-                  <input
-                    type="number"
-                    className="bg-gray-700 px-4 py-2 rounded"
-                    value={formData.price_cents}
-                    onChange={(e) =>
-                      handleChange("price_cents", parseInt(e.target.value) || 0)
-                    }
-                  />
-                )}
-              </div>
-
-              <button
-                onClick={handleSubmit}
-                className="mt-6 w-full bg-blue-600 py-3 rounded text-white"
-              >
-                {loading ? "Saving..." : "Continue"}
-              </button>
-            </>
-          )}
-
-          {/* -------------------------------- STEP 2 -------------------------------- */}
-          {step === 2 && createdContent && (
-            <>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-
-                {/* Poster */}
-                <div>
-                  <label className="text-gray-300">Poster Image</label>
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={(e) => setPosterFile(e.target.files?.[0] || null)}
-                    className="w-full bg-gray-700 px-4 py-2 rounded"
-                  />
-                  <button
-                    className="w-full mt-2 bg-purple-600 py-2 rounded text-white"
-                    onClick={() => uploadImageHandler("poster")}
-                    disabled={!posterFile || imageUploading === "poster"}
-                  >
-                    {imageUploading === "poster" ? "Uploading..." : "Upload Poster"}
-                  </button>
-                </div>
-
-                {/* Banner */}
-                <div>
-                  <label className="text-gray-300">Banner Image</label>
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={(e) => setBannerFile(e.target.files?.[0] || null)}
-                    className="w-full bg-gray-700 px-4 py-2 rounded"
-                  />
-                  <button
-                    className="w-full mt-2 bg-purple-600 py-2 rounded text-white"
-                    onClick={() => uploadImageHandler("banner")}
-                    disabled={!bannerFile || imageUploading === "banner"}
-                  >
-                    {imageUploading === "banner" ? "Uploading..." : "Upload Banner"}
-                  </button>
-                </div>
-              </div>
-
-              <div className="flex gap-4 mt-6">
-                <button
-                  className="flex-1 py-3 bg-gray-600 rounded text-white"
-                  onClick={prevStep}
-                >
-                  Back
-                </button>
-                <button
-                  className="flex-1 py-3 bg-blue-600 rounded text-white"
-                  onClick={nextStep}
-                >
-                  Continue
-                </button>
-              </div>
-            </>
-          )}
-
-          {/* -------------------------------- STEP 3 -------------------------------- */}
-          {step === 3 && createdContent && (
-            <>
-              <label className="text-gray-300">Upload Media File</label>
-              <input
-                type="file"
-                accept="video/*,audio/*"
-                onChange={(e) => setUploadFile(e.target.files?.[0] || null)}
-                className="w-full bg-gray-700 px-4 py-2 rounded"
-              />
-
-              <button
-                onClick={uploadMediaHandler}
-                disabled={!uploadFile || uploadingMedia}
-                className="w-full mt-3 bg-green-600 py-3 rounded text-white"
-              >
-                {uploadingMedia ? "Uploading..." : "Upload Media"}
-              </button>
-
-              {uploadingMedia && (
-                <div className="text-center text-gray-300 mt-3">
-                  {uploadProgress}%
-                </div>
-              )}
-
-              <button
-                onClick={handlePublish}
-                className="mt-6 w-full bg-orange-600 py-3 rounded text-white"
-              >
-                Publish
-              </button>
-            </>
-          )}
-        </div>
-      </div>
-    </div>
-  );
-}
+ 
+ 
 

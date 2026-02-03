@@ -14,7 +14,7 @@ export default function UploadProgress({
   onRetry 
 }: UploadProgressProps) {
   return (
-    <div className="bg-gray-700 rounded-lg p-4 space-y-3">
+    <div className="bg-neutral-900 rounded-lg p-4 space-y-3">
       {/* Progress Bar */}
       <div className="relative">
         <div className="h-4 bg-gray-600 rounded-full overflow-hidden">

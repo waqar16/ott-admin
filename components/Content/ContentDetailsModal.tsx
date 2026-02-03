@@ -22,6 +22,9 @@ const toastPromise = dynamic(
 );
 
 import "../ShakaPlayer/shaka.css"
+import Link from 'next/link';
+import { FRONTEND_BASE } from '@/lib/config';
+import { FiExternalLink } from 'react-icons/fi';
  
  
 
@@ -46,47 +49,10 @@ const ContentDetailsModal: React.FC<ContentDetailsModalProps> = ({
   publishContent, 
 }) => {
   
-  
-  const [mounted,setMounted]=useState(false);
-  const [videoUrl, setVideoUrl] = useState<string | null>(null);
-  const [videoUrlLoading, setVideoUrlLoading] = useState<boolean>(true);
-  const [dashUrl, setDashUrl] = useState('');
-  const [hlsUrl, setHlsUrl] = useState('');
-  const [dashToken, setDashToken] = useState('');
-  const [hlsToken, setHlsToken] = useState('');
-    const isSafari = typeof navigator !== "undefined" && /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
-  // const playbackUrl = isSafari ? hlsUrl : dashUrl;
-  // const drmToken = isSafari ? hlsToken : dashToken;
-
-const isVR = detailContent.media_type.startsWith("vr_");
-const playbackUrl = isVR ? hlsUrl : (isSafari ? hlsUrl : dashUrl);
-const drmToken = isVR ? hlsToken : (isSafari ? hlsToken : dashToken);
-
-useEffect(()=>{
-    const fetchStreamingUrl = async () => {
-      try{ 
+   
  
-        const urlPayload = await getStreamingUrl(detailContent.id);
-        
-        setVideoUrlLoading(false);
-        console.log("urlPayload.dash_url",urlPayload.dash_url)
-        setVideoUrl(urlPayload.dash_url);
-        setHlsUrl(urlPayload.hls_url);
-        setDashUrl(urlPayload.dash_url);
-        //  setHlsToken(urlPayload?.hls_token);
-        // setDashToken(urlPayload?.dash_token);
-      } catch (rendErr) {
-        console.error('Error fetching renditions:', rendErr);
-        // Don't fail the whole operation if renditions fail
-      }
-      setVideoUrlLoading(false)
-    }
-    fetchStreamingUrl()
+
  
-},[])
- useEffect(()=>{
-    setMounted(true);
-  },[])   
  
  useEffect(() => {
     // Disable background scroll when modal opens
@@ -101,9 +67,7 @@ useEffect(()=>{
       }
     };
   }, []);
-
-
- if (!mounted) return null;
+ 
   if (!open || !detailContent) return null;
   return (
    <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 ">
@@ -218,34 +182,23 @@ useEffect(()=>{
               }
             </div>
           )}
-
-          {/* Video */}
-          {videoUrlLoading && <RoundLoader />} 
-          {videoUrl && (
-             <div className="watch-player-absolute">
-        {detailContent.media_type.startsWith('vr_') ? (
-          <VRAframePlayer src={playbackUrl} token={drmToken} autoplay={true} />
-        ) : (
-          <ShakaPlayer
-            src={playbackUrl}
-            drmToken={drmToken}
-            autoPlay={true}
-            t={0}
-            watermarkText=""
-          />
-
-        )}
-
-        {/* <div className="watch-title-netflix">{title}</div> */}
-      </div>
-            // <div className='w-full flex flex-col items-center'>
-            //   <video src={videoUrl} controls className="w-full md:w-7/12  rounded-lg" />
-            // </div>
-          )}
-{!videoUrl && (
-            <div className='  w-full p-8 flex flex-col items-center justify-center bg-neutral-700'> No VIdeo to show</div>         )}
+  <div className='flex flex-col items-start w-full '>
+     <h2 className='mt-2 mb-1 text-sm text-neutral-300'>Video Preview</h2>
+                              {detailContent.ingest_status == 'ready' ?
+                              <Link
+                              href={`${FRONTEND_BASE}admin/watch/${detailContent.id}?media_type=${detailContent.media_type}`}
+                               target="_blank"
+                               className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-700 font-medium"
+    
+                               >Watch Video
+                                <FiExternalLink size={16} className="opacity-80" />
+                               </Link>:
+                               detailContent.ingest_status == 'processing'?
+                               <p>Video not ready yet</p>:
+                               <p>Video not provided yet</p>
+                               }
+  </div>
  
-          {/* Publish Button */}
           {detailContent.ingest_status === 'ready' && detailContent.status != 'published' && (
             <button 
               className="bg-yellow-600 px-4 py-2 rounded-md text-black"
