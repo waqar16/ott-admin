@@ -5,6 +5,8 @@ import axios from "axios";
 import Cookies from "js-cookie";
 import { API_BASE, USE_MOCK_DATA, logMockDataUsage } from '../../../lib/config'
 import SkeletonLoader from "@/components/Loader/SkeletonLoader";
+import { toast } from "sonner";
+import { BiEdit, BiTrash } from "react-icons/bi";
 interface PaymentPlan {
   id: string;
   name: string;
@@ -38,11 +40,27 @@ const PaymentPlansPage = () => {
   const [filters, setFilters] = useState<Filters>({});
   const [page, setPage] = useState(1);
   const [count, setCount] = useState(0);
-const [modalOpen, setModalOpen] = useState(false);
-const [editPlan, setEditPlan] = useState<PaymentPlan | null>(null);
-const [loadingUpdate, setLoadingUpdate] = useState(false);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [editPlan, setEditPlan] = useState<PaymentPlan | null>(null);
+  const [loadingUpdate, setLoadingUpdate] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [confirmPlantDeletion, setConfirmPlantDeletion] = useState(false);
 
-const [loading, setLoading] = useState(true);
+  // Delete plan by id
+  const deletePlan = async (id: string) => {
+    
+    try {
+      await axios.delete(`${API_BASE}api/v1/payments/plans/${id}/`, {
+        headers: {
+          Authorization: `Bearer ${Cookies.get('access_token')}`
+        }
+      });
+      fetchPlans();
+    } catch (error) {
+      console.error(error);
+      toast.error("Failed to delete plan.");
+    }
+  };
 
  const fetchPlans = async () => {
   try {
@@ -66,6 +84,38 @@ const [loading, setLoading] = useState(true);
   useEffect(() => {
     fetchPlans();
   }, [page, filters]);
+const confirmDelete = (id: string) => {
+  toast.custom((t) => (
+    <div className="bg-neutral-900 border border-neutral-700 p-4 rounded-lg shadow-lg w-80">
+      <h3 className="text-white font-semibold mb-2">
+        Delete Payment Plan?
+      </h3>
+      <p className="text-neutral-400 text-sm mb-4">
+        This action cannot be undone.
+      </p>
+
+      <div className="flex justify-end gap-2">
+        <button
+          onClick={() => toast.dismiss(t)}
+          className="px-3 py-1 bg-neutral-700 hover:bg-neutral-600 text-white rounded-md text-sm"
+        >
+          Cancel
+        </button>
+
+        <button
+          onClick={async () => {
+            toast.dismiss(t);
+            await deletePlan(id);
+            toast.success("Plan deleted successfully.");
+          }}
+          className="px-3 py-1 bg-red-600 hover:bg-red-700 text-white rounded-md text-sm"
+        >
+          Confirm
+        </button>
+      </div>
+    </div>
+  ));
+};
 
   return (
     <div className="md:p-6 p-2 mt-16 md:mt-0 min-h-screen bg-black">
@@ -133,7 +183,27 @@ const [loading, setLoading] = useState(true);
     </>
   ) : (
     plans.map((plan) => (
-      <div key={plan.id} className="bg-neutral-800 p-6 rounded-lg shadow-lg border border-neutral-700">
+      <div key={plan.id} className="bg-neutral-800 p-6 rounded-lg shadow-lg border border-neutral-700 relative">
+        {/* Delete Button Top Right */}
+<button
+                     onClick={() => confirmDelete(plan.id)}
+
+          title="Delete Plan"
+          className="absolute top-3 right-3 text-red-400   p-1 rounded-full  transition"
+        >
+          <BiTrash className="w-5 h-5"/>
+        </button>
+        <button
+ onClick={() => {
+            setModalOpen(true);
+            setEditPlan(plan);
+          }}
+          title="Delete Plan"
+          className="absolute top-3 right-9 text-neutral-400   p-1 rounded-full  transition"
+        >
+          <BiEdit className="w-5 h-5"/>
+        </button>
+
         <h3 className="text-xl text-neutral-300 font-bold mb-2">{plan.name}</h3>
         <p className="text-neutral-400 mb-3">{plan.description}</p>
 
@@ -147,15 +217,7 @@ const [loading, setLoading] = useState(true);
           <li>Status: {plan.is_active ? "Active" : "Inactive"}</li>
         </ul>
 
-        <button
-          onClick={() => {
-            setModalOpen(true);
-            setEditPlan(plan);
-          }}
-          className="mt-4 w-full px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg"
-        >
-          Edit Plan
-        </button>
+         
       </div>
     ))
   )}
@@ -165,7 +227,7 @@ const [loading, setLoading] = useState(true);
       </div>
 
       {/* Pagination */}
-      <div className="flex justify-center items-center gap-4 mt-8">
+      {plans && plans.length > 0 &&   !(page * 10 >= count) &&  <div className="flex justify-center items-center gap-4 mt-8">
 
         <button
           disabled={page === 1}
@@ -185,14 +247,19 @@ const [loading, setLoading] = useState(true);
           Next
         </button>
 
-      </div>
-
+      </div>}
+{plans.length === 0 && !loading && (
+  <div className="text-center text-neutral-400 mt-20">
+    <p className="text-xl">No payment plans found.</p>
+    
+  </div>
+) }
       {/* Add New Plan Modal */}
       {modalOpen && (
   <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
     <div className="bg-neutral-800 p-6 rounded-lg w-full max-w-lg">
 
-      <h2 className="text-xl font-bold mb-4">
+      <h2 className="text-xl font-bold mb-4 text-white">
         {editPlan ? "Edit Payment Plan" : "Add New Payment Plan"}
       </h2>
 
@@ -205,6 +272,7 @@ const [loading, setLoading] = useState(true);
         onSuccess={() => {
           setModalOpen(false);
           setEditPlan(null);
+          toast.success(`Plan ${editPlan ? "updated" : "created"} successfully.`);
           fetchPlans();
         }}
       />
@@ -247,20 +315,25 @@ const PlanForm = ({
 
       if (initial) {
         // 🔥 UPDATE
-        await axios.put(`${API_BASE}/api/v1/payments/plans/${initial.id}/`, form,{headers:{
+        await axios.put(`${API_BASE}api/v1/payments/plans/${initial.id}/`, form,{headers:{
           Authorization:`Bearer ${Cookies.get('access_token')}`
         }});
       } else {
         // ➕ CREATE NEW
-        await axios.post(`${API_BASE}/api/v1/payments/plans/`, form,{headers:{
+        await axios.post(`${API_BASE}api/v1/payments/plans/`, form,{headers:{
           Authorization:`Bearer ${Cookies.get('access_token')}`
         }});
       }
 
       onSuccess();
-    } catch (error) {
+    } catch (error:any) {
       console.error(error);
-      alert("Something went wrong!");
+        const message =
+      error?.response?.data?.detail ||
+      error?.response?.data?.message ||
+      "Something went wrong. Please try again.";
+
+    toast.error(message);
     } finally {
       setLoading(false);
     }
@@ -275,14 +348,18 @@ const PlanForm = ({
           placeholder="Plan Name"
           value={form.name}
           onChange={(e) => update("name", e.target.value)}
-          className="w-full px-4 py-2 bg-neutral-700 text-white rounded-lg"
+          className="w-full px-4 py-2 bg-neutral-700 text-white rounded-lg 
+             outline-none focus:outline-none 
+             focus:ring-0 focus:border-none"
         />
 
         <textarea
           placeholder="Description"
           value={form.description}
           onChange={(e) => update("description", e.target.value)}
-          className="w-full px-4 py-2 bg-neutral-700 text-white rounded-lg"
+           className="w-full px-4 py-2 bg-neutral-700 text-white rounded-lg 
+             outline-none focus:outline-none 
+             focus:ring-0 focus:border-none"
         />
 
         <input
@@ -290,7 +367,9 @@ const PlanForm = ({
           placeholder="Price"
           value={form.price}
           onChange={(e) => update("price", parseFloat(e.target.value))}
-          className="w-full px-4 py-2 bg-neutral-700 text-white rounded-lg"
+           className="w-full px-4 py-2 bg-neutral-700 text-white rounded-lg 
+             outline-none focus:outline-none 
+             focus:ring-0 focus:border-none"
         />
 
         <input
@@ -298,7 +377,9 @@ const PlanForm = ({
           placeholder="Duration (days)"
           value={form.duration_days}
           onChange={(e) => update("duration_days", Number(e.target.value))}
-          className="w-full px-4 py-2 bg-neutral-700 text-white rounded-lg"
+           className="w-full px-4 py-2 bg-neutral-700 text-white rounded-lg 
+             outline-none focus:outline-none 
+             focus:ring-0 focus:border-none"
         />
 
         <input
@@ -306,7 +387,9 @@ const PlanForm = ({
           placeholder="Max Devices"
           value={form.max_devices}
           onChange={(e) => update("max_devices", Number(e.target.value))}
-          className="w-full px-4 py-2 bg-neutral-700 text-white rounded-lg"
+          className="w-full px-4 py-2 bg-neutral-700 text-white rounded-lg 
+             outline-none focus:outline-none 
+             focus:ring-0 focus:border-none"
         />
 
         <input
@@ -314,14 +397,18 @@ const PlanForm = ({
           placeholder="Max Profiles"
           value={form.max_profiles}
           onChange={(e) => update("max_profiles", Number(e.target.value))}
-          className="w-full px-4 py-2 bg-neutral-700 text-white rounded-lg"
+           className="w-full px-4 py-2 bg-neutral-700 text-white rounded-lg 
+             outline-none focus:outline-none 
+             focus:ring-0 focus:border-none"
         />
 
         {/* Ad Supported */}
         <select
           value={form.ad_supported ? "true" : "false"}
           onChange={(e) => update("ad_supported", e.target.value === "true")}
-          className="w-full px-4 py-2 bg-neutral-700 text-white rounded-lg"
+           className="w-full px-4 py-2 bg-neutral-700 text-white rounded-lg 
+             outline-none focus:outline-none 
+             focus:ring-0 focus:border-none"
         >
           <option value="false">No Ads</option>
           <option value="true">Ad Supported</option>
@@ -331,7 +418,9 @@ const PlanForm = ({
         <select
           value={form.is_active ? "true" : "false"}
           onChange={(e) => update("is_active", e.target.value === "true")}
-          className="w-full px-4 py-2 bg-neutral-700 text-white rounded-lg"
+           className="w-full px-4 py-2 bg-neutral-700 text-white rounded-lg 
+             outline-none focus:outline-none 
+             focus:ring-0 focus:border-none"
         >
           <option value="true">Active</option>
           <option value="false">Inactive</option>
