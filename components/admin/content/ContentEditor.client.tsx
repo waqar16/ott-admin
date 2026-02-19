@@ -440,6 +440,7 @@ const [videoUrlInput, setVideoUrlInput] = useState("");
     media_type: content?.media_type || 'flat',
     trailerType: content?.trailerType || 'movie',
     status: content?.status || 'draft',
+    is_demo_content: content?.is_demo_content || false,
     is_kid_safe: content?.is_kid_safe || false,
     is_ppv: content?.is_ppv || false,
     price_cents: content?.price_cents || 0,
@@ -903,7 +904,7 @@ console.log(file,"file")
     if (!mounted) return null;
   return (
     <>
-
+ 
       <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 py-2 sm:p-2 md:p-8">
         {loading && !uploading && <FullScreenLoader />}
         <div className="bg-neutral-900 sm:rounded-lg max-w-4xl w-full h-[100vh]  md:max-h-[95vh] md:h-auto">
@@ -919,6 +920,7 @@ console.log(file,"file")
               ✕
             </button>
           </div>
+ 
 
           {/* Upload progress & status for large files */}
           {/* {(uploading || uploadProgress > 0) && (
