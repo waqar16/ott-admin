@@ -28,6 +28,7 @@ import { getAccessToken } from './tokenStore';
 
 export function getPlatformSettings(token?: string) {
   const accessToken = token || getAccessToken();
+  console.log('object')
   return get<PlatformSettings>('api/v1/platform/settings/', accessToken ? { headers: { Authorization: `Bearer ${accessToken}` } } : undefined);
 }
 
