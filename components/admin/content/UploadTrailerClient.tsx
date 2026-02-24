@@ -34,11 +34,13 @@ interface UploadTrailerClientProps {
     trailer_id?: string;
     content: Content;
   setOpen:React.Dispatch<React.SetStateAction<boolean>>;
+  refreshContent: () => void;
 }
 
 const UploadTrailerClient: React.FC<UploadTrailerClientProps> = ({
    trailer_url,
     trailer_id,
+    refreshContent,
  setOpen, 
   content,   
 }) => {
@@ -117,10 +119,11 @@ const [trailerContentDataFetching,setTrailerContentDataFetching] = React.useStat
             setUploadStatus('Initializing upload...');
       
             const uploadInit = await initUpload(isTrailerContentData?.id || "", trailerUploadFile.name);
-       
+          refreshContent();
+      console.log("Calling refreshContent...",uploadInit);
     if(uploadInit.s3_key){
-        setOpen(false)
-
+   
+        // setOpen(false)
     }
             const result = await uploadWithCallback(uploadInit, trailerUploadFile, {
                    onProgress: (progress) => {
@@ -158,6 +161,8 @@ const [trailerContentDataFetching,setTrailerContentDataFetching] = React.useStat
             setLoading(false)
             setTrailerUploadFile(null)
             setIsTrailerContentData(null)
+           
+
             setOpen(false)
       
       
@@ -168,7 +173,6 @@ const [trailerContentDataFetching,setTrailerContentDataFetching] = React.useStat
             setUploading(false);
             setLoading(false)
             setOpen(false)
-            
           }
         }
 
@@ -232,12 +236,24 @@ const [trailerContentDataFetching,setTrailerContentDataFetching] = React.useStat
         
                 const token = Cookies.get("access_token");
         const res = await getContent(trailer_id ?? '')
+        if(res.content_type !== 'trailer'){{
+          setTrailerData(null)
+          setTrailerDataFetching(false)
+        setTraileMediaType('flat') 
+
+          return;
+         }
+        }
         setTraileMediaType(res.media_type) 
         setTrailerData(res)
                 setTrailerDataFetching(false)
                  
            
-              } catch (e) {
+              } catch (e:any) {
+                if(e?.status && e?.status =='404'){
+                  setTrailerData(null)
+                   
+                }
                 setTrailerDataFetching(false)
               } 
             }
@@ -278,7 +294,11 @@ const [trailerContentDataFetching,setTrailerContentDataFetching] = React.useStat
         <div className="flex flex-col w-full h-auto h-auto ">
         <div className="space-y-2 w-full space-y-2   max-h-[55vh] md:max-h-[70vh] min-h-auto ">
 <div className='w-full flex flex-row items-center justify-end'> <button
-onClick={()=>setOpen(false)}
+onClick={()=>{
+  setOpen(false)
+  refreshContent()
+  
+  }}
 >
     <GrClose/>
     </button></div>
@@ -375,7 +395,11 @@ onClick={()=>setOpen(false)}
          
               <div className='flex flex-row items-center justify-end'>
                 <button
-                              onClick={()=>setOpen(false)}
+                              onClick={()=>{setOpen(false)
+
+  // refreshContent()
+
+                              }}
 
                   className="px-4 py-2 bg-neutral-600 text-white rounded-lg mr-1"
                 >
@@ -383,31 +407,39 @@ onClick={()=>setOpen(false)}
                 </button>
                 <button
                   onClick={async () => {
-                    if (trailer_id) {
-                      const created = await updateContent(trailer_id, {
-                        ...formData,
-                        content_type: 'trailer',
-                        media_type: trailerMediaType
-                      });
-                      if (created.id) {
-                        toast.success(`Your Trailer's Video Media type is successfully created. Proceed with the process of uploading trailer`);
-                        setIsTrailerContentData(created);
+                    setTrailerContentDataFetching(true);
+                    try {
+                      if (trailerData?.id) {
+                        const created = await updateContent(trailerData.id, {
+                          ...formData,
+                          content_type: 'trailer',
+                          media_type: trailerMediaType
+                        });
+                        if (created.id) {
+                          toast.success(`Your Trailer's Video Media type is successfully created. Proceed with the process of uploading trailer`);
+                          setIsTrailerContentData(created);
+                        } else {
+                          toast.error(`Something Went Wrong`);
+                        }
                       } else {
-                        toast.error(`Something Went Wrong`);
+                        console.log('object',trailerData)
+                        const created = await createContent({
+                          ...formData,
+                          media_type: trailerMediaType,
+                          parent: content.id ,
+                          content_type: 'trailer'
+                        });
+                        if (created.id) {
+                          toast.success(`Your Trailer's Video Media type is successfully updated. Proceed with the process of uploading trailer`);
+                          setIsTrailerContentData(created);
+                        } else {
+                          toast.error(`Something Went Wrong`);
+                        }
                       }
-                    } else {
-                      const created = await createContent({
-                        ...formData,
-                        media_type: trailerMediaType,
-                        parent: content.id ,
-                        content_type: 'trailer'
-                      });
-                      if (created.id) {
-                        toast.success(`Your Trailer's Video Media type is successfully updated. Proceed with the process of uploading trailer`);
-                        setIsTrailerContentData(created);
-                      } else {
-                        toast.error(`Something Went Wrong`);
-                      }
+                    } finally {
+                      setTrailerContentDataFetching(false);
+       
+
                     }
                   }}
                   disabled={trailerContentDataFetching}
@@ -420,7 +452,7 @@ onClick={()=>setOpen(false)}
                     </>
                   ) :  
                     <> 
-                   {trailer_id ? <>
+                   {trailerData?.id ? <>
                    {playbackUrl?
                    'Upload New Trailer'
                 :
