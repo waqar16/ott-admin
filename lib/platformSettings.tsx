@@ -31,30 +31,30 @@ export function PlatformSettingsProvider({ children }: { children: React.ReactNo
   useEffect(() => {
     let isCancelled = false;
 
-    const fetchSettings = async () => {
-      try {
-        const response = await fetch(`${API_BASE}/api/v1/platform/settings/`, { cache: "no-store" });
-        if (!response.ok) {
-          throw new Error(`Failed to load platform settings (${response.status})`);
-        }
+    // const fetchSettings = async () => {
+    //   try {
+    //     const response = await fetch(`https://k8v2hqmyaa.execute-api.us-east-1.amazonaws.com/staging/api/v1/platform/settings/`, { cache: "no-store" });
+    //     if (!response.ok) {
+    //       throw new Error(`Failed to load platform settings (${response.status})`);
+    //     }
 
-        const data = await response.json();
-        if (isCancelled) return;
+    //     const data = await response.json();
+    //     if (isCancelled) return;
 
-        setSettings(normalizeSettings(data));
-        setError(null);
-      } catch (err) {
-        if (isCancelled) return;
-        setError(err as Error);
-        setSettings(DEFAULT_BRAND);
-      } finally {
-        if (!isCancelled) {
-          setLoading(false);
-        }
-      }
-    };
+    //     setSettings(normalizeSettings(data));
+    //     setError(null);
+    //   } catch (err) {
+    //     if (isCancelled) return;
+    //     setError(err as Error);
+    //     setSettings(DEFAULT_BRAND);
+    //   } finally {
+    //     if (!isCancelled) {
+    //       setLoading(false);
+    //     }
+    //   }
+    // };
 
-    fetchSettings();
+    // fetchSettings();
     return () => {
       isCancelled = true;
     };

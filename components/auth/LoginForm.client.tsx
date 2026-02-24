@@ -21,7 +21,7 @@ interface LoginFormProps {
 }
 
 export function LoginForm({   }: LoginFormProps) {
-  const { login, loading } = useAuth();
+  const { login } = useAuth();
   const router  = useRouter()
   const [mounted, setMounted] = useState(false);
   const [email, setEmail] = useState('');
@@ -93,7 +93,7 @@ setLoginLoading(false)
             id="email"
             value={email}
             required
-            disabled={Boolean(isSubmitting || loading)}
+            disabled={Boolean(isSubmitting)}
 
             onChange={(e)=>setEmail(e.target.value)}
             className=" peer w-full   px-4 pt-6  pb-2   placeholder-transparent outline-none ring-1 ring-white  bg-transparent text-neutral-800 text-sm min-h-[60px]  "
@@ -115,7 +115,7 @@ setLoginLoading(false)
             onChange={(e)=>setPassword(e.target.value)}
             className=" peer w-full   px-4 pt-6  pb-2   placeholder-transparent outline-none ring-1 ring-white  bg-transparent text-neutral-800 text-sm min-h-[60px]  "
             placeholder="Password"
-            disabled={Boolean(isSubmitting || loading)}
+            disabled={Boolean(isSubmitting )}
 
             autoComplete="current-password"
 
@@ -151,7 +151,7 @@ setLoginLoading(false)
               value={token2fa}
               onChange={(e) => setToken2fa(e.target.value)}
               required
-              disabled={Boolean(isSubmitting || loading)}
+              disabled={Boolean(isSubmitting )}
               className="w-full px-4 py-2 border border-blue-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
               placeholder="Enter 6-digit code"
               maxLength={6}
@@ -171,10 +171,10 @@ setLoginLoading(false)
 
         <button
           type="submit"
-          disabled={Boolean(isSubmitting || loading)}
+          disabled={Boolean(isSubmitting )}
           className="w-full py-3 px-4 bg-[var(--main-color)]  text-white font-semibold rounded-lg hover:bg-[var(--main-color)] hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
         >
-          {(isSubmitting || loading) ? (
+          {(isSubmitting ) ? (
             <span className="flex items-center justify-center gap-2">
               <svg
                 className="animate-spin h-5 w-5"

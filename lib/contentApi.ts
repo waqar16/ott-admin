@@ -650,8 +650,7 @@ export async function initUpload(
       message: 'Not authenticated — please login',
       needAuth: true,
     } as ApiError;
-  }
-  console.log('object')
+  } 
   try {
     const url = `${API_BASE}api/v1/content/content/upload/init/`;
     const response = await fetch(url, {
@@ -661,8 +660,7 @@ export async function initUpload(
         filename,
         content_id: contentId,
       }),
-    });
-    console.log('url',url)
+    }); 
     if (!response.ok) {
       throw await handleApiError(response);
     }
