@@ -388,7 +388,7 @@ setDeleteOpen(false);
 content={item}
 trailer_url={item.trailer_url || ""}
 setOpen={setTrailerOpen}
-
+refreshContent={fetchContent}
 
 />}
 

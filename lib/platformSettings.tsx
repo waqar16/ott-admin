@@ -33,7 +33,7 @@ export function PlatformSettingsProvider({ children }: { children: React.ReactNo
 
     const fetchSettings = async () => {
       try {
-        const response = await fetch(`${API_BASE}/api/v1/platform/settings/`, { cache: "no-store" });
+        const response = await fetch(`${API_BASE}api/v1/platform/settings/`, { cache: "no-store" });
         if (!response.ok) {
           throw new Error(`Failed to load platform settings (${response.status})`);
         }

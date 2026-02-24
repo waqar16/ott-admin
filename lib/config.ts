@@ -5,8 +5,8 @@
  * Set USE_MOCK_DATA to true to run the app without backend dependencies.
  */
 // API Base URL for backend authentication and content APIs
-export const API_BASE = process.env.NEXT_PUBLIC_API_BASE ?? 'https://cmy7tz9t49.execute-api.us-east-1.amazonaws.com/';
-export const FRONTEND_BASE = process.env.NEXT_PUBLIC_FRONTEND_BASE ?? 'http://localhost:3000/';
+export const API_BASE = process.env.NEXT_PUBLIC_API_BASE 
+export const FRONTEND_BASE = process.env.NEXT_PUBLIC_FRONTEND_BASE
 // export const API_BASE = process.env.NEXT_PUBLIC_API_BASE ?? 'http://localhost:8000/';
 
 // Mock mode flag - set to true to use dummy data instead of real APIs
@@ -14,7 +14,7 @@ export const USE_MOCK_DATA = process.env.NEXT_PUBLIC_USE_MOCK_DATA === 'true';
 
 // API Configuration
 export const API_CONFIG = {
-  baseUrl: USE_MOCK_DATA ? 'http://localhost:3000' : (process.env.NEXT_PUBLIC_API_URL || 'https://cmy7tz9t49.execute-api.us-east-1.amazonaws.com/'),
+  baseUrl: USE_MOCK_DATA ? 'http://localhost:3000' : (process.env.NEXT_PUBLIC_API_BASE ),
   timeout: 30000,
 };
 
