@@ -443,7 +443,7 @@ const [videoUrlInput, setVideoUrlInput] = useState("");
     is_demo_content: content?.is_demo_content || false,
     is_kid_safe: content?.is_kid_safe || false,
     is_ppv: content?.is_ppv || false,
-    price_cents: content?.price_cents || 0,
+    price_dollars: content?.price_dollars || 0,
     genres: content?.genres || [],
     parent: parentId
 
@@ -478,7 +478,7 @@ const [videoUrlInput, setVideoUrlInput] = useState("");
       return;
     }
 
-    if (formData.is_ppv && (!formData.price_cents || formData.price_cents <= 0)) {
+    if (formData.is_ppv && (!formData.price_dollars || formData.price_dollars <= 0)) {
        toast.error('Price is required for PPV content');
       return;
     }
@@ -1094,8 +1094,8 @@ console.log(file,"file")
                         </label>
                         <input
                           type="number"
-                          value={formData.price_cents}
-                          onChange={(e) => handleChange('price_cents', parseInt(e.target.value) || 0)}
+                          value={formData.price_dollars}
+                          onChange={(e) => handleChange('price_dollars', parseInt(e.target.value) || 0)}
                           min="0"
                           step="1"
                           className="w-full px-4 py-2 bg-gray-700 text-white rounded-lg  outline-none ring-0 

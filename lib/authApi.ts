@@ -5,7 +5,7 @@
  * Implements login, signup, token refresh, and profile fetching.
  * 
  * Reference: API_DOCS/API_DOCUMENTATION_PART1.pdf
- * Base URL: https://cmy7tz9t49.execute-api.us-east-1.amazonaws.com
+  
  * 
  * Endpoints:
  * - POST /api/v1/login/ - User login

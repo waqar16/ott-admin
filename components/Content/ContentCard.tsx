@@ -207,7 +207,7 @@ const ContentCard: React.FC<ContentCardProps> = ({
 
             {item.is_ppv && (
               <span className="px-2 py-1 bg-purple-900/50 text-purple-300 rounded text-[8px]">
-                PPV ${((item?.price_cents || 0) / 100).toFixed(2)}
+                PPV ${((item?.price_dollars || 0) / 100).toFixed(2)}
               </span>
             )}
             {item.ingest_status === 'failed' &&

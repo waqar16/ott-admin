@@ -106,7 +106,7 @@ export interface StreamAccessResponse {
   drm_key?: string;
   expires_in_seconds?: number;
   is_ppv?: boolean;
-  price_cents?: number;
+  price_dollars?: number;
   checkout_url?: string;
 }
 
@@ -690,7 +690,7 @@ export async function checkStreamAccess(
     return {
       access: false,
       is_ppv: true,
-      price_cents: 599,
+      price_dollars: 599,
       checkout_url: `https://checkout.stripe.com/pay/mock_ppv_${contentId}`,
     };
   }
