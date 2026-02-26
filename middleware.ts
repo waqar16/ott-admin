@@ -44,7 +44,7 @@ try {
  
     } 
     // Validate token
-    const accessCheck = await axios.get(`${API_BASE}api/v1/me/`, {
+    const accessCheck = await axios.get(`${API_BASE}api/v1/me`, {
       headers: { Authorization: `Bearer ${token}` },
     });
 

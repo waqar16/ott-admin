@@ -65,7 +65,7 @@ STRIPE_PRICE_ID_FULL=price_...
 ```
 
 6. Set up webhook endpoint:
-   - URL: `https://yourdomain.com/api/stripe/webhook`
+  - URL: `https://yourdomain.com/api/stripe/webhook`
    - Events to listen for:
      - `customer.subscription.created`
      - `customer.subscription.updated`

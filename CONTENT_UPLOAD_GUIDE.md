@@ -68,7 +68,7 @@ Content-Type: application/json
   "status": "draft",
   "is_kid_safe": false,
   "is_ppv": true,
-  "price_cents": 599,
+  "price_dollars": 599,
   "genres": ["action", "adventure"]
 }
 ```
@@ -84,7 +84,7 @@ Content-Type: application/json
   "status": "draft",
   "is_kid_safe": false,
   "is_ppv": true,
-  "price_cents": 599,
+  "price_dollars": 599,
   "genres": ["action", "adventure"],
   "created_at": "2024-01-15T10:30:00Z",
   "updated_at": "2024-01-15T10:30:00Z"
