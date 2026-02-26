@@ -190,7 +190,7 @@ const { url } = await createCheckoutSession(
 
 3. **Stripe Testing**: Use Stripe CLI to test webhooks locally:
    ```bash
-   stripe listen --forward-to localhost:3000/api/stripe/webhook
+  stripe listen --forward-to localhost:3000/api/stripe/webhook
    ```
 
 4. **OAuth Setup**: Google and GitHub OAuth are placeholders. Configure credentials in .env.local to enable.

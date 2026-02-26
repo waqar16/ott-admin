@@ -19,7 +19,7 @@ export async function getFaqs(): Promise<FAQ[]> {
 }
 
 export async function deleteFaq(faq: FAQ) {
-  const res = await fetch(`${BASE}/${faq.id}/`, { method: "DELETE",
+  const res = await fetch(`${BASE}/${faq.id}`, { method: "DELETE",
      headers: { 
       "Authorization": `Bearer ${Cookies.get('access_token')}`
     },
@@ -27,7 +27,7 @@ export async function deleteFaq(faq: FAQ) {
   return res.status;
 }
 export async function createFaq(faq: Partial<FAQ>) {
-  const res = await fetch(`${BASE}/`, {
+  const res = await fetch(`${BASE}`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -38,7 +38,7 @@ export async function createFaq(faq: Partial<FAQ>) {
   return res.status;
 }
 export async function updateFaq(faq: Partial<FAQ>) {
-  const res = await fetch(`${BASE}/${faq.id}/`, {
+  const res = await fetch(`${BASE}/${faq.id}`, {
     method: "PATCH",
     headers: {
       "Content-Type": "application/json",

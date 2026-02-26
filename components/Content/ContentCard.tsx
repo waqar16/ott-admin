@@ -128,6 +128,7 @@ const ContentCard: React.FC<ContentCardProps> = ({
       Delete
     </span>
   </div>
+  {item.content_type !== 'trailer' && 
   <div className="relative group">
     <button
       onClick={() => setTrailerOpen(true)}
@@ -146,7 +147,7 @@ const ContentCard: React.FC<ContentCardProps> = ({
     >
       Attach Trailer
     </span>
-  </div>
+  </div>}
   {(item.ingest_status === 'ready' &&
                 item.status !== 'published' &&
                 item.status !== 'inactive') &&
@@ -207,7 +208,7 @@ const ContentCard: React.FC<ContentCardProps> = ({
 
             {item.is_ppv && (
               <span className="px-2 py-1 bg-purple-900/50 text-purple-300 rounded text-[8px]">
-                PPV ${((item?.price_dollars || 0) / 100).toFixed(2)}
+                PPV ${((item?.price_dollars || 0)) }
               </span>
             )}
             {item.ingest_status === 'failed' &&

@@ -8,10 +8,10 @@
   
  * 
  * Endpoints:
- * - POST /api/v1/login/ - User login
- * - POST /api/v1/signup/ - User registration
- * - POST /api/v1/token/refresh/ - Refresh access token
- * - GET /api/v1/me/ - Get current user profile (protected)
+ * - POST /api/v1/login - User login
+ * - POST /api/v1/signup - User registration
+ * - POST /api/v1/token/refresh - Refresh access token
+ * - GET /api/v1/me - Get current user profile (protected)
  * Note: Logout is handled client-side by clearing tokens
  */
 
@@ -71,7 +71,7 @@ export async function login(credentials: {
   // Mock mode fallback
    
   try {
-    const response = await fetch(`${API_BASE}api/v1/login/`, {
+    const response = await fetch(`${API_BASE}api/v1/login`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -135,7 +135,7 @@ export async function signup(userData: {
   }
 
   try {
-    const response = await fetch(`${API_BASE}api/v1/signup/`, {
+    const response = await fetch(`${API_BASE}api/v1/signup`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -204,7 +204,7 @@ export async function refreshToken(refreshToken: string): Promise<LoginResponse>
   }
 
   try {
-    const response = await fetch(`${API_BASE}api/v1/token/refresh/`, {
+    const response = await fetch(`${API_BASE}api/v1/token/refresh`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -262,7 +262,7 @@ export async function me(accessToken: string): Promise<User> {
   }
 
   try {
-    const response = await fetch(`${API_BASE}api/v1/me/`, {
+    const response = await fetch(`${API_BASE}api/v1/me`, {
       method: 'GET',
       headers: {
         'Authorization': `Bearer ${accessToken}`,

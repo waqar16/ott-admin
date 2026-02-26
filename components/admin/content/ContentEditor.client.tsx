@@ -369,7 +369,7 @@ export const MEDIA_TYPES: Array<{ id: MediaType; name: string }> = [
 
 export default function ContentEditor(props: ContentEditorProps) {
    const [mounted,setMounted]=useState(false);
-   
+   const gridScrollRef = useRef(null);
   const [metaData, setMetaData] = useState<ContentMetadataPayload>({
     content: '',
     directors: [],
@@ -720,9 +720,11 @@ console.log("file",file)
   const fetchGenre = async () => {
     try {
       let fetchGenre = await axios.get(`${API_BASE}api/v1/content/genres`)
-      setAllGenre(fetchGenre.data.results)
+      setAllGenre(fetchGenre?.data?.results)
     }
     catch (err) {
+      console.log(err,"error")
+      setAllGenre([])
     }
   }
   useEffect(() => {
@@ -740,7 +742,7 @@ console.log("file",file)
         const token = Cookies.get("access_token");
 
         const res = await fetch(
-          `${API_BASE}api/v1/content/content/${content?.id}/stream/`,
+          `${API_BASE}api/v1/content/content/${content?.id}/stream`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -775,7 +777,7 @@ console.log("file",file)
 
       if (isEditing && metaData?.id) {
         await axios.patch(
-          `${API_BASE}api/v1/content/content-metadata/${metaData.id}/`,
+          `${API_BASE}api/v1/content/content-metadata/${metaData.id}`,
           metaData, {
           headers: {
             'Content-Type': 'application/json',
@@ -788,7 +790,7 @@ console.log("file",file)
       }
       else {
         await axios.post(
-          `${API_BASE}api/v1/content/content-metadata/`,
+          `${API_BASE}api/v1/content/content-metadata`,
           metaData, {
           headers: {
             'Content-Type': 'application/json',
@@ -974,8 +976,11 @@ console.log(file,"file")
             {step === 1 && (
 
               <>
-
-                <div className="  grid grid-cols-1 md:grid-cols-2 gap-2  overflow-y-auto minimal-scrollbar max-h-[55vh] md:max-h-[60vh]">
+ 
+                <div
+                  ref={gridScrollRef}
+                  className="  grid grid-cols-1 md:grid-cols-2 gap-2  overflow-y-auto minimal-scrollbar max-h-[55vh] md:max-h-[60vh]"
+                >
                   <div className="md:col-span-2">
                     <label className="block text-sm font-medium text-gray-300 mb-2">
                       Title *
@@ -1079,7 +1084,15 @@ console.log(file,"file")
                         type="checkbox"
                         id="is_ppv"
                         checked={formData.is_ppv}
-                        onChange={(e) => handleChange('is_ppv', e.target.checked)}
+                        onChange={(e) => {
+                          handleChange('is_ppv', e.target.checked);
+                          if (e.target.checked && gridScrollRef.current) {
+                            setTimeout(() => {
+                              const el = gridScrollRef.current;
+                              el.scrollTo({ top: el.scrollHeight, behavior: 'smooth' });
+                            }, 100);
+                          }
+                        }}
                         className="w-4 h-4 text-blue-600 bg-gray-700 border-gray-600 rounded focus:ring-blue-500"
                       />
                       <label htmlFor="is_ppv" className="ml-2 text-sm text-gray-300">
@@ -1090,7 +1103,7 @@ console.log(file,"file")
                     {formData.is_ppv && (
                       <div className="md:col-span-2">
                         <label className="block text-sm font-medium text-gray-300 mb-2">
-                          Price (cents)
+                          Price ($)
                         </label>
                         <input
                           type="number"
@@ -1104,7 +1117,7 @@ console.log(file,"file")
                           placeholder="599 = $5.99"
                         />
                         <p className="text-xs text-gray-400 mt-1">
-                          Price in cents (e.g., 599 = $5.99)
+                          Price in Dollars 
                         </p>
                       </div>
                     )}
