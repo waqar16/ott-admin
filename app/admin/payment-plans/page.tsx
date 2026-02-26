@@ -50,7 +50,7 @@ const PaymentPlansPage = () => {
   const deletePlan = async (id: string) => {
     
     try {
-      await axios.delete(`${API_BASE}api/v1/payments/plans/${id}/`, {
+      await axios.delete(`${API_BASE}api/v1/payments/plans/${id}`, {
         headers: {
           Authorization: `Bearer ${Cookies.get('access_token')}`
         }
@@ -67,7 +67,7 @@ const PaymentPlansPage = () => {
     setLoading(true);
 
     const response = await axios.get<ApiResponse>(
-      `${API_BASE}api/v1/payments/plans/?page=${page}&search=${filters.search || ""}&is_active=${filters.is_active ?? ""}&ad_supported=${filters.ad_supported ?? ""}`
+      `${API_BASE}api/v1/payments/plans?page=${page}&search=${filters.search || ""}&is_active=${filters.is_active ?? ""}&ad_supported=${filters.ad_supported ?? ""}`
     );
 
     setPlans(response.data.results);
@@ -315,12 +315,12 @@ const PlanForm = ({
 
       if (initial) {
         // 🔥 UPDATE
-        await axios.put(`${API_BASE}api/v1/payments/plans/${initial.id}/`, form,{headers:{
+        await axios.put(`${API_BASE}api/v1/payments/plans/${initial.id}`, form,{headers:{
           Authorization:`Bearer ${Cookies.get('access_token')}`
         }});
       } else {
         // ➕ CREATE NEW
-        await axios.post(`${API_BASE}api/v1/payments/plans/`, form,{headers:{
+        await axios.post(`${API_BASE}api/v1/payments/plans`, form,{headers:{
           Authorization:`Bearer ${Cookies.get('access_token')}`
         }});
       }

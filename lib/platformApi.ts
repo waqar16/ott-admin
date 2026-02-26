@@ -29,12 +29,12 @@ import { getAccessToken } from './tokenStore';
 export function getPlatformSettings(token?: string) {
   const accessToken = token || getAccessToken();
   console.log('object')
-  return get<PlatformSettings>('api/v1/platform/settings/', accessToken ? { headers: { Authorization: `Bearer ${accessToken}` } } : undefined);
+  return get<PlatformSettings>('api/v1/platform/settings', accessToken ? { headers: { Authorization: `Bearer ${accessToken}` } } : undefined);
 }
 
 export function updatePlatformSettings(data: UpdatePlatformSettingsRequest, token?: string) {
   const accessToken = token || getAccessToken();
-  return post<PlatformSettings>('api/v1/platform/settings/', data, accessToken ? { headers: { Authorization: `Bearer ${accessToken}` } } : undefined);
+  return post<PlatformSettings>('api/v1/platform/settings', data, accessToken ? { headers: { Authorization: `Bearer ${accessToken}` } } : undefined);
 }
 
 import { API_CONFIG } from './config';
@@ -45,7 +45,7 @@ export function uploadPlatformLogo(file: File, token?: string): Promise<Platform
   const formData = new FormData();
   formData.append('file', file);
   const accessToken = token || getAccessToken();
-  return fetch(`${API_CONFIG.baseUrl}api/v1/platform/logo-upload/`, {
+  return fetch(`${API_CONFIG.baseUrl}api/v1/platform/logo-upload`, {
     method: 'POST',
     body: formData,
     headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : undefined,

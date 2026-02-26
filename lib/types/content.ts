@@ -57,7 +57,7 @@ export interface Content {
   status: ContentStatus;
   is_kid_safe: boolean;
   is_ppv: boolean;
-  price_cents?: number;
+  price_dollars?: number;
   genres?: string[];
   children?:[];
   parent?:number;
@@ -86,7 +86,7 @@ export interface CreateContentPayload {
   is_kid_safe?: boolean;
   is_ppv?: boolean;
   trailerType?:string;
-  price_cents?: number;
+  price_dollars?: number;
   genres?: string[];
   duration_seconds?: number;
   trailer_youtube_url?: string;
@@ -108,7 +108,7 @@ export interface UpdateContentPayload {
   status?: ContentStatus;
   is_kid_safe?: boolean;
   is_ppv?: boolean;
-  price_cents?: number;
+  price_dollars?: number;
   genres?: string[];
   duration_seconds?: number;
   release_date?: string;

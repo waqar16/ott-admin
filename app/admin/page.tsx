@@ -13,7 +13,7 @@ export default function AdminHome() {
     try {
       const token = Cookies.get('access_token')
       console.log(token,"token")
-      const res = await fetch(`${API_BASE}api/v1/admin-dashboard/overview/`, {
+      const res = await fetch(`${API_BASE}api/v1/admin-dashboard/overview`, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",

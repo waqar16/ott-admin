@@ -37,7 +37,7 @@ export async function getUsers(): Promise<User[]> {
 }
 
 export async function updateUser(userData:User) { 
-  const res = await axios.patch(`${API_BASE}api/v1/users/${userData.id}/update/`,userData, { 
+  const res = await axios.patch(`${API_BASE}api/v1/users/${userData.id}/update`,userData, { 
     headers: {
       "Content-Type": "application/json", 
       Authorization: `Bearer ${Cookies.get('access_token')}`,
@@ -53,7 +53,7 @@ return data
 }
 
 export async function deleteUser(userData:User) { 
-  const res = await axios.delete(`${API_BASE}api/v1/users/${userData.id}/delete/`, { 
+  const res = await axios.delete(`${API_BASE}api/v1/users/${userData.id}/delete`, { 
     headers: {
       "Content-Type": "application/json", 
       Authorization: `Bearer ${Cookies.get('access_token')}`,

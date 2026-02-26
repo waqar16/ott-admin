@@ -164,7 +164,7 @@ async function handleApiError(response: Response): Promise<ApiError> {
 
 /**
  * List all profiles for the authenticated user
- * GET /api/v1/profiles/
+ * GET /api/v1/profiles
  */
 export async function listProfiles({
   page = 1,
@@ -199,7 +199,7 @@ export async function listProfiles({
   }
   
   try {
-    const url = `${API_BASE}api/v1/profiles/?page=${page}&page_size=${pageSize}`;
+    const url = `${API_BASE}api/v1/profiles?page=${page}&page_size=${pageSize}`;
     const response = await fetch(url, {
       method: 'GET',
       headers: getAuthHeaders(),
@@ -224,7 +224,7 @@ export async function listProfiles({
 
 /**
  * Create a new profile
- * POST /api/v1/profiles/
+ * POST /api/v1/profiles
  */
 export async function createProfile(payload: CreateProfilePayload): Promise<Profile> {
   if (USE_MOCK_DATA) {
@@ -265,7 +265,7 @@ export async function createProfile(payload: CreateProfilePayload): Promise<Prof
   }
   
   try {
-    const url = `${API_BASE}api/v1/profiles/`;
+    const url = `${API_BASE}api/v1/profiles`;
     const response = await fetch(url, {
       method: 'POST',
       headers: getAuthHeaders(),
@@ -291,7 +291,7 @@ export async function createProfile(payload: CreateProfilePayload): Promise<Prof
 
 /**
  * Get a single profile by ID
- * GET /api/v1/profiles/{profileId}/
+ * GET /api/v1/profiles/{profileId}
  */
 export async function getProfile(profileId: string): Promise<Profile> {
   if (USE_MOCK_DATA) {
@@ -318,7 +318,7 @@ export async function getProfile(profileId: string): Promise<Profile> {
   }
   
   try {
-    const url = `${API_BASE}api/v1/profiles/${profileId}/`;
+    const url = `${API_BASE}api/v1/profiles/${profileId}`;
     const response = await fetch(url, {
       method: 'GET',
       headers: getAuthHeaders(),
@@ -343,7 +343,7 @@ export async function getProfile(profileId: string): Promise<Profile> {
 
 /**
  * Update a profile (partial update)
- * PATCH /api/v1/profiles/{profileId}/
+ * PATCH /api/v1/profiles/{profileId}
  */
 export async function updateProfile(
   profileId: string,
@@ -379,7 +379,7 @@ export async function updateProfile(
   }
   
   try {
-    const url = `${API_BASE}api/v1/profiles/${profileId}/`;
+    const url = `${API_BASE}api/v1/profiles/${profileId}`;
     const response = await fetch(url, {
       method: 'PATCH',
       headers: getAuthHeaders(),
@@ -405,7 +405,7 @@ export async function updateProfile(
 
 /**
  * Delete a profile
- * DELETE /api/v1/profiles/{profileId}/
+ * DELETE /api/v1/profiles/{profileId}
  */
 export async function deleteProfile(profileId: string): Promise<boolean> {
   if (USE_MOCK_DATA) {
@@ -433,7 +433,7 @@ export async function deleteProfile(profileId: string): Promise<boolean> {
   }
   
   try {
-    const url = `${API_BASE}api/v1/profiles/${profileId}/`;
+    const url = `${API_BASE}api/v1/profiles/${profileId}`;
     const response = await fetch(url, {
       method: 'DELETE',
       headers: getAuthHeaders(),
@@ -458,7 +458,7 @@ export async function deleteProfile(profileId: string): Promise<boolean> {
 
 /**
  * Verify profile PIN
- * POST /api/v1/profiles/{profileId}/verify-pin/
+ * POST /api/v1/profiles/{profileId}/verify-pin
  */
 export async function verifyPin(profileId: string, pin: string): Promise<VerifyPinResponse> {
   if (USE_MOCK_DATA) {
@@ -497,7 +497,7 @@ export async function verifyPin(profileId: string, pin: string): Promise<VerifyP
   }
   
   try {
-    const url = `${API_BASE}api/v1/profiles/${profileId}/verify-pin/`;
+    const url = `${API_BASE}api/v1/profiles/${profileId}/verify-pin`;
     const response = await fetch(url, {
       method: 'POST',
       headers: getAuthHeaders(),

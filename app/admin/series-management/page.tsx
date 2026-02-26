@@ -30,7 +30,7 @@ async function createSeries() {
     setCreatingSeries(true);
     const token = Cookies.get("access_token"); 
 
-    const res = await fetch(`${API_BASE}api/v1/content/contents/series/`, {
+    const res = await fetch(`${API_BASE}api/v1/content/contents/series`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

@@ -187,7 +187,7 @@ async function handleApiError(response: Response): Promise<ApiError> {
 
 /**
  * Create a new content record
- * POST /api/v1/content/contents/
+ * POST /api/v1/content/contents
  */
 export async function deleteContentContent(contentId): Promise<any> {
   
@@ -252,7 +252,7 @@ export async function createContent(payload: CreateContentPayload): Promise<Cont
   }
   
   try {
-    const url = `${API_BASE}api/v1/content/contents/`;
+    const url = `${API_BASE}api/v1/content/contents`;
     const response = await fetch(url, {
       method: 'POST',
       headers: getAuthHeaders(),
@@ -278,7 +278,7 @@ export async function createContent(payload: CreateContentPayload): Promise<Cont
 
 /**
  * Update an existing content record
- * PATCH /api/v1/content/contents/{contentId}/
+ * PATCH /api/v1/content/contents/{contentId}
  */
 export async function updateContent(
   contentId: string,
@@ -314,7 +314,7 @@ export async function updateContent(
   }
   
   try {
-    const url = `${API_BASE}api/v1/content/contents/${contentId}/`;
+    const url = `${API_BASE}api/v1/content/contents/${contentId}`;
     const response = await fetch(url, {
       method: 'PATCH',
       headers: getAuthHeaders(),
@@ -351,7 +351,7 @@ export async function deleteContent(
   }
   
   try {
-    const url = `${API_BASE}api/v1/content/contents/${contentId}/`;
+    const url = `${API_BASE}api/v1/content/contents/${contentId}`;
     const response = await fetch(url, {
       method: 'DELETE',
       headers: getAuthHeaders(), 
@@ -375,7 +375,7 @@ export async function deleteContent(
 }
 /**
  * Get a single content record by ID
- * GET /api/v1/content/contents/{contentId}/
+ * GET /api/v1/content/contents/{contentId}
  */
 export async function getContent(contentId: string): Promise<Content> {
   if (USE_MOCK_DATA) {
@@ -402,7 +402,7 @@ export async function getContent(contentId: string): Promise<Content> {
   }
   
   try {
-    const url = `${API_BASE}api/v1/content/contents/${contentId}/`;
+    const url = `${API_BASE}api/v1/content/contents/${contentId}`;
     const response = await fetch(url, {
       method: 'GET',
       headers: getAuthHeaders(),
@@ -427,7 +427,7 @@ export async function getContent(contentId: string): Promise<Content> {
 
 /**
  * List content with pagination and filters
- * GET /api/v1/content/contents/
+ * GET /api/v1/content/contents
  */
 export async function listContent({
   page = 1,
@@ -513,7 +513,7 @@ export async function listContent({
     if (search) params.append('search', search);
     
     const url =  
-    `${API_BASE}api/v1/content/contents/?content_type=${content_type}&${params.toString()}`;
+    `${API_BASE}api/v1/content/contents?content_type=${content_type}&${params.toString()}`;
     const response = await fetch(url, {
       method: 'GET',
       headers: getAuthHeaders(),
@@ -548,7 +548,7 @@ export async function retryTranscoding(contentId: string): Promise<any> {
   }
   
   try {
-    const url = `${API_BASE}api/v1/admin-dashboard/content/video-assets/${contentId}/retry-transcode/`;
+    const url = `${API_BASE}api/v1/admin-dashboard/content/video-assets/${contentId}/retry-transcode`;
     const response = await fetch(url, {
       method: 'POST',
       headers: getAuthHeaders(), 
@@ -572,7 +572,7 @@ export async function retryTranscoding(contentId: string): Promise<any> {
 }
 /**
  * Publish content (change status to published)
- * POST /api/v1/content/content/{content_id}/publish/
+ * POST /api/v1/content/content/{content_id}/publish
  */
 export async function publishContent(contentId: string,status?:string): Promise<Content> {
   
@@ -587,7 +587,7 @@ export async function publishContent(contentId: string,status?:string): Promise<
   }
   
   try {
-    const url = `${API_BASE}api/v1/content/contents/${contentId}/`;
+    const url = `${API_BASE}api/v1/content/contents/${contentId}`;
     const response = await fetch(url, {
       method: 'PATCH',
       headers: getAuthHeaders(),
@@ -617,7 +617,7 @@ export async function publishContent(contentId: string,status?:string): Promise<
 
 /**
  * Initialize upload and get presigned POST URL
- * POST /api/v1/content/content/upload/init/
+ * POST /api/v1/content/content/upload/init
  */
 export async function initUpload(
   contentId: string,
@@ -629,7 +629,7 @@ export async function initUpload(
     // Mock presigned POST response
     return {
       upload_url: {
-        url: 'https://urview-raw.s3.amazonaws.com/',
+        url: 'https://urview-raw.s3.amazonaws.com',
         fields: {
           key: `raw/content/${contentId}/${filename}`,
           'x-amz-algorithm': 'AWS4-HMAC-SHA256',
@@ -652,7 +652,7 @@ export async function initUpload(
     } as ApiError;
   } 
   try {
-    const url = `${API_BASE}api/v1/content/content/upload/init/`;
+    const url = `${API_BASE}api/v1/content/content/upload/init`;
     const response = await fetch(url, {
       method: 'POST',
       headers: getAuthHeaders(),
@@ -680,7 +680,7 @@ export async function initUpload(
 
 /**
  * Simulate S3 callback (DEV ONLY)
- * POST /api/v1/content/uploads/s3-callback/
+ * POST /api/v1/content/uploads/s3-callback
  * 
  * PRODUCTION NOTE: In production, this endpoint should ONLY be called by S3 via event notifications.
  * The frontend should NOT call this endpoint in production.
@@ -701,7 +701,7 @@ export async function postUploadCallback(payload: S3CallbackPayload): Promise<an
   }
   
   try {
-    const url = `${API_BASE}api/v1/content/uploads/s3-callback/`;
+    const url = `${API_BASE}api/v1/content/uploads/s3-callback`;
     const response = await fetch(url, {
       method: 'POST',
       headers: {
@@ -734,7 +734,7 @@ export async function postUploadCallback(payload: S3CallbackPayload): Promise<an
 
 /**
  * Upload poster or banner image
- * POST /api/v1/content/content/{content_id}/images/
+ * POST /api/v1/content/content/{content_id}/images
  */
 export async function fetchSubtitles(
   contentId: string,
@@ -751,7 +751,7 @@ export async function fetchSubtitles(
   }
   
   try {
-    const url = `${API_BASE}api/v1/content/content/${contentId}/subtitles/list/`;
+    const url = `${API_BASE}api/v1/content/content/${contentId}/subtitles/list`;
     
     // const formData = new FormData();
     // formData.append('file', file);
@@ -798,7 +798,7 @@ export async function uploadSubtitles(assetId: string, files: File[], languages:
       fd.append("names[]", names[i])         // subtitle display name
     })
 
-    const response = await fetch(`${API_BASE}api/v1/content/content/${assetId}/subtitles/bulk/`, {
+    const response = await fetch(`${API_BASE}api/v1/content/content/${assetId}/subtitles/bulk`, {
       method: "POST",
       headers:{
         Authorization: `Bearer ${token}`,
@@ -848,7 +848,7 @@ export async function uploadDubbings(
     })
 
     const response = await fetch(
-      `${API_BASE}api/v1/content/content/${assetId}/audiotracks/bulk/`,
+      `${API_BASE}api/v1/content/content/${assetId}/audiotracks/bulk`,
       {
         method: 'POST',
         headers: {
@@ -896,7 +896,7 @@ export async function uploadImageForEpisode(
   }
   
   try {
-    const url = `${API_BASE}api/v1/content/content/${contentId}/images/`;
+    const url = `${API_BASE}api/v1/content/content/${contentId}/images`;
     
     const formData = new FormData();
     formData.append('file', file);
@@ -932,7 +932,7 @@ export async function uploadImageForEpisode(
 
 /**
  * Create a new series
- * POST /api/v1/content/series/
+ * POST /api/v1/content/series
  */
 export async function uploadImage(
   contentId: string,
@@ -959,7 +959,7 @@ export async function uploadImage(
   }
   
   try {
-    const url = `${API_BASE}api/v1/content/content/${contentId}/images/`;
+    const url = `${API_BASE}api/v1/content/content/${contentId}/images`;
     
     const formData = new FormData();
     formData.append('file', file);
@@ -1013,7 +1013,7 @@ export async function createSeries(payload: CreateSeriesPayload): Promise<Series
   }
   
   try {
-    const url = `${API_BASE}api/v1/content/series/`;
+    const url = `${API_BASE}api/v1/content/series`;
     const response = await fetch(url, {
       method: 'POST',
       headers: getAuthHeaders(),
@@ -1039,7 +1039,7 @@ export async function createSeries(payload: CreateSeriesPayload): Promise<Series
 
 /**
  * Create a new season
- * POST /api/v1/content/seasons/
+ * POST /api/v1/content/seasons
  */
 export async function createSeason(payload: CreateSeasonPayload): Promise<Season> {
   if (USE_MOCK_DATA) {
@@ -1063,7 +1063,7 @@ export async function createSeason(payload: CreateSeasonPayload): Promise<Season
   }
   
   try {
-    const url = `${API_BASE}api/v1/content/seasons/`;
+    const url = `${API_BASE}api/v1/content/seasons`;
     const response = await fetch(url, {
       method: 'POST',
       headers: getAuthHeaders(),
@@ -1089,7 +1089,7 @@ export async function createSeason(payload: CreateSeasonPayload): Promise<Season
 
 /**
  * Create a new episode
- * POST /api/v1/content/episodes/
+ * POST /api/v1/content/episodes
  */
 export async function createEpisode(payload: CreateEpisodePayload): Promise<Episode> {
   if (USE_MOCK_DATA) {
@@ -1114,7 +1114,7 @@ export async function createEpisode(payload: CreateEpisodePayload): Promise<Epis
   }
   
   try {
-    const url = `${API_BASE}api/v1/content/episodes/`;
+    const url = `${API_BASE}api/v1/content/episodes`;
     const response = await fetch(url, {
       method: 'POST',
       headers: getAuthHeaders(),
@@ -1140,7 +1140,7 @@ export async function createEpisode(payload: CreateEpisodePayload): Promise<Epis
 
 /**
  * Upload episode thumbnail
- * POST /api/v1/content/episodes/{episode_id}/upload-thumbnail/
+ * POST /api/v1/content/episodes/{episode_id}/upload-thumbnail
  */
 export async function uploadEpisodeThumbnail(
   episodeId: string,
@@ -1165,7 +1165,7 @@ export async function uploadEpisodeThumbnail(
   }
   
   try {
-    const url = `${API_BASE}api/v1/content/episodes/${episodeId}/upload-thumbnail/`;
+    const url = `${API_BASE}api/v1/content/episodes/${episodeId}/upload-thumbnail`;
     
     const formData = new FormData();
     formData.append('file', file);
@@ -1201,7 +1201,7 @@ export async function uploadEpisodeThumbnail(
 
 /**
  * Get renditions for a content item
- * GET /api/v1/content/content/{contentId}/renditions/
+ * GET /api/v1/content/content/{contentId}/renditions
  */
 export async function getRenditions(contentId: string): Promise<RenditionsListResponse> {
   if (USE_MOCK_DATA) {
@@ -1223,7 +1223,7 @@ export async function getRenditions(contentId: string): Promise<RenditionsListRe
   }
   
   try {
-    const url = `${API_BASE}api/v1/content/content/${contentId}/renditions/`;
+    const url = `${API_BASE}api/v1/content/content/${contentId}/renditions`;
     const response = await fetch(url, {
       method: 'GET',
       headers: getAuthHeaders(),
@@ -1257,7 +1257,7 @@ export async function getStreamingUrl(contentId: string): Promise<any> {
   }
   
   try {
-    const url = `${API_BASE}api/v1/content/content/${contentId}/stream/`;
+    const url = `${API_BASE}api/v1/content/content/${contentId}/stream`;
     const response = await fetch(url, {
       method: 'GET',
       headers: getAuthHeaders(),
@@ -1282,7 +1282,7 @@ export async function getStreamingUrl(contentId: string): Promise<any> {
 
 /**
  * Get manifest for a content item
- * GET /api/v1/content/content/manifest/{contentId}/
+ * GET /api/v1/content/content/manifest/{contentId}
  */
 export async function getManifest(contentId: string): Promise<ManifestResponse> {
   if (USE_MOCK_DATA) {
@@ -1313,7 +1313,7 @@ https://cdn.example.com/content-${contentId}/1080p/playlist.m3u8`;
   }
   
   try {
-    const url = `${API_BASE}api/v1/content/content/manifest/${contentId}/`;
+    const url = `${API_BASE}api/v1/content/content/manifest/${contentId}`;
     const response = await fetch(url, {
       method: 'GET',
       headers: getAuthHeaders(),
@@ -1348,7 +1348,7 @@ https://cdn.example.com/content-${contentId}/1080p/playlist.m3u8`;
 
 /**
  * Get DRM key for content playback
- * GET /api/v1/content/drm/key/
+ * GET /api/v1/content/drm/key
  * 
  * NOTE: This endpoint should be called by the video player during playback when DRM is required.
  * The key is sensitive and should only be retrieved when needed.
@@ -1377,7 +1377,7 @@ export async function getDrmKey(contentId: string): Promise<DrmKeyResponse> {
   }
   
   try {
-    const url = `${API_BASE}api/v1/content/drm/key/?content_id=${contentId}`;
+    const url = `${API_BASE}api/v1/content/drm/key?content_id=${contentId}`;
     const response = await fetch(url, {
       method: 'GET',
       headers: getAuthHeaders(),
@@ -1406,7 +1406,7 @@ export async function getDrmKey(contentId: string): Promise<DrmKeyResponse> {
 
 /**
  * Simulate MediaConvert webhook (DEV ONLY)
- * POST /api/v1/content/uploads/mediaconvert-webhook/
+ * POST /api/v1/content/uploads/mediaconvert-webhook
  * 
  * PRODUCTION NOTE: In production, this endpoint should ONLY be called by AWS MediaConvert.
  * The frontend should NOT call this endpoint in production.
@@ -1424,7 +1424,7 @@ export async function simulateMediaConvertWebhook(payload: any): Promise<any> {
   }
   
   try {
-    const url = `${API_BASE}api/v1/content/uploads/mediaconvert-webhook/`;
+    const url = `${API_BASE}api/v1/content/uploads/mediaconvert-webhook`;
     const response = await fetch(url, {
       method: 'POST',
       headers: {

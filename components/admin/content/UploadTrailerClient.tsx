@@ -69,7 +69,7 @@ const [trailerContentDataFetching,setTrailerContentDataFetching] = React.useStat
         status: content?.status || 'draft',
         is_kid_safe: content?.is_kid_safe || false,
         is_ppv: content?.is_ppv || false,
-        price_cents: content?.price_cents || 0,
+        price_dollars: content?.price_dollars || 0,
         genres: content?.genres || [],
         parent: content.id
     
