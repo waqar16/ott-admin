@@ -52,9 +52,10 @@ const ContentDetailsModal: React.FC<ContentDetailsModalProps> = ({
   
    
  
-const [confirmText, setConfirmText] = React.useState("");  
-    const [publishOpen,setPublishOpen] = React.useState(false)
-  const [publishLoading,setPublishLoading] = React.useState(false)
+  const [confirmText, setConfirmText] = React.useState("");  
+  const [publishOpen, setPublishOpen] = React.useState(false);
+  const [publishLoading, setPublishLoading] = React.useState(false);
+  const [inactivateLoading, setInactivateLoading] = React.useState(false);
  
  
  useEffect(() => {
@@ -213,20 +214,22 @@ const [confirmText, setConfirmText] = React.useState("");
           )}
           {detailContent.status == 'published' && (
             <button 
-              className="bg-yellow-600 px-4 py-2 rounded-md text-black"
+              className="bg-yellow-600 px-4 py-2 rounded-md text-black disabled:bg-neutral-700 disabled:text-gray-400"
+              disabled={inactivateLoading}
               onClick={async () => {
-                const res = await publishContent(detailContent.id,'inactive');
-                if (res.status == 'inactive') {
-                  toastPromise.then(toast => toast.success(`${detailContent.title} is UnPublished`))
- 
+                setInactivateLoading(true);
+                const res = await publishContent(detailContent.id,'archived');
+                console.log('object',res);
+                if (res.status == 'archived') {
+                  toast.success(`${detailContent.title} is UnPublished`);
                   onClose();
                 } else {
-                  toastPromise.then(toast => toast.error('Publishing failed'))
- 
+                  toast.error('UnPublishing failed');
                 }
+                setInactivateLoading(false);
               }}
             >
-              {'Inactivate Content'}
+              {inactivateLoading ? 'Inactivating...' : 'Inactivate Content'}
             </button>
             
           )}
