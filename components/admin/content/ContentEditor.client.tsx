@@ -1107,17 +1107,27 @@ console.log(file,"file")
                         </label>
                         <input
                           type="number"
-                          value={formData.price_dollars}
-                          onChange={(e) => handleChange('price_dollars', parseInt(e.target.value) || 0)}
+                          value={formData.price_dollars === 0 ? '' : String(formData.price_dollars)}
+                          onChange={e => {
+                            const val = e.target.value;
+                            // Allow empty string for controlled input
+                            if (val === '') {
+                              handleChange('price_dollars', 0);
+                            } else {
+                              // Remove leading zeros
+                              const clean = val.replace(/^0+(?!$)/, '');
+                              handleChange('price_dollars', parseInt(clean) || 0);
+                            }
+                          }}
                           min="0"
                           step="1"
                           className="w-full px-4 py-2 bg-gray-700 text-white rounded-lg  outline-none ring-0 
-           focus:outline-none focus:ring-0 
-           focus-visible:outline-none focus-visible:ring-0"
+                               focus:outline-none focus:ring-0 
+                               focus-visible:outline-none focus-visible:ring-0"
                           placeholder="599 = $5.99"
                         />
                         <p className="text-xs text-gray-400 mt-1">
-                          Price in Dollars 
+                          Price in Dollars
                         </p>
                       </div>
                     )}
