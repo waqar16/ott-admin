@@ -1902,7 +1902,7 @@ console.log(file,"file")
                     {/* Large File Warning */}
                     {uploadFile && uploadFile.size >= 1024 * 1024 * 1024 && (
                       <p className="text-xs text-amber-500">
-                        Large file detected. Upload may take time — keep this tab open.
+                        Large file detected. Upload may take time  
                       </p>
                     )}
 
