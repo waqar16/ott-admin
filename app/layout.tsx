@@ -84,6 +84,8 @@ export default function RootLayout({
           </div>
         </AuthProvider>
       </body>
+      <script src="https://apis.google.com/js/api.js"></script>
+<script src="https://accounts.google.com/gsi/client"></script>
     </html>
   )
 }

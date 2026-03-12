@@ -5,6 +5,7 @@ import Cookies from "js-cookie";
 import ReactECharts from "echarts-for-react";
 import SkeletonLoader from "@/components/Loader/SkeletonLoader";
 import { API_BASE } from "@/lib/config";
+import GoogleDriveButton from "@/components/GoogleDriveUploadButton/GoogleDriveButton";
 
 // Generic ChartCard
 export function ChartCard({ title, description, chartData, type = "line" }: any) {
@@ -225,6 +226,17 @@ if (loading)
   return (
     <div className=" p-2 md:p-6 space-y-2 md:space-y-8  text-white sm:mt-0 mt-16 ">
        <h1 className="text-3xl font-bold">Admin Analytics</h1>
+      
+      <GoogleDriveButton
+  allowMultiple={false}
+  mimeTypes={['video/mp4', 'video/*']}
+  onFilePicked={(files) => {
+    console.log('Picked from Drive:', files);
+    // files[0].id, files[0].name, files[0].url …
+  }}
+>
+  Upload Video from Google Drive
+</GoogleDriveButton>
       <p className="text-gray-400">Numeral overview of your OTT Platform</p>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 ">
        <ChartCard
