@@ -278,14 +278,17 @@ if (loading)
       <TableCard title="Top Paying Users" columns={["email", "total_spent", "subscription_count", "last_payment_date"]} data={data.topUsers.results ?? []} />
 
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-        <PieCard title="Payment Status" data={Object.entries(data.paymentStatus).map(([k, v]) => ({ label: k, count: v })) ?? []} />
+        <PieCard
+          title="Payment Status"
+          data={data?.paymentStatus?.results ? data.paymentStatus.results.map((p: any) => ({ label: p.status, count: p.count })) : []}
+        />
         <PieCard title="Payment Processor" data={data?.paymentProcessor?.results?data.paymentProcessor.results.map((p: any) => ({ label: p.processor, count: p.count })) : []} />
       </div>
 
       <div className="space-y-6">
-        <TableCard title="Top Movies" columns={["title", "views"]} data={data.topMovies.results?? []} />
-        <TableCard title="Top Series" columns={["title", "views"]} data={data.topSeries.results?? []} />
-        <TableCard title="Top Episodes" columns={["title", "views"]} data={data.topEpisodes.results?? []} />
+        <TableCard title="Top Movies" columns={["title", "views"]} data={data.topMovies?? []} />
+        <TableCard title="Top Series" columns={["title", "views"]} data={data.topSeries?? []} />
+        <TableCard title="Top Episodes" columns={["title", "views"]} data={data.topEpisodes?? []} />
       </div>
 
       <div className="grid grid-cols-3 gap-6">
