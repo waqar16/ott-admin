@@ -84,6 +84,7 @@ export default function RootLayout({
           </div>
         </AuthProvider>
       </body>
+      
     </html>
   )
 }

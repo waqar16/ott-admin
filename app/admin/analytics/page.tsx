@@ -5,6 +5,7 @@ import Cookies from "js-cookie";
 import ReactECharts from "echarts-for-react";
 import SkeletonLoader from "@/components/Loader/SkeletonLoader";
 import { API_BASE } from "@/lib/config";
+import GoogleDriveButton from "@/components/GoogleDriveUploadButton/GoogleDriveButton";
 
 // Generic ChartCard
 export function ChartCard({ title, description, chartData, type = "line" }: any) {
@@ -15,7 +16,7 @@ export function ChartCard({ title, description, chartData, type = "line" }: any)
     grid: { left: "10%", right: "5%", bottom: "10%", top: "20%" },
     series: [
       {
-        data: chartData.map((d: any) => d.count ?? d.total_revenue ?? d.value),
+        data: chartData.map((d: any) => d.count ?? d.total_revenue ?? d.watch_seconds ?? d.events ?? d.value ?? 0),
         type,
         smooth: true,
         lineStyle: { color: "#423ffdff", width: 3 },
@@ -112,6 +113,18 @@ export default function Analytics() {
   const [data, setData] = useState<any>({});
   const [error, setError] = useState("");
 
+  function formatSeconds(seconds: number | undefined) {
+    if (typeof seconds !== "number" || Number.isNaN(seconds)) return "0s";
+
+    const hrs = Math.floor(seconds / 3600);
+    const mins = Math.floor((seconds % 3600) / 60);
+    const secs = Math.floor(seconds % 60);
+
+    if (hrs > 0) return `${hrs}h ${mins}m ${secs}s`;
+    if (mins > 0) return `${mins}m ${secs}s`;
+    return `${secs}s`;
+  }
+
   async function fetchAPI(endpoint: string, defaultData: any = []) {
     try {
       const token = Cookies.get("access_token");
@@ -206,6 +219,10 @@ export default function Analytics() {
 
   if (error) return <div className="text-red-500 p-6">{error}</div>;
 
+  const engagementTimelineData = Array.isArray(data?.engagementTimeline)
+    ? data.engagementTimeline
+    : data?.engagementTimeline?.results ?? [];
+
 if (loading)
     return (
       <div className=" p-2 md:p-6 mt-16 md:mt-0 space-y-2 md:space-y-8 ">
@@ -225,13 +242,25 @@ if (loading)
   return (
     <div className=" p-2 md:p-6 space-y-2 md:space-y-8  text-white sm:mt-0 mt-16 ">
        <h1 className="text-3xl font-bold">Admin Analytics</h1>
+      
+      <GoogleDriveButton
+  allowMultiple={false}
+  mimeTypes={['video/mp4', 'video/*']}
+  onFilePicked={(files) => {
+    console.log('Picked from Drive:', files);
+    // files[0].id, files[0].name, files[0].url …
+  }}
+>
+  Upload Video from Google Drive
+</GoogleDriveButton>
       <p className="text-gray-400">Numeral overview of your OTT Platform</p>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 ">
+       {data.userGrowth.results>0 && 
        <ChartCard
   title="User Growth"
   description="New users per day"
   chartData={data.userGrowth?.results ?? []}
-/>
+/>}
 
 <ChartCard
   title="Active Users"
@@ -266,14 +295,17 @@ if (loading)
       <TableCard title="Top Paying Users" columns={["email", "total_spent", "subscription_count", "last_payment_date"]} data={data.topUsers.results ?? []} />
 
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-        <PieCard title="Payment Status" data={Object.entries(data.paymentStatus).map(([k, v]) => ({ label: k, count: v })) ?? []} />
+        <PieCard
+          title="Payment Status"
+          data={data?.paymentStatus?.results ? data.paymentStatus.results.map((p: any) => ({ label: p.status, count: p.count })) : []}
+        />
         <PieCard title="Payment Processor" data={data?.paymentProcessor?.results?data.paymentProcessor.results.map((p: any) => ({ label: p.processor, count: p.count })) : []} />
       </div>
 
       <div className="space-y-6">
-        <TableCard title="Top Movies" columns={["title", "views"]} data={data.topMovies.results?? []} />
-        <TableCard title="Top Series" columns={["title", "views"]} data={data.topSeries.results?? []} />
-        <TableCard title="Top Episodes" columns={["title", "views"]} data={data.topEpisodes.results?? []} />
+        <TableCard title="Top Movies" columns={["title", "views"]} data={data.topMovies?? []} />
+        <TableCard title="Top Series" columns={["title", "views"]} data={data.topSeries?? []} />
+        <TableCard title="Top Episodes" columns={["title", "views"]} data={data.topEpisodes?? []} />
       </div>
 
       <div className="grid grid-cols-3 gap-6">
@@ -282,7 +314,13 @@ if (loading)
         <StatCard title="MAU" value={data.engagementActive.mau} />
       </div>
 
-      <ChartCard title="Engagement Timeline" description="DAU & PPV revenue" chartData={data.engagementTimeline.results?? []} />
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+        <StatCard title="Total Watch Time" value={formatSeconds(data.engagementWatchTime?.total_watch_seconds)} />
+        <StatCard title="Avg Watch / User" value={formatSeconds(data.engagementWatchTime?.avg_watch_per_user_seconds)} />
+        <StatCard title="Avg Watch / Session" value={formatSeconds(data.engagementWatchTime?.avg_watch_per_session_seconds)} />
+      </div>
+
+      <ChartCard title="Engagement Timeline" description="Watch seconds over time" chartData={engagementTimelineData} />
     </div>
   );
 }
