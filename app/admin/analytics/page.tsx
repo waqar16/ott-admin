@@ -243,16 +243,7 @@ if (loading)
     <div className=" p-2 md:p-6 space-y-2 md:space-y-8  text-white sm:mt-0 mt-16 ">
        <h1 className="text-3xl font-bold">Admin Analytics</h1>
       
-      <GoogleDriveButton
-  allowMultiple={false}
-  mimeTypes={['video/mp4', 'video/*']}
-  onFilePicked={(files) => {
-    console.log('Picked from Drive:', files);
-    // files[0].id, files[0].name, files[0].url …
-  }}
->
-  Upload Video from Google Drive
-</GoogleDriveButton>
+     
       <p className="text-gray-400">Numeral overview of your OTT Platform</p>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 ">
        {data.userGrowth.results>0 && 
@@ -292,7 +283,7 @@ if (loading)
         <ChartCard title="Revenue Timeseries" description="Revenue per day" chartData={data.revenueTimeseries.results?? []} />
       </div>
 
-      <TableCard title="Top Paying Users" columns={["email", "total_spent", "subscription_count", "last_payment_date"]} data={data.topUsers.results ?? []} />
+      <TableCard title="Top Paying Users" columns={["email", "total_revenue", "payments_count"]} data={data.topUsers.results ?? []} />
 
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
         <PieCard

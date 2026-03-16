@@ -621,7 +621,8 @@ export async function publishContent(contentId: string,status?:string): Promise<
  */
 export async function initUpload(
   contentId: string,
-  filename: string
+  filename: string,
+  isDriveUpload?: boolean
 ): Promise<UploadInitResponse> {
   if (USE_MOCK_DATA) {
     logMockDataUsage('initUpload');
@@ -653,14 +654,28 @@ export async function initUpload(
   } 
   try {
     const url = `${API_BASE}api/v1/content/content/upload/init`;
-    const response = await fetch(url, {
+    let response;
+    if(isDriveUpload){
+      response = await fetch(url, {
+      method: 'POST',
+      headers: getAuthHeaders(),
+      body: JSON.stringify({
+        google_drive_file_id:filename,
+        content_id: contentId,
+        filename
+      }),
+    })
+    } 
+    else{
+      response = await fetch(url, {
       method: 'POST',
       headers: getAuthHeaders(),
       body: JSON.stringify({
         filename,
         content_id: contentId,
       }),
-    }); 
+    })
+    }
     if (!response.ok) {
       throw await handleApiError(response);
     }
