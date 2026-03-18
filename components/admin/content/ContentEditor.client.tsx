@@ -33,6 +33,7 @@ import FullScreenLoader from '@/components/Loader/FullScreenLoader';
 import SingleSelect from '@/components/SingleSelect';
 import SearchableSingleSelect from '@/components/SearchableSingleSelect';
 import { UploadToastProgress } from './UploadToastProgress';
+import GoogleDriveButton, { type DriveFile } from '@/components/GoogleDriveUploadButton/GoogleDriveButton';
 
 
 export interface ContentEditorProps {
@@ -399,6 +400,7 @@ export default function ContentEditor(props: ContentEditorProps) {
 
   const [showUpload, setShowUpload] = useState(false);
   const [uploadFile, setUploadFile] = useState<File | null>(null);
+  const [driveSelectedFile, setDriveSelectedFile] = useState<DriveFile | null>(null);
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [uploadStatus, setUploadStatus] = useState<string>('');
@@ -565,22 +567,71 @@ const [videoUrlInput, setVideoUrlInput] = useState("");
   }
 
   async function handleFileUpload() {
-    if (!uploadFile || !createdContent) {
+    if ((!uploadFile && !driveSelectedFile) || !createdContent ) {
        toast.error('Please select a file to upload');
       return;
     }
 
-  const toastId = toast.custom(
-    () => (
-      <UploadToastProgress
-        progress={0}
-        status="Initializing upload…"
-      />
-    ),
-    {
-      duration: Infinity, // 🔑 stays until we dismiss/update
+    // Handle Drive file upload
+    if (driveSelectedFile && !uploadFile) {
+      try {
+        setLoading(true);
+        setUploading(true);
+        setError(null);
+        setUploadStatus('Initializing Drive upload...');
+
+       
+
+       
+      
+         
+        // Call initUpload with Drive file ID and access token
+        const uploadInit = await initUpload(createdContent.id, driveSelectedFile.id, true, driveSelectedFile.accessToken);
+        
+     
+        setUploadStatus(uploadInit?.msg || 'Google Drive upload initiated');
+        
+        
+      
+ 
+        toast.success(
+          uploadInit?.msg  || 'Google Drive upload initiated'
+        );
+
+        
+        setDriveSelectedFile(null);
+if(uploadInit.msg){
+        onClose()
+
+}
+else{
+  toast.error('Failed to initiate Google Drive upload');
+  onClose()
+}
+      } catch (err) {
+        const apiError = err as ApiError;
+         toast.error(apiError.message || 'Drive upload failed');
+      } finally {
+        setUploading(false);
+        setLoading(false);
+      }
+
+      return;
     }
-  );
+
+    // Handle local file upload
+    const toastId = toast.custom(
+      () => (
+        <UploadToastProgress
+          progress={0}
+          status="Initializing upload…"
+        />
+      ),
+      {
+        duration: Infinity,
+      }
+    );
+
     const validation = validateFile(uploadFile, { 
       allowedTypes: ['video/*', 'audio/*'],
     });
@@ -589,39 +640,40 @@ const [videoUrlInput, setVideoUrlInput] = useState("");
        toast.error(validation.error || 'Invalid file');
       return;
     }
+
     try {
-      setLoading(true)
+      setLoading(true);
       setUploading(true);
       setError(null);
       setUploadStatus('Initializing upload...');
 
       const uploadInit = await initUpload(createdContent.id, uploadFile.name);
    
-    if(uploadInit.s3_key){
+      if(uploadInit.s3_key){
         onClose()
+      }
 
-    }
       const result = await uploadWithCallback(uploadInit, uploadFile, {
         onProgress: (progress) => {
           setUploadProgress(progress.percentage);
           setUploadStatus(`Uploading: ${progress.percentage}% (${formatFileSize(progress.loaded)} / ${formatFileSize(progress.total)})`);
           toast.custom(
-      () => (
-        <UploadToastProgress
-          progress={progress.percentage}
-          status={`Uploading ${progress.percentage}%`}
-        />
-      ),
-      {
-        id: toastId, // 🔑 update same toast
-      }
-    );
-if (progress.percentage >= 100) {
-      toast.dismiss(toastId); // hide the progress toast
-      toast.success(
-        "Upload completed. Please wait for processing before publishing."
-      );
-    }
+            () => (
+              <UploadToastProgress
+                progress={progress.percentage}
+                status={`Uploading ${progress.percentage}%`}
+              />
+            ),
+            {
+              id: toastId,
+            }
+          );
+          if (progress.percentage >= 100) {
+            toast.dismiss(toastId);
+            toast.success(
+              "Upload completed. Please wait for processing before publishing."
+            );
+          }
         },
       });
 
@@ -629,7 +681,6 @@ if (progress.percentage >= 100) {
       setContent(prevContents => {
         return prevContents.map(c => c.id === createdContent.id ? { ...c, status: 'processing', ingest_status: 'processing' } : c);
       });
-      // toast.info("Your Video Content upload wait for the processing to comlete then proceed to publish");
 
       setSuccess('File uploaded successfully! Waiting for transcoding to start...');
       setUploadStatus('Upload complete - Asset created. Transcoding will begin shortly.');
@@ -640,8 +691,7 @@ if (progress.percentage >= 100) {
        toast.error(apiError.message || 'Upload failed');
     } finally {
       setUploading(false);
-      setLoading(false)
-
+      setLoading(false);
     }
   }
 
@@ -1830,8 +1880,8 @@ console.log(file,"file")
 
                     {/* Media Upload Area */}
                     <div className="relative max-h-[30vh] md:max-h-[45vh] w-full aspect-video rounded-xl border-2 border-dashed border-gray-600 bg-neutral-900 hover:border-blue-500 transition cursor-pointer overflow-hidden group">
-
-                      {/* Video Preview */}
+ 
+                      
                       {!videoFetchLoading && videoUrl && isEditing ? (
                         <div className="absolute inset-0">
                           <HlsVideoPlayer src={videoUrl} />
@@ -1857,6 +1907,31 @@ console.log(file,"file")
                           </p>
                           <p className="text-xs text-gray-300 mt-1">
                             {formatFileSize(uploadFile.size)}
+                          </p>
+                        </div>
+                      ) : driveSelectedFile ? (
+                        <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-6 bg-black/60">
+                          <svg
+                            className="w-12 h-12 text-orange-400 mb-3"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth={1.5}
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              d="M3 16.5V19a2 2 0 002 2h14a2 2 0 002-2v-2.5M7 10l5-5 5 5M12 5v14"
+                            />
+                          </svg>
+
+                          <p className="text-white font-medium break-all">
+                            {driveSelectedFile.name}
+                          </p>
+                          <p className="text-xs text-gray-300 mt-1">
+                            {typeof driveSelectedFile.sizeBytes === 'number'
+                              ? formatFileSize(driveSelectedFile.sizeBytes)
+                              : 'Size unavailable'}
                           </p>
                         </div>
                       ) : (
@@ -1893,7 +1968,10 @@ console.log(file,"file")
                       <input
                         type="file"
                         accept="video/*,audio/*"
-                        onChange={(e) => setUploadFile(e.target.files?.[0] || null)}
+                        onChange={(e) => {
+                          setUploadFile(e.target.files?.[0] || null);
+                          setDriveSelectedFile(null);
+                        }}
                         disabled={uploading || content?.ingest_status === 'processing'}
                         className="absolute inset-0 opacity-0 cursor-pointer"
                       />
@@ -1921,7 +1999,7 @@ console.log(file,"file")
 
                       <button
                         onClick={handleFileUpload}
-                        disabled={!uploadFile || uploading || content?.ingest_status === 'processing'}
+                        disabled={(!uploadFile && !driveSelectedFile) || uploading || content?.ingest_status === 'processing'}
                         className="px-6 py-2 bg-orange-600 text-white rounded-lg flex items-center gap-2 disabled:opacity-50"
                       >
                         {uploading || content?.ingest_status === 'processing' ? (
@@ -2031,7 +2109,7 @@ console.log(file,"file")
                     </h3>
 
                     {/* Media Upload Area */}
-                    <div className="relative max-h-[30vh] md:max-h-[45vh] w-full aspect-video rounded-xl border-2 border-dashed border-gray-600 bg-neutral-900 hover:border-blue-500 transition cursor-pointer overflow-hidden group">
+                    <div className="relative max-h-[20vh] md:max-h-[45vh] w-full aspect-video rounded-xl border-2 border-dashed border-gray-600 bg-neutral-900 hover:border-blue-500 transition cursor-pointer overflow-hidden group">
 
                       {/* Video Preview */}
                       {!videoFetchLoading && videoUrl && isEditing ? (
@@ -2059,6 +2137,31 @@ console.log(file,"file")
                           </p>
                           <p className="text-xs text-gray-300 mt-1">
                             {formatFileSize(uploadFile.size)}
+                          </p>
+                        </div>
+                      ) : driveSelectedFile ? (
+                        <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-6 bg-black/60">
+                          <svg
+                            className="w-12 h-12 text-orange-400 mb-3"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth={1.5}
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              d="M3 16.5V19a2 2 0 002 2h14a2 2 0 002-2v-2.5M7 10l5-5 5 5M12 5v14"
+                            />
+                          </svg>
+
+                          <p className="text-white font-medium break-all">
+                            {driveSelectedFile.name}
+                          </p>
+                          <p className="text-xs text-gray-300 mt-1">
+                            {typeof driveSelectedFile.sizeBytes === 'number'
+                              ? formatFileSize(driveSelectedFile.sizeBytes)
+                              : 'Size unavailable'}
                           </p>
                         </div>
                       ) : (
@@ -2095,7 +2198,10 @@ console.log(file,"file")
                       <input
                         type="file"
                         accept="video/*,audio/*"
-                        onChange={(e) => setUploadFile(e.target.files?.[0] || null)}
+                        onChange={(e) => {
+                          setUploadFile(e.target.files?.[0] || null);
+                          setDriveSelectedFile(null);
+                        }}
                         disabled={uploading || content?.ingest_status === 'processing'}
                         className="absolute inset-0 opacity-0 cursor-pointer"
                       />
@@ -2115,17 +2221,33 @@ console.log(file,"file")
                 )}
            </div>   
            <div className="flex justify-between mt-6">
-                      <button
+                      <div className='flex flex-row items-center'>
+                        <button
                         onClick={prevStep}
-                        className="px-4 py-2 bg-gray-600 text-white rounded-lg"
+                        className="mr-4 px-4 py-2 bg-gray-600 text-white rounded-lg"
                       >
                         Back
                       </button>
-
+<GoogleDriveButton
+  allowMultiple={false}
+  mimeTypes={['video/mp4', 'video/*']}
+  onFilePicked={(files) => {
+    const picked = files?.[0] ?? null;
+    setDriveSelectedFile(picked);
+    if (picked) {
+      console.log('Picked from Drive:', picked);
+      // Keep local file upload flow unchanged; this only updates preview text.
+      setUploadFile(null);
+    }
+  }}
+>
+  Upload Video from Google Drive
+</GoogleDriveButton> </div>
                       <button
                         onClick={handleFileUpload}
-                        disabled={!uploadFile || uploading || content?.ingest_status === 'processing'}
-                        className="px-6 py-2 bg-orange-600 text-white rounded-lg flex items-center gap-2 disabled:opacity-50"
+                         disabled={(!uploadFile && !driveSelectedFile) || uploading || content?.ingest_status === 'processing'}
+                       
+                         className="px-6 py-2 bg-orange-600 text-white rounded-lg flex items-center gap-2 disabled:opacity-50"
                       >
                         {uploading || content?.ingest_status === 'processing' ? (
                           <>

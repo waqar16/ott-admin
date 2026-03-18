@@ -44,6 +44,7 @@ export interface DriveFile {
   mimeType: string;
   url: string;
   sizeBytes?: number;
+  accessToken?: string;
 }
 
 export interface GoogleDriveButtonProps {
@@ -101,32 +102,52 @@ export default function GoogleDriveButton({
   const pickerLoadedRef = useRef(false);
 
   // ── Load GAPI + GIS scripts once on mount ──────────────────────────────────
-  useEffect(() => {
-    if (!CLIENT_ID || !API_KEY) return;
+useEffect(() => {
+  if (!CLIENT_ID || !API_KEY) return;
 
-    (async () => {
-      try {
-        await Promise.all([
-          loadScript('https://apis.google.com/js/api.js'),
-          loadScript('https://accounts.google.com/gsi/client'),
-        ]);
+  const initGoogle = async () => {
+    try {
+      await Promise.all([
+        loadScript("https://apis.google.com/js/api.js"),
+        loadScript("https://accounts.google.com/gsi/client"),
+      ]);
 
-        // Initialise gapi client
-        await new Promise<void>((resolve) => window.gapi.load('client:picker', resolve));
-        await window.gapi.client.init({ apiKey: API_KEY, discoveryDocs: [] });
-        pickerLoadedRef.current = true;
+      // Wait until gapi is available
+      const waitForGapi = () =>
+        new Promise<void>((resolve) => {
+          const check = () => {
+            if (window.gapi) resolve();
+            else setTimeout(check, 50);
+          };
+          check();
+        });
 
-        // Initialise the token client (GIS)
-        tokenClientRef.current = window.google.accounts.oauth2.initTokenClient({
+      await waitForGapi();
+
+      await new Promise<void>((resolve) =>
+        window.gapi.load("client:picker", resolve)
+      );
+
+      await window.gapi.client.init({
+        apiKey: API_KEY,
+        discoveryDocs: [],
+      });
+
+      pickerLoadedRef.current = true;
+
+      tokenClientRef.current =
+        window.google.accounts.oauth2.initTokenClient({
           client_id: CLIENT_ID,
           scope: SCOPES,
-          callback: '', // will be set per-click
+          callback: "",
         });
-      } catch (err) {
-        console.error('[GoogleDriveButton] Init error:', err);
-      }
-    })();
-  }, []);
+    } catch (err) {
+      console.error("[GoogleDriveButton] Init error:", err);
+    }
+  };
+
+  initGoogle();
+}, []);
 
   // ── Build & show the picker ────────────────────────────────────────────────
   const openPicker = useCallback(
@@ -157,13 +178,19 @@ export default function GoogleDriveButton({
         .addView(uploadView)
         .addView(driveView)
         .setCallback((data: any) => {
-          if (data[Action.PICKED]) {
+          // Google Picker returns the user action under `data.action`.
+          // Keep a fallback check for compatibility with older payload shapes.
+          const action = data?.action;
+          console.log('[GoogleDriveButton] Picker callback:', data);
+
+          if (action === Action.PICKED || data?.[Action.PICKED]) {
             const files: DriveFile[] = (data.docs ?? []).map((doc: any) => ({
               id: doc.id,
               name: doc.name,
               mimeType: doc.mimeType,
               url: doc.url,
               sizeBytes: doc.sizeBytes,
+              accessToken: accessTokenRef.current || undefined,
             }));
             onFilePicked?.(files);
           }

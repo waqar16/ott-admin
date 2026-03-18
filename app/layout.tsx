@@ -4,6 +4,9 @@ import '@/styles/globals.css'
 import { Navbar } from '@/components/Navbar'
 import { AuthProvider } from '@/lib/useAuth'
 import { Toaster } from "sonner";
+import Script from "next/script";
+
+
 import { Cinzel,Varela_Round,Satisfy,Titan_One } from 'next/font/google'
 const inter = Inter({ subsets: ['latin'] })
 export const cinzel = Cinzel({ subsets: ['latin'] })
@@ -83,6 +86,8 @@ export default function RootLayout({
           </footer> */}
           </div>
         </AuthProvider>
+        <Script src="https://apis.google.com/js/api.js" strategy="afterInteractive" />
+<Script src="https://accounts.google.com/gsi/client" strategy="afterInteractive" />
       </body>
       
     </html>
