@@ -622,7 +622,8 @@ export async function publishContent(contentId: string,status?:string): Promise<
 export async function initUpload(
   contentId: string,
   filename: string,
-  isDriveUpload?: boolean
+  isDriveUpload?: boolean,
+  googleAccessToken?: string
 ): Promise<UploadInitResponse> {
   if (USE_MOCK_DATA) {
     logMockDataUsage('initUpload');
@@ -662,7 +663,8 @@ export async function initUpload(
       body: JSON.stringify({
         google_drive_file_id:filename,
         content_id: contentId,
-        filename
+        filename,
+        google_drive_access_token: googleAccessToken
       }),
     })
     } 

@@ -580,77 +580,37 @@ const [videoUrlInput, setVideoUrlInput] = useState("");
         setError(null);
         setUploadStatus('Initializing Drive upload...');
 
-        const toastId = toast.custom(
-          () => (
-            <UploadToastProgress
-              progress={0}
-              status="Initializing Google Drive upload…"
-            />
-          ),
-          {
-            duration: Infinity,
-          }
-        );
+       
 
-        // Simulate progress while initializing
-        let progressStep = 0;
-        const progressInterval = setInterval(() => {
-          progressStep += Math.random() * 30;
-          if (progressStep > 90) progressStep = 90;
-          
-          toast.custom(
-            () => (
-              <UploadToastProgress
-                progress={Math.round(progressStep)}
-                status={`Uploading ${Math.round(progressStep)}%`}
-              />
-            ),
-            {
-              id: toastId,
-            }
-          );
-        }, 500);
-
-        // Call initUpload with Drive file ID
-        const uploadInit = await initUpload(createdContent.id, driveSelectedFile.id,true);
+       
+      
+         
+        // Call initUpload with Drive file ID and access token
+        const uploadInit = await initUpload(createdContent.id, driveSelectedFile.id, true, driveSelectedFile.accessToken);
         
-        clearInterval(progressInterval);
-        setUploadStatus('Drive file upload initialized...');
+     
+        setUploadStatus(uploadInit?.msg || 'Google Drive upload initiated');
         
-        toast.custom(
-          () => (
-            <UploadToastProgress
-              progress={100}
-              status="Uploading 100%"
-            />
-          ),
-          {
-            id: toastId,
-          }
-        );
-
-        // Mark content as processing
-        setContent(prevContents => {
-          return prevContents.map(c =>
-            c.id === createdContent.id
-              ? { ...c, status: 'processing', ingest_status: 'processing' }
-              : c
-          );
-        });
-
-        setUploadProgress(100);
-        toast.dismiss(toastId);
+        
+      
+ 
         toast.success(
-          'Google Drive file upload initiated. Processing will begin shortly.'
+          uploadInit?.msg  || 'Google Drive upload initiated'
         );
 
-        setSuccess('Drive file uploaded successfully! Waiting for transcoding to start...');
-        setUploadStatus('Upload complete - Asset created. Transcoding will begin shortly.');
+        
         setDriveSelectedFile(null);
+if(uploadInit.msg){
+        onClose()
 
+}
+else{
+  toast.error('Failed to initiate Google Drive upload');
+  onClose()
+}
       } catch (err) {
         const apiError = err as ApiError;
-        toast.error(apiError.message || 'Drive upload failed');
+         toast.error(apiError.message || 'Drive upload failed');
       } finally {
         setUploading(false);
         setLoading(false);

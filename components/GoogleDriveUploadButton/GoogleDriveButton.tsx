@@ -44,6 +44,7 @@ export interface DriveFile {
   mimeType: string;
   url: string;
   sizeBytes?: number;
+  accessToken?: string;
 }
 
 export interface GoogleDriveButtonProps {
@@ -189,6 +190,7 @@ useEffect(() => {
               mimeType: doc.mimeType,
               url: doc.url,
               sizeBytes: doc.sizeBytes,
+              accessToken: accessTokenRef.current || undefined,
             }));
             onFilePicked?.(files);
           }

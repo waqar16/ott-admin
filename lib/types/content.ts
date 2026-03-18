@@ -155,6 +155,7 @@ export interface UploadInitResponse {
     fields: Record<string, string>;
   };
   s3_key: string;
+  msg?:string
 }
 
 export interface S3CallbackPayload {
