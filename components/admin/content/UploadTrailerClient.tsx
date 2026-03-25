@@ -354,7 +354,7 @@ onClick={()=>{
 
                         <h2 className='mt-2 mb-1 text-sm text-neutral-300'>Trailer Preview</h2>
                           <Link
-                          href={`${FRONTEND_BASE}admin/watch/${trailer_id}?media_type=${trailerMediaType}`}
+                          href={`/admin/watch/${trailer_id}?media_type=${trailerMediaType}`}
                            target="_blank"
                            className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-700 font-medium"
 
