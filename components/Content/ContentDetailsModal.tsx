@@ -190,7 +190,7 @@ const ContentDetailsModal: React.FC<ContentDetailsModalProps> = ({
      <h2 className='mt-2 mb-1 text-sm text-neutral-300'>Video Preview</h2>
                               {detailContent.ingest_status == 'ready' ?
                               <Link
-                              href={`${FRONTEND_BASE}admin/watch/${detailContent.id}?media_type=${detailContent.media_type}`}
+                              href={`/admin/watch/${detailContent.id}?media_type=${detailContent.media_type}`}
                                target="_blank"
                                className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-700 font-medium"
     
