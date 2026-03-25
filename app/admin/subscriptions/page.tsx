@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import axios from "axios";
+import Cookies from "js-cookie";
 import { API_BASE } from "../../../lib/config";
 import SkeletonLoader from "@/components/Loader/SkeletonLoader";
 
@@ -43,8 +44,12 @@ const SubscriptionPage = () => {
       setLoading(true);
 
       const res = await axios.get<ApiResponse>(
-        `${API_BASE}api/v1/payments/subscriptions`
-        
+        `${API_BASE}api/v1/payments/subscriptions`,
+        {
+          headers: {
+            Authorization: `Bearer ${Cookies.get('access_token')}`
+          }
+        }
         // `${API_BASE}api/v1/payments/subscriptions/?page=${page}&user=${filters.user}&plan=${filters.plan}&status=${filters.status}`
       );
 
