@@ -12,6 +12,7 @@ import { Content } from "@/lib/types/content";
 import { usePathname } from "next/navigation";
 import { BiRefresh } from "react-icons/bi";
 import UploadTrailerClient from "@/components/admin/content/UploadTrailerClient";
+import AdminContentHelpPanel from '@/components/admin/content/AdminContentHelpPanel';
 export default function SeriesPage() {
   const [seriesList, setSeriesList] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -106,6 +107,8 @@ let pathname = usePathname()
     fetchSeries()
   }}>Refresh <BiRefresh className='ml-1'/> </button>
 </div>
+      <AdminContentHelpPanel />
+
       {/* Loading Skeleton */}
       {loading ? (
         <SeriesSkeleton />

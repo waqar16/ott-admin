@@ -17,6 +17,7 @@ import ContentDetailsModal from '@/components/Content/ContentDetailsModal';
 import { GrDocument } from 'react-icons/gr';
 import { FiTablet } from 'react-icons/fi';
 import ContentCard from '@/components/Content/ContentCard';
+import AdminContentHelpPanel from '@/components/admin/content/AdminContentHelpPanel';
 import { varela_round } from '@/app/layout';
 function formatBitrate(bitrate: number): string {
   if (bitrate >= 1000000) {
@@ -147,6 +148,8 @@ const [hasPrev, setHasPrev] = useState(false);
 
 
       <div className="max-w-7xl mx-auto px-4 py-8">
+        <AdminContentHelpPanel />
+
         {/* Loading Spinner */}
 
 
