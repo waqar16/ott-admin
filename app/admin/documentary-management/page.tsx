@@ -15,6 +15,7 @@ import ContentDetailsModal from '@/components/Content/ContentDetailsModal';
 import { toast } from 'sonner';
 import { FiTablet } from 'react-icons/fi';
 import ContentCard from '@/components/Content/ContentCard';
+import AdminContentHelpPanel from '@/components/admin/content/AdminContentHelpPanel';
 
 export default function ContentManagementPage() {
   // TODO: Add proper authentication check when NextAuth is ready
@@ -156,6 +157,8 @@ export default function ContentManagementPage() {
       <ContentHeaderComponent handleCreateNew={handleCreateNew} />
 
       <div className="max-w-7xl mx-auto px-4 py-8">
+        <AdminContentHelpPanel />
+
         {/* Loading Spinner */}
 
 
