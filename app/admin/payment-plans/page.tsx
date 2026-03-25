@@ -55,10 +55,11 @@ const PaymentPlansPage = () => {
           Authorization: `Bearer ${Cookies.get('access_token')}`
         }
       });
+      
+            toast.success("Plan deleted successfully.");
       fetchPlans();
-    } catch (error) {
-      console.error(error);
-      toast.error("Failed to delete plan.");
+    } catch (error) { 
+      toast.error(error.response.data?.detail || "Failed to delete plan.");
     }
   };
 
@@ -106,7 +107,6 @@ const confirmDelete = (id: string) => {
           onClick={async () => {
             toast.dismiss(t);
             await deletePlan(id);
-            toast.success("Plan deleted successfully.");
           }}
           className="px-3 py-1 bg-red-600 hover:bg-red-700 text-white rounded-md text-sm"
         >
