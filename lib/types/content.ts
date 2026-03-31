@@ -25,6 +25,7 @@ export type MediaType =
 export type ContentStatus = 'ready' |'draft' | 'uploaded' | 'published' | 'inactive' | 'failed' | 'archived';
 export type IngestStatus = 'ready' | 'processing' | 'uploading' | 'failed';
 export type ImageType = 'poster' | 'banner' | 'thumbnail';
+export type VisibilityMode = 'public' | 'beta';
 export type ContentMetadataPayload = {
   content: string;
   id?:string;
@@ -53,6 +54,7 @@ export interface Content {
   content_type: ContentType;
   trailer_url:null | string;
   media_type: MediaType;
+  visibility_mode: VisibilityMode;
   content_metadata?: ContentMetadataPayload;
   status: ContentStatus;
   is_kid_safe: boolean;
@@ -82,6 +84,7 @@ export interface CreateContentPayload {
   description: string;
   content_type: ContentType;
   media_type: MediaType;
+  visibility_mode?: VisibilityMode;
   status?: ContentStatus;
   is_kid_safe?: boolean;
   is_ppv?: boolean;
@@ -104,6 +107,7 @@ export interface UpdateContentPayload {
   description?: string;
   content_type?: ContentType;
   media_type?: MediaType;
+  visibility_mode?: VisibilityMode;
   trailer_youtube_url?: string;
   status?: ContentStatus;
   is_kid_safe?: boolean;
@@ -127,6 +131,7 @@ export   interface ContentFilters {
   status?: string;
   media_type?: string;
   content_type?:string;
+  visibility_mode?: VisibilityMode;
 
   search?: string;
   is_kid_safe?: boolean;

@@ -65,6 +65,7 @@ const [trailerContentDataFetching,setTrailerContentDataFetching] = React.useStat
         description: content?.description || '', 
         media_type: content?.media_type || 'flat',
         content_type: 'trailer',
+      visibility_mode: content?.visibility_mode || 'public',
         trailerType: content?.trailerType || 'movie',
         status: content?.status || 'draft',
         is_kid_safe: content?.is_kid_safe || false,
