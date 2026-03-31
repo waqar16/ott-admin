@@ -11,6 +11,7 @@ import {
   ContentType,
   MediaType,
   ContentMetadataPayload,
+  VisibilityMode,
 } from '@/lib/types/content';
 import { BiX } from 'react-icons/bi';
 
@@ -367,6 +368,10 @@ export const MEDIA_TYPES: Array<{ id: MediaType; name: string }> = [
   { id: 'vr_180_tb', name: '180° VR Video (3D – Top & Bottom)' },
 ];
 
+export const VISIBILITY_MODES: Array<{ id: VisibilityMode; name: string }> = [
+  { id: 'public', name: 'Public' },
+  { id: 'beta', name: 'Beta' },
+];
 
 export default function ContentEditor(props: ContentEditorProps) {
    const [mounted,setMounted]=useState(false);
@@ -440,6 +445,7 @@ const [videoUrlInput, setVideoUrlInput] = useState("");
     description: content?.description || '',
     content_type: content?.content_type || contentType,
     media_type: content?.media_type || 'flat',
+    visibility_mode: content?.visibility_mode || 'public',
     trailerType: content?.trailerType || 'movie',
     status: content?.status || 'draft',
     is_demo_content: content?.is_demo_content || false,
@@ -1065,7 +1071,8 @@ console.log(file,"file")
 
 
                   {contentType != 'season' &&     <>
-                    <MultiSelect
+                  <div className='w-full grid grid-cols-3 col-span-2 gap-x-4'>
+                      <MultiSelect
                       allGenre={allGenre}
                       formData={formData}
                       setFormData={setFormData}
@@ -1103,7 +1110,19 @@ console.log(file,"file")
   }))
 }
                         />
-                     
+                        <SingleSelect
+                          label="Visibility Mode"
+                          options={VISIBILITY_MODES}
+                          value={String(formData.visibility_mode)}
+                       onChange={(id) =>
+  setFormData((prev) => ({
+    ...prev,
+    visibility_mode: id as VisibilityMode
+  }))
+}
+                        />
+                  </div>
+                   
                     <div className="flex items-center">
                       <input
                         type="checkbox"

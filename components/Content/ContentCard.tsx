@@ -36,7 +36,7 @@ const ContentCard: React.FC<ContentCardProps> = ({
     
     <div
       key={item.id}
-      className="w-full bg-neutral-900 rounded-xs shadow-lg rounded-md flex flex-col  hover:shadow-2xl transition-all duration-300 border border-neutral-700"
+      className="w-full bg-gradient-to-br from-neutral-950 via-neutral-900 to-neutral-800 shadow-lg rounded-2xl flex flex-col hover:shadow-2xl transition-all duration-300 border border-white/10 overflow-hidden"
     >
       {/* Left: Thumbnail / Type */}
       <div className=" relative   z-0 w-full h-48 sm:h-32 md:h-36  rounded-t-md   shadow-xl bg-neutral-900  ">
@@ -216,14 +216,20 @@ const ContentCard: React.FC<ContentCardProps> = ({
           <div className="flex flex-wrap items-start justify-start gap-2 w-full  mt-2">
 
             {item.status !== 'published' && (
-              <span className={`  px-2 py-1 rounded-full  text-[8px] ${getStatusBadge(item.status)}`}>
+              <span className={`inline-flex items-center gap-1 rounded-full px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.18em] shadow-lg shadow-black/30 ring-1 ring-white/10 ${getStatusBadge(item.status)}`}>
                 Upload: {item.status}
               </span>
             )}
 
-            {item.ingest_status != 'failed' && <span className={`  px-2 py-1 rounded-full  text-[8px] ${getStatusBadge(item.ingest_status)}`}>
+            {item.ingest_status != 'failed' && <span className={`inline-flex items-center gap-1 rounded-full px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.18em] shadow-lg shadow-black/30 ring-1 ring-white/10 ${getStatusBadge(item.ingest_status)}`}>
               Transcoding: {item.ingest_status}
             </span>}
+
+            {item.visibility_mode && (
+              <span className={`inline-flex items-center gap-1 rounded-full px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.18em] shadow-lg shadow-black/30 ring-1 ring-white/10 ${getStatusBadge(item.visibility_mode)}`}>
+                Visibility: {item.visibility_mode}
+              </span>
+            )}
 
             {item.is_kid_safe && (
               <span className="px-1 py-1 bg-green-900/50 text-green-300 text-[8px] rounded  flex items-center gap-1">

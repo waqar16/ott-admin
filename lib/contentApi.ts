@@ -68,6 +68,7 @@ const MOCK_CONTENT: Content[] = [
     description: 'A great sample movie for testing',
     content_type: 'movie',
     media_type: 'flat',
+    visibility_mode: 'public',
     status: 'published',
     is_kid_safe: false,
     is_ppv: false,
@@ -85,6 +86,7 @@ const MOCK_CONTENT: Content[] = [
     description: 'Fun adventure for children',
     content_type: 'movie',
     media_type: 'flat',
+    visibility_mode: 'public',
     status: 'published',
     is_kid_safe: true,
     is_ppv: false,
@@ -231,6 +233,7 @@ export async function createContent(payload: CreateContentPayload): Promise<Cont
     const newContent: Content = {
       id: `content-${Date.now()}`,
       ...payload,
+      visibility_mode: payload.visibility_mode || 'public',
       status: payload.status || 'draft',
       is_kid_safe: payload.is_kid_safe || false,
       is_ppv: payload.is_ppv || false,
@@ -434,6 +437,7 @@ export async function listContent({
   pageSize = 20,
   status, 
   content_type,
+  visibility_mode,
   is_kid_safe,
   is_ppv,
   search, 
@@ -443,6 +447,7 @@ export async function listContent({
   pageSize?: number;
   status?: string; 
   content_type?: string;
+  visibility_mode?: 'public' | 'beta';
   is_kid_safe?: boolean;
   is_ppv?: boolean;
   search?: string;
@@ -462,6 +467,9 @@ export async function listContent({
     }
     if (content_type) {
       filtered = filtered.filter(c => c.content_type === content_type);
+    }
+    if (visibility_mode) {
+      filtered = filtered.filter(c => c.visibility_mode === visibility_mode);
     }
     if (typeof Boolean(is_kid_safe) == 'boolean') {
       filtered = filtered.filter(c => c.is_kid_safe === is_kid_safe);
@@ -508,6 +516,7 @@ export async function listContent({
     if (status) params.append('status', status);
     if (media_type) params.append('media_type', media_type);
     if (content_type) params.append('content_type', content_type);
+    if (visibility_mode) params.append('visibility_mode', visibility_mode);
     if (typeof Boolean(is_kid_safe) === 'boolean') params.append('is_kid_safe', String(is_kid_safe));
     if (typeof Boolean(is_ppv) === 'boolean') params.append('is_ppv', String(is_ppv));
     if (search) params.append('search', search);

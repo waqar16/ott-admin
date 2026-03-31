@@ -110,12 +110,7 @@ export async function POST(request: NextRequest) {
     }
 
     // File size validation
-    if (fileSize > MAX_FILE_SIZE) {
-      return NextResponse.json(
-        { error: `File size exceeds maximum allowed size of ${MAX_FILE_SIZE / (1024 * 1024 * 1024)} GB` },
-        { status: 400 }
-      );
-    }
+    
 
     // Content type validation
     const allowedTypes =

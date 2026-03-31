@@ -134,6 +134,7 @@ export default function EditUser({ setEditUser,user,setUsers }: EditUserProps) {
             <option value="">Select role</option>
             <option value="user">User</option>
             <option value="admin">Admin</option>
+            <option value="beta_tester">Tester</option>
           </select>
 
           {errors.role && (
