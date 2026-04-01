@@ -14,8 +14,9 @@
  * TODO: Implement resumable uploads for large files
  */
 
-import type { UploadInitResponse, S3CallbackPayload } from './types/content';
-import { postUploadCallback } from './contentApi';
+import type { UploadPresignedPostInitResponse, MultipartUploadInitResponse, MultipartPresignedUrl, S3CallbackPayload } from './types/content';
+import { postUploadCallback, getMultipartPresignedUrls, completeMultipartUpload } from './contentApi';
+import { uploadFileWithProgress } from './uploader';
 
 // ============================================================================
 // TYPES
@@ -52,7 +53,7 @@ export interface UploadOptions {
  * @returns Upload result with S3 key, bucket, and size
  */
 export async function uploadToS3Presigned(
-  uploadInitResponse: UploadInitResponse,
+  uploadInitResponse: UploadPresignedPostInitResponse,
   file: File,
   options: UploadOptions = {}
 ): Promise<UploadResult> {
@@ -127,6 +128,117 @@ export async function uploadToS3Presigned(
   });
 }
 
+const MULTIPART_THRESHOLD_BYTES = 5 * 1024 * 1024 * 1024;
+
+function normalizeHeaderKey(key: string): string {
+  return key.trim().toLowerCase();
+}
+
+function findHeaderValue(headers: Record<string, string>, key: string): string | undefined {
+  return headers[normalizeHeaderKey(key)];
+}
+
+export async function uploadToS3Multipart(
+  uploadInitResponse: MultipartUploadInitResponse,
+  file: File,
+  contentId: string,
+  filename: string,
+  options: UploadOptions = {}
+): Promise<UploadResult> {
+  const { onProgress, signal } = options;
+  const presignedResponse = await getMultipartPresignedUrls(
+    uploadInitResponse.upload_id,
+    uploadInitResponse.s3_key,
+    file.size
+  );
+
+  const sortedParts = presignedResponse.presigned_urls.slice().sort((a, b) => a.part_number - b.part_number);
+  const chunkProgress = new Map<number, number>();
+  const total = file.size;
+
+  const updateProgress = () => {
+    if (!onProgress) return;
+    const loaded = Array.from(chunkProgress.values()).reduce((sum, value) => sum + value, 0);
+    onProgress({
+      loaded,
+      total,
+      percentage: total > 0 ? Math.round((loaded / total) * 100) : 0,
+    });
+  };
+
+  const uploadPromises = sortedParts.map(async (part) => {
+    const start = (part.part_number - 1) * uploadInitResponse.part_size;
+    const end = Math.min(start + uploadInitResponse.part_size, file.size);
+    const chunk = file.slice(start, end);
+
+    chunkProgress.set(part.part_number, 0);
+
+    const chunkResult = await uploadFileWithProgress({
+      url: part.presigned_url,
+      method: 'PUT',
+      file: chunk,
+      signal,
+      onProgress: (progress) => {
+        if (!onProgress) return;
+        chunkProgress.set(part.part_number, progress.loaded);
+        updateProgress();
+      },
+    });
+
+    const etag =
+      findHeaderValue(chunkResult.headers || {}, 'etag') ||
+      findHeaderValue(chunkResult.headers || {}, 'x-amz-meta-etag');
+
+    if (!etag) {
+      throw new Error('Multipart upload part returned no ETag');
+    }
+
+    chunkProgress.set(part.part_number, chunk.size);
+    updateProgress();
+
+    return { part_number: part.part_number, etag };
+  });
+
+  const parts = await Promise.all(uploadPromises);
+
+  await completeMultipartUpload(
+    uploadInitResponse.upload_id,
+    uploadInitResponse.s3_key,
+    contentId,
+    filename,
+    parts
+  );
+
+  return {
+    success: true,
+    s3_key: uploadInitResponse.s3_key,
+    bucket: extractBucketFromUrl(sortedParts[0]?.presigned_url) || 'urview-raw',
+    size: file.size,
+  };
+}
+
+export async function uploadMultipartWithCallback(
+  uploadInitResponse: MultipartUploadInitResponse,
+  file: File,
+  contentId: string,
+  filename: string,
+  options: UploadOptions = {}
+): Promise<{
+  uploadResult: UploadResult;
+  callbackResult: any;
+}> {
+  const uploadResult = await uploadToS3Multipart(uploadInitResponse, file, contentId, filename, options);
+
+  console.warn(
+    '[DEV ONLY] Simulating S3 callback. In production, S3 event notifications handle this.'
+  );
+
+  return {
+    uploadResult,
+    callbackResult: null,
+  };
+}
+
 /**
  * Upload file with automatic callback simulation (DEV ONLY)
  * 
@@ -143,7 +255,7 @@ export async function uploadToS3Presigned(
  * @returns Upload result with callback response
  */
 export async function uploadWithCallback(
-  uploadInitResponse: UploadInitResponse,
+  uploadInitResponse: UploadPresignedPostInitResponse,
   file: File,
   options: UploadOptions = {}
 ): Promise<{

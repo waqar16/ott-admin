@@ -35,9 +35,11 @@ import type {
   CreateContentPayload,
   UpdateContentPayload,
   ContentListResponse,
-  UploadInitResponse,
+  UploadPresignedPostInitResponse,
   S3CallbackPayload,
   ImageUploadResponse,
+  MultipartUploadInitResponse,
+  MultipartPresignedUrl,
   Rendition,
   RenditionsListResponse,
   ManifestResponse,
@@ -633,7 +635,7 @@ export async function initUpload(
   filename: string,
   isDriveUpload?: boolean,
   googleAccessToken?: string
-): Promise<UploadInitResponse> {
+): Promise<UploadPresignedPostInitResponse> {
   if (USE_MOCK_DATA) {
     logMockDataUsage('initUpload');
     
@@ -691,6 +693,160 @@ export async function initUpload(
       throw await handleApiError(response);
     }
     
+    return await response.json();
+  } catch (error) {
+    if ((error as ApiError).status) {
+      throw error;
+    }
+    throw {
+      status: 0,
+      message: 'Network error - please check your connection',
+      body: error,
+    } as ApiError;
+  }
+}
+
+/**
+ * Initialize multipart upload and get upload_id
+ * POST /api/v1/content/content/upload/multipart/init
+ */
+export async function initMultipartUpload(
+  contentId: string,
+  filename: string,
+  fileSize?:string|number,
+  isDriveUpload?: boolean,
+  googleAccessToken?: string
+): Promise<MultipartUploadInitResponse> {
+  const token = getAccessToken();
+  if (!token) {
+    throw {
+      status: 401,
+      message: 'Not authenticated — please login',
+      needAuth: true,
+    } as ApiError;
+  }
+
+  try {
+    const url = `${API_BASE}api/v1/content/content/upload/multipart/init`;
+    let response;
+    if (isDriveUpload) {
+      response = await fetch(url, {
+        method: 'POST',
+        headers: getAuthHeaders(),
+        body: JSON.stringify({
+          google_drive_file_id: filename,
+          content_id: contentId,
+          filename,
+          google_drive_access_token: googleAccessToken,
+        }),
+      });
+    } else {
+      response = await fetch(url, {
+        method: 'POST',
+        headers: getAuthHeaders(),
+        body: JSON.stringify({
+          filename,
+          content_id: contentId,
+          file_size: fileSize,
+
+        }),
+      });
+    }
+
+    if (!response.ok) {
+      throw await handleApiError(response);
+    }
+
+    return await response.json();
+  } catch (error) {
+    if ((error as ApiError).status) {
+      throw error;
+    }
+    throw {
+      status: 0,
+      message: 'Network error - please check your connection',
+      body: error,
+    } as ApiError;
+  }
+}
+
+export async function getMultipartPresignedUrls(
+  uploadId: string,
+  s3_key: string,
+  file_size: number
+): Promise<{ presigned_urls: MultipartPresignedUrl[] }> {
+  const token = getAccessToken();
+  if (!token) {
+    throw {
+      status: 401,
+      message: 'Not authenticated — please login',
+      needAuth: true,
+    } as ApiError;
+  }
+
+  try {
+    const url = `${API_BASE}api/v1/content/content/upload/multipart/presigned-urls`;
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: getAuthHeaders(),
+      body: JSON.stringify({
+        upload_id: uploadId,
+        s3_key,
+        file_size,
+      }),
+    });
+
+    if (!response.ok) {
+      throw await handleApiError(response);
+    }
+
+    return await response.json();
+  } catch (error) {
+    if ((error as ApiError).status) {
+      throw error;
+    }
+    throw {
+      status: 0,
+      message: 'Network error - please check your connection',
+      body: error,
+    } as ApiError;
+  }
+}
+
+export async function completeMultipartUpload(
+  uploadId: string,
+  s3_key: string,
+  contentId: string,
+  filename: string,
+  parts: Array<{ part_number: number; etag: string }>
+): Promise<any> {
+  const token = getAccessToken();
+  if (!token) {
+    throw {
+      status: 401,
+      message: 'Not authenticated — please login',
+      needAuth: true,
+    } as ApiError;
+  }
+
+  try {
+    const url = `${API_BASE}api/v1/content/content/upload/multipart/complete`;
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: getAuthHeaders(),
+      body: JSON.stringify({
+        upload_id: uploadId,
+        s3_key,
+        content_id: contentId,
+        filename,
+        parts,
+      }),
+    });
+
+    if (!response.ok) {
+      throw await handleApiError(response);
+    }
+
     return await response.json();
   } catch (error) {
     if ((error as ApiError).status) {
