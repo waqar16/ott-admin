@@ -154,14 +154,37 @@ export interface Asset {
   updated_at: string;
 }
 
-export interface UploadInitResponse {
+export interface UploadPresignedPostInitResponse {
   upload_url: {
     url: string;
     fields: Record<string, string>;
   };
   s3_key: string;
-  msg?:string
+  msg?: string;
 }
+
+export interface MultipartUploadInitResponse {
+  upload_id: string;
+  s3_key: string;
+  part_size: number;
+  num_parts: number;
+  msg?: string;
+}
+
+export interface MultipartPresignedUrl {
+  part_number: number;
+  presigned_url: string;
+}
+
+export interface UploadMultipartCompleteRequest {
+  upload_id: string;
+  s3_key: string;
+  content_id: string;
+  filename: string;
+  parts: Array<{ part_number: number; etag: string }>;
+}
+
+export type UploadInitResponse = UploadPresignedPostInitResponse | MultipartUploadInitResponse;
 
 export interface S3CallbackPayload {
   s3_key: string;

@@ -5,7 +5,7 @@ export type UploadMethod = 'PUT' | 'POST'
 export interface UploadRequest {
   url: string
   method?: UploadMethod
-  file: File
+  file: Blob
   fieldName?: string
   headers?: Record<string, string>
   timeoutMs?: number
@@ -16,6 +16,7 @@ export interface UploadRequest {
 export interface UploadResult {
   status: number
   response?: any
+  headers?: Record<string, string>
   fileKey?: string
 }
 
@@ -83,8 +84,18 @@ export function uploadFileWithProgress(req: UploadRequest): Promise<UploadResult
         response = xhr.responseText
       }
 
+      const headers: Record<string, string> = {}
+      const rawHeaders = xhr.getAllResponseHeaders()
+      rawHeaders.trim().split(/\r?\n/).forEach((line) => {
+        const parts = line.split(': ')
+        const key = parts.shift()?.toLowerCase()
+        if (key) {
+          headers[key] = parts.join(': ')
+        }
+      })
+
       if (status >= 200 && status < 300) {
-        resolve({ status, response })
+        resolve({ status, response, headers })
       } else {
         const message = typeof response === 'string' ? response : response?.error || 'Upload failed'
         reject(new Error(message))
@@ -100,7 +111,7 @@ export function uploadFileWithProgress(req: UploadRequest): Promise<UploadResult
 
     if (method === 'POST') {
       const form = new FormData()
-      form.append(fieldName, file, file.name)
+      form.append(fieldName, file, file instanceof File ? file.name : 'file')
       xhr.send(form)
     } else {
       // PUT/RAW upload
