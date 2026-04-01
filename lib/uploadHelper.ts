@@ -153,13 +153,25 @@ export async function uploadToS3Multipart(
   );
 
   const sortedParts = presignedResponse.presigned_urls.slice().sort((a, b) => a.part_number - b.part_number);
-  const parts: Array<{ part_number: number; etag: string }> = [];
-  let bytesUploaded = 0;
+  const chunkProgress = new Map<number, number>();
+  const total = file.size;
 
-  for (const part of sortedParts) {
+  const updateProgress = () => {
+    if (!onProgress) return;
+    const loaded = Array.from(chunkProgress.values()).reduce((sum, value) => sum + value, 0);
+    onProgress({
+      loaded,
+      total,
+      percentage: total > 0 ? Math.round((loaded / total) * 100) : 0,
+    });
+  };
+
+  const uploadPromises = sortedParts.map(async (part) => {
     const start = (part.part_number - 1) * uploadInitResponse.part_size;
     const end = Math.min(start + uploadInitResponse.part_size, file.size);
     const chunk = file.slice(start, end);
+
+    chunkProgress.set(part.part_number, 0);
 
     const chunkResult = await uploadFileWithProgress({
       url: part.presigned_url,
@@ -168,13 +180,8 @@ export async function uploadToS3Multipart(
       signal,
       onProgress: (progress) => {
         if (!onProgress) return;
-        const loaded = bytesUploaded + progress.loaded;
-        const total = file.size;
-        onProgress({
-          loaded,
-          total,
-          percentage: Math.round((loaded / total) * 100),
-        });
+        chunkProgress.set(part.part_number, progress.loaded);
+        updateProgress();
       },
     });
 
@@ -186,9 +193,13 @@ export async function uploadToS3Multipart(
       throw new Error('Multipart upload part returned no ETag');
     }
 
-    parts.push({ part_number: part.part_number, etag });
-    bytesUploaded += chunk.size;
-  }
+    chunkProgress.set(part.part_number, chunk.size);
+    updateProgress();
+
+    return { part_number: part.part_number, etag };
+  });
+
+  const parts = await Promise.all(uploadPromises);
 
   await completeMultipartUpload(
     uploadInitResponse.upload_id,
