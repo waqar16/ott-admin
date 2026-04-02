@@ -811,7 +811,7 @@ console.log("file",file)
   const fetchGenre = async () => {
     try {
       let fetchGenre = await axios.get(`${API_BASE}api/v1/content/genres`)
-      setAllGenre(fetchGenre?.data?.results)
+      setAllGenre(fetchGenre?.data)
     }
     catch (err) {
       console.log(err,"error")
