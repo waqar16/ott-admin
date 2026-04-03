@@ -45,12 +45,11 @@ export default async function AdminUsersPage() {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      {/* <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <StatBox title="Total Users" value="4,921" change="+8%" />
         <StatBox title="Premium Users" value="1,232" change="+12%" />
         <StatBox title="Active Today" value="892" change="+5%" />
-        {/* <StatBox title="Banned Users" value="34" change="0%" /> */}
-      </div>
+       </div> */}
 
       {/* User Table */}
       {usersFetchLoading ?

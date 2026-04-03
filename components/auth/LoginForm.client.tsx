@@ -41,7 +41,7 @@ export function LoginForm({   }: LoginFormProps) {
   // Render the auth form only on the client to avoid SSR hydration
   // mismatches from browser/password-manager DOM mutations on inputs.
   if (!mounted) {
-    return <FullScreenLoader msg={'Loading login'} />;
+    return <FullScreenLoader msg={'Loading login Page'} />;
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
