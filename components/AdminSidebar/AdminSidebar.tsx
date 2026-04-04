@@ -251,7 +251,7 @@ onClick={() => {
                   >
                     <BiTv size={16} />   Series
                   </Link>
-              <Link
+              {/* <Link
 onClick={() => {
   if (pathname !== "/admin/documentary-management") {
     setIsNavigating(true);
@@ -261,7 +261,7 @@ onClick={() => {
                 className={`${linkBase} ${isActive("/admin/documentary-management") ? activeClass : ""}  text-xs`}
               >
                 <GrDocumentCloud size={16} /> Documentary
-              </Link>
+              </Link> */}
               <Link
 onClick={() => {
   if (pathname !== "/admin/trailer-management") {
