@@ -657,7 +657,7 @@ else{
       const LARGE_FILE_SIZE_BYTES = 2 * 1024 * 1024 * 1024;
       let result;
 
-      if (uploadFile.size > LARGE_FILE_SIZE_BYTES) {
+ 
        
         const uploadInit = await initMultipartUpload(createdContent.id, uploadFile.name,  uploadFile.size );
         if (uploadInit.s3_key) {
@@ -687,36 +687,7 @@ else{
             }
           },
         });
-      } else {
-        const uploadInit = await initUpload(createdContent.id, uploadFile.name);
-        if (uploadInit.s3_key) {
-          onClose();
-        }
-
-        result = await uploadWithCallback(uploadInit, uploadFile, {
-          onProgress: (progress) => {
-            setUploadProgress(progress.percentage);
-            setUploadStatus(`Uploading: ${progress.percentage}% (${formatFileSize(progress.loaded)} / ${formatFileSize(progress.total)})`);
-            toast.custom(
-              () => (
-                <UploadToastProgress
-                  progress={progress.percentage}
-                  status={`Uploading ${progress.percentage}%`}
-                />
-              ),
-              {
-                id: toastId,
-              }
-            );
-            if (progress.percentage >= 100) {
-              toast.dismiss(toastId);
-              toast.success(
-                "Upload completed. Please wait for processing before publishing."
-              );
-            }
-          },
-        });
-      }
+      
 
       setUploadStatus('Upload complete! Processing callback...');
       setContent(prevContents => {
