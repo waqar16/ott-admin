@@ -654,7 +654,7 @@ else{
       setError(null);
       setUploadStatus('Initializing upload...');
 
-      const LARGE_FILE_SIZE_BYTES = 2 * 1024 * 1024 * 1024;
+     
       let result;
 
  

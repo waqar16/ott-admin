@@ -175,8 +175,7 @@ useEffect(() => {
         .setOAuthToken(token)
         .setDeveloperKey(API_KEY)
         .setTitle('Select or Upload a File')
-        .addView(uploadView)
-        .addView(driveView)
+       .addView(driveView)
         .setCallback((data: any) => {
           // Google Picker returns the user action under `data.action`.
           // Keep a fallback check for compatibility with older payload shapes.

@@ -7,9 +7,9 @@ import { toast } from 'sonner';
 import RoundLoader from '@/components/Loader/RoundLoader';
 import SkeletonLoader from '@/components/Loader/SkeletonLoader';
 import HlsVideoPlayer from '@/players/HLSPlayer';
-import { formatFileSize, uploadWithCallback, validateFile } from '@/lib/uploadHelper';
+import { formatFileSize, uploadMultipartWithCallback, uploadWithCallback, validateFile } from '@/lib/uploadHelper';
 import { MEDIA_TYPES } from './ContentEditor.client';
-import { updateContent,createContent, initUpload, getContent, getStreamingUrl } from '@/lib/contentApi';
+import { updateContent,createContent, initUpload, getContent, getStreamingUrl, initMultipartUpload } from '@/lib/contentApi';
 import { ApiError } from '@/lib/authApi';
 import { API_BASE, FRONTEND_BASE } from '@/lib/config';
 import { GrClose } from 'react-icons/gr';
@@ -119,37 +119,65 @@ const [trailerContentDataFetching,setTrailerContentDataFetching] = React.useStat
             setError(null);
             setUploadStatus('Initializing upload...');
       
-            const uploadInit = await initUpload(isTrailerContentData?.id || "", trailerUploadFile.name);
-          refreshContent();
-      console.log("Calling refreshContent...",uploadInit);
-    if(uploadInit.s3_key){
+    //         const uploadInit = await initUpload(isTrailerContentData?.id || "", trailerUploadFile.name);
+    //       refreshContent();
+    //   console.log("Calling refreshContent...",uploadInit);
+    // if(uploadInit.s3_key){
    
-        // setOpen(false)
-    }
-            const result = await uploadWithCallback(uploadInit, trailerUploadFile, {
-                   onProgress: (progress) => {
-                     setUploadProgress(progress.percentage);
-                     setUploadStatus(`Uploading: ${progress.percentage}% (${formatFileSize(progress.loaded)} / ${formatFileSize(progress.total)})`);
-                     toast.custom(
-                 () => (
-                   <UploadToastProgress
-                     progress={progress.percentage}
-                     status={`Uploading ${progress.percentage}%`}
-                   />
-                 ),
-                 {
-                   id: toastId, // 🔑 update same toast
-                 }
-               );
-           if (progress.percentage >= 100) {
-                 toast.dismiss(toastId); // hide the progress toast
-                 toast.success(
-                   "Upload completed. Please wait for processing before publishing."
-                 );
-               }
-              },
-            });
+    //     
+    // }
+    //         const result = await uploadWithCallback(uploadInit, trailerUploadFile, {
+    //                onProgress: (progress) => {
+    //                  setUploadProgress(progress.percentage);
+    //                  setUploadStatus(`Uploading: ${progress.percentage}% (${formatFileSize(progress.loaded)} / ${formatFileSize(progress.total)})`);
+    //                  toast.custom(
+    //              () => (
+    //                <UploadToastProgress
+    //                  progress={progress.percentage}
+    //                  status={`Uploading ${progress.percentage}%`}
+    //                />
+    //              ),
+    //              {
+    //                id: toastId, // 🔑 update same toast
+    //              }
+    //            );
+    //        if (progress.percentage >= 100) {
+    //              toast.dismiss(toastId); // hide the progress toast
+    //              toast.success(
+    //                "Upload completed. Please wait for processing before publishing."
+    //              );
+    //            }
+    //           },
+    //         });
+        const uploadInit = await initMultipartUpload(isTrailerContentData?.id, trailerUploadFile.name,  trailerUploadFile.size );
+              if (uploadInit.s3_key) {
+                refreshContent();
+              }
       
+              const result = await uploadMultipartWithCallback(uploadInit, trailerUploadFile, isTrailerContentData?.id, trailerUploadFile.name, {
+                onProgress: (progress) => {
+                  setUploadProgress(progress.percentage);
+                  setUploadStatus(`Uploading: ${progress.percentage}% (${formatFileSize(progress.loaded)} / ${formatFileSize(progress.total)})`);
+                  toast.custom(
+                    () => (
+                      <UploadToastProgress
+                        progress={progress.percentage}
+                        status={`Uploading ${progress.percentage}%`}
+                      />
+                    ),
+                    {
+                      id: toastId,
+                    }
+                  );
+                  if (progress.percentage >= 100) {
+                    toast.dismiss(toastId);
+                    toast.success(
+                      "Upload completed. Please wait for processing before publishing."
+                    );
+                  }
+                },
+              });
+            
             setUploadStatus('Upload complete! Processing callback...');
             
             
