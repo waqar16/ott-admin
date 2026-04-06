@@ -162,7 +162,7 @@ if (pathname !== "/admin/analytics") {
                 }} className={`${linkBase} text-xs ${isActive("/admin/users") ? "bg-[var(--brand-primary)]" : ""}`}>
                   <FiList size={16} /> Manage Users
                 </Link>
-                <Link href="/admin/user-profiles" onClick={() => {setOpenDrawer(false)
+                {/* <Link href="/admin/user-profiles" onClick={() => {setOpenDrawer(false)
 
   if (pathname !== "/admin/profiles") {
     setIsNavigating(true);
@@ -170,7 +170,7 @@ if (pathname !== "/admin/analytics") {
 
                 }} className={`${linkBase} text-xs ${isActive("/admin/user-profiles") ? "bg-[var(--brand-primary)]" : ""}`}>
                   <BsPersonFillGear size={16} /> Manage User Profiles
-                </Link>
+                </Link> */}
               </div>
             )}
           </div>

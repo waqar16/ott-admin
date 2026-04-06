@@ -114,7 +114,7 @@ onClick={() => {
               >
                 <FiList size={16} />Manage Users
               </Link>
- <Link
+ {/* <Link
 onClick={() => {
   if (pathname !== "/admin/user-profiles") {
     setIsNavigating(true);
@@ -123,7 +123,7 @@ onClick={() => {
                 className={`${linkBase} ${isActive("/admin/user-profiles") ? activeClass : ""}  text-xs`}
               >
                 <BsPersonFillGear size={16} /> Manage User Profiles
-              </Link>
+              </Link> */}
               {/* <Link
 onClick={() => {
   if (pathname !== "/admin/settings") {
