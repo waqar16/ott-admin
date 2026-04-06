@@ -6,6 +6,7 @@ import ReactECharts from "echarts-for-react";
 import SkeletonLoader from "@/components/Loader/SkeletonLoader";
 import { API_BASE } from "@/lib/config";
 import GoogleDriveButton from "@/components/GoogleDriveUploadButton/GoogleDriveButton";
+import { upperCaseString } from "@/utils/stringUpperCase";
 
 // Generic ChartCard
 export function ChartCard({ title, description, chartData, type = "line" }: any) {
@@ -263,12 +264,18 @@ if (loading)
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
        <PieCard
   title="User Roles"
-  data={Object.entries(data.userRoles ?? {}).map(([k, v]) => ({ label: k, count: v }))}
+  data={(data.userRoles?.breakdown ?? []).map((item: any) => ({
+    label: upperCaseString(item.role),
+    count: item.count,
+  }))}
 />
 
 <PieCard
   title="User Status"
-  data={Object.entries(data.userStatus ?? {}).map(([k, v]) => ({ label: k, count: v }))}
+   data={(data.userStatus?.breakdown ?? []).map((item: any) => ({
+    label: upperCaseString(item.status),
+    count: item.count,
+  }))} 
 />
 
 <PieCard
@@ -278,9 +285,15 @@ if (loading)
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-        <StatCard title="Churn Rate" value={`${data.subscriptionChurn.churn_rate_percent}%`} />
-        <ChartCard title="New Subscriptions" description="Subscriptions per day" chartData={data.newSubscriptions.results?? []} />
-        <ChartCard title="Revenue Timeseries" description="Revenue per day" chartData={data.revenueTimeseries.results?? []} />
+        {data.subscriptionChurn.churn_rate_percent>0 && <StatCard title="Churn Rate" value={`${data.subscriptionChurn.churn_rate_percent}%`} />}
+        
+        
+        {data.newSubscriptions.results?.length > 0 && (
+          <ChartCard title="New Subscriptions" description="Subscriptions per day" chartData={data.newSubscriptions.results?? []} />
+        )}
+        {data.revenueTimeseries.results?.length > 0 && (
+          <ChartCard title="Revenue Timeseries" description="Revenue per day" chartData={data.revenueTimeseries.results?? []} />
+        )}
       </div>
 
       <TableCard title="Top Paying Users" columns={["email", "total_revenue", "payments_count"]} data={data.topUsers.results ?? []} />
@@ -288,15 +301,15 @@ if (loading)
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
         <PieCard
           title="Payment Status"
-          data={data?.paymentStatus?.results ? data.paymentStatus.results.map((p: any) => ({ label: p.status, count: p.count })) : []}
+          data={data?.paymentStatus?.results ? data.paymentStatus.results.map((p: any) => ({ label: upperCaseString(p.status), count: p.count })) : []}
         />
-        <PieCard title="Payment Processor" data={data?.paymentProcessor?.results?data.paymentProcessor.results.map((p: any) => ({ label: p.processor, count: p.count })) : []} />
+        <PieCard title="Payment Processor" data={data?.paymentProcessor?.results?data.paymentProcessor.results.map((p: any) => ({ label: upperCaseString(p.processor), count: p.count })) : []} />
       </div>
 
       <div className="space-y-6">
-        <TableCard title="Top Movies" columns={["title", "views"]} data={data.topMovies?? []} />
-        <TableCard title="Top Series" columns={["title", "views"]} data={data.topSeries?? []} />
-        <TableCard title="Top Episodes" columns={["title", "views"]} data={data.topEpisodes?? []} />
+        {data.topMovies?.length > 0 && <TableCard title="Top Movies" columns={["title", "views"]} data={data.topMovies?? []} />}
+        {data.topSeries?.length > 0 && <TableCard title="Top Series" columns={["title", "views"]} data={data.topSeries?? []} />}
+        {data.topEpisodes?.length > 0 && <TableCard title="Top Episodes" columns={["title", "views"]} data={data.topEpisodes?? []} />}
       </div>
 
       <div className="grid grid-cols-3 gap-6">
