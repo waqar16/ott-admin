@@ -452,7 +452,7 @@ const [videoUrlInput, setVideoUrlInput] = useState("");
     is_demo_content: content?.is_demo_content || false,
     is_kid_safe: content?.is_kid_safe || false,
     is_ppv: content?.is_ppv || false,
-    price_dollars: content?.price_dollars || 0,
+    price: content?.price || 0,
     genres: content?.genres || [],
     parent: parentId
 
@@ -487,7 +487,7 @@ const [videoUrlInput, setVideoUrlInput] = useState("");
       return;
     }
 
-    if (formData.is_ppv && (!formData.price_dollars || formData.price_dollars <= 0)) {
+    if (formData.is_ppv && (!formData.price || formData.price <= 0)) {
        toast.error('Price is required for PPV content');
       return;
     }
@@ -1178,20 +1178,20 @@ console.log(file,"file")
                     {formData.is_ppv && (
                       <div className="md:col-span-2">
                         <label className="block text-sm font-medium text-gray-300 mb-2">
-                          Price ($)
+                          Price (£)
                         </label>
                         <input
                           type="number"
-                          value={formData.price_dollars === 0 ? '' : String(formData.price_dollars)}
+                          value={formData.price === 0 ? '' : String(formData.price)}
                           onChange={e => {
                             const val = e.target.value;
                             // Allow empty string for controlled input
                             if (val === '') {
-                              handleChange('price_dollars', 0);
+                              handleChange('price', 0);
                             } else {
                               // Remove leading zeros
                               const clean = val.replace(/^0+(?!$)/, '');
-                              handleChange('price_dollars', parseInt(clean) || 0);
+                              handleChange('price', parseInt(clean) || 0);
                             }
                           }}
                           min="0"
@@ -1199,10 +1199,10 @@ console.log(file,"file")
                           className="w-full px-4 py-2 bg-gray-700 text-white rounded-lg  outline-none ring-0 
                                focus:outline-none focus:ring-0 
                                focus-visible:outline-none focus-visible:ring-0"
-                          placeholder="599 = $5.99"
+                          placeholder="price in British Pounds"
                         />
                         <p className="text-xs text-gray-400 mt-1">
-                          Price in Dollars
+                          Price in British Pounds
                         </p>
                       </div>
                     )}

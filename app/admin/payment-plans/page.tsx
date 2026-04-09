@@ -7,21 +7,9 @@ import { API_BASE, USE_MOCK_DATA, logMockDataUsage } from '../../../lib/config'
 import SkeletonLoader from "@/components/Loader/SkeletonLoader";
 import { toast } from "sonner";
 import { BiEdit, BiTrash } from "react-icons/bi";
-interface PaymentPlan {
-  id: string;
-  name: string;
-  description: string;
-  price: number;
-  currency: string;
-  duration_days: number;
-  max_devices: number;
-  max_profiles: number;
-  ad_supported: boolean;
-  stripe_price_id: string;
-  is_active: boolean;
-  created_at: string;
-}
-
+import { PaymentPlan } from "@/lib/types/content";
+import PlanForm from "@/components/PlanForm/PlanForm";
+import Link from "next/link";
 interface ApiResponse {
   count: number;
   next: string | null;
@@ -124,12 +112,12 @@ const confirmDelete = (id: string) => {
       <div className="flex justify-between items-center mb-6">
         <h1 className=" text-2xl md:text-3xl font-bold text-white">Payment Plans</h1>
 
-        <button
-          onClick={() => setModalOpen(true)}
+        <Link
+         href={'/admin/payment-plans/add'}
           className="px-3 md:px-5 py-2 md:py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg  text-sm md:text-md"
         >
           + Add New Payment Plan
-        </button>
+        </Link>
       </div>
 
       {/* Filters */}
@@ -193,16 +181,13 @@ const confirmDelete = (id: string) => {
         >
           <BiTrash className="w-5 h-5"/>
         </button>
-        <button
- onClick={() => {
-            setModalOpen(true);
-            setEditPlan(plan);
-          }}
+        <Link
+href={`/admin/payment-plans/${plan.id}`}
           title="Delete Plan"
           className="absolute top-3 right-9 text-neutral-400   p-1 rounded-full  transition"
         >
           <BiEdit className="w-5 h-5"/>
-        </button>
+        </Link>
 
         <h3 className="text-xl text-neutral-300 font-bold mb-2">{plan.name}</h3>
         <p className="text-neutral-400 mb-3">{plan.description}</p>
@@ -284,172 +269,7 @@ const confirmDelete = (id: string) => {
     </div>
   );
 };
-const PlanForm = ({
-  initial,
-  onSuccess,
-  onClose,
-}: {
-  initial?: PaymentPlan | null;
-  onSuccess: () => void;
-  onClose: () => void;
-}) => {
-  const [form, setForm] = useState({
-    name: initial?.name || "",
-    description: initial?.description || "",
-    price: initial?.price || "",
-    duration_days: initial?.duration_days || "",
-    max_devices: initial?.max_devices || "",
-    max_profiles: initial?.max_profiles || "",
-    ad_supported: initial?.ad_supported || false,
-    is_active: initial?.is_active ?? true,
-  });
 
-  const [loading, setLoading] = useState(false);
-
-  const update = (key: string, value: any) =>
-    setForm((prev) => ({ ...prev, [key]: value }));
-
-  const handleSubmit = async () => {
-    try {
-      setLoading(true);
-
-      if (initial) {
-        // 🔥 UPDATE
-        await axios.put(`${API_BASE}api/v1/payments/plans/${initial.id}`, form,{headers:{
-          Authorization:`Bearer ${Cookies.get('access_token')}`
-        }});
-      } else {
-        // ➕ CREATE NEW
-        await axios.post(`${API_BASE}api/v1/payments/plans`, form,{headers:{
-          Authorization:`Bearer ${Cookies.get('access_token')}`
-        }});
-      }
-
-      onSuccess();
-    } catch (error:any) {
-      console.error(error);
-        const message =
-      error?.response?.data?.detail ||
-      error?.response?.data?.message ||
-      "Something went wrong. Please try again.";
-
-    toast.error(message);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  return (
-    <>
-      <div className="space-y-4">
-
-        <input
-          type="text"
-          placeholder="Plan Name"
-          value={form.name}
-          onChange={(e) => update("name", e.target.value)}
-          className="w-full px-4 py-2 bg-neutral-700 text-white rounded-lg 
-             outline-none focus:outline-none 
-             focus:ring-0 focus:border-none"
-        />
-
-        <textarea
-          placeholder="Description"
-          value={form.description}
-          onChange={(e) => update("description", e.target.value)}
-           className="w-full px-4 py-2 bg-neutral-700 text-white rounded-lg 
-             outline-none focus:outline-none 
-             focus:ring-0 focus:border-none"
-        />
-
-        <input
-          type="number"
-          placeholder="Price"
-          value={form.price}
-          onChange={(e) => update("price", parseFloat(e.target.value))}
-           className="w-full px-4 py-2 bg-neutral-700 text-white rounded-lg 
-             outline-none focus:outline-none 
-             focus:ring-0 focus:border-none"
-        />
-
-        <input
-          type="number"
-          placeholder="Duration (days)"
-          value={form.duration_days}
-          onChange={(e) => update("duration_days", Number(e.target.value))}
-           className="w-full px-4 py-2 bg-neutral-700 text-white rounded-lg 
-             outline-none focus:outline-none 
-             focus:ring-0 focus:border-none"
-        />
-
-        <input
-          type="number"
-          placeholder="Max Devices"
-          value={form.max_devices}
-          onChange={(e) => update("max_devices", Number(e.target.value))}
-          className="w-full px-4 py-2 bg-neutral-700 text-white rounded-lg 
-             outline-none focus:outline-none 
-             focus:ring-0 focus:border-none"
-        />
-
-        <input
-          type="number"
-          placeholder="Max Profiles"
-          value={form.max_profiles}
-          onChange={(e) => update("max_profiles", Number(e.target.value))}
-           className="w-full px-4 py-2 bg-neutral-700 text-white rounded-lg 
-             outline-none focus:outline-none 
-             focus:ring-0 focus:border-none"
-        />
-
-        {/* Ad Supported */}
-        <select
-          value={form.ad_supported ? "true" : "false"}
-          onChange={(e) => update("ad_supported", e.target.value === "true")}
-           className="w-full px-4 py-2 bg-neutral-700 text-white rounded-lg 
-             outline-none focus:outline-none 
-             focus:ring-0 focus:border-none"
-        >
-          <option value="false">No Ads</option>
-          <option value="true">Ad Supported</option>
-        </select>
-
-        {/* Active */}
-        <select
-          value={form.is_active ? "true" : "false"}
-          onChange={(e) => update("is_active", e.target.value === "true")}
-           className="w-full px-4 py-2 bg-neutral-700 text-white rounded-lg 
-             outline-none focus:outline-none 
-             focus:ring-0 focus:border-none"
-        >
-          <option value="true">Active</option>
-          <option value="false">Inactive</option>
-        </select>
-
-      </div>
-
-      {/* Buttons */}
-      <div className="flex justify-end gap-3 mt-6">
-        <button
-          onClick={onClose}
-          className="px-4 py-2 bg-neutral-600 hover:bg-neutral-700 text-white rounded-lg"
-        >
-          Cancel
-        </button>
-
-        <button
-          onClick={handleSubmit}
-          disabled={loading}
-          className={`px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg ${
-            loading ? "opacity-50" : ""
-          }`}
-        >
-          {loading ? "Saving..." : initial ? "Update Plan" : "Create Plan"}
-        </button>
-      </div>
-    </>
-  );
-};
 const PlanCardSkeleton = () => (
   <div className="bg-neutral-800 p-6 rounded-lg border border-neutral-700 animate-pulse">
     <SkeletonLoader className="h-6 w-32 bg-neutral-700 mb-4" />

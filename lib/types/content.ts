@@ -59,7 +59,7 @@ export interface Content {
   status: ContentStatus;
   is_kid_safe: boolean;
   is_ppv: boolean;
-  price_dollars?: number;
+  price?: number;
   genres?: string[];
   children?:[];
   parent?:number;
@@ -89,7 +89,7 @@ export interface CreateContentPayload {
   is_kid_safe?: boolean;
   is_ppv?: boolean;
   trailerType?:string;
-  price_dollars?: number;
+  price?: number;
   genres?: string[];
   duration_seconds?: number;
   trailer_youtube_url?: string;
@@ -112,7 +112,7 @@ export interface UpdateContentPayload {
   status?: ContentStatus;
   is_kid_safe?: boolean;
   is_ppv?: boolean;
-  price_dollars?: number;
+  price?: number;
   genres?: string[];
   duration_seconds?: number;
   release_date?: string;
@@ -352,4 +352,19 @@ export interface ApiError {
   message: string;
   body?: any;
   needAuth?: boolean;
+}
+export interface PaymentPlan {
+  id: string;
+  name: string;
+  description: string;
+  price: number;
+  currency: string;
+  duration_days: number;
+  max_devices: number;
+  max_profiles: number;
+  
+  ad_supported: boolean;
+  stripe_price_id: string;
+  is_active: boolean;
+  created_at: string;
 }
