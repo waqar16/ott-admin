@@ -484,8 +484,7 @@ const PlanForm = ({
     price: initial?.price || "",
     currency: "GBP",
     duration_days: initial?.duration_days || "",
-    max_devices: initial?.max_devices || "",
-    max_profiles: initial?.max_profiles || "",
+    max_devices: initial?.max_devices || "", 
     ad_supported: initial?.ad_supported || false,
     is_active: initial?.is_active ?? true,
   });
@@ -495,8 +494,7 @@ const PlanForm = ({
     description: "",
     price: "",
     duration_days: "",
-    max_devices: "",
-    max_profiles: "",
+    max_devices: "", 
   });
 
   const [touched, setTouched] = useState({
@@ -504,8 +502,7 @@ const PlanForm = ({
     description: false,
     price: false,
     duration_days: false,
-    max_devices: false,
-    max_profiles: false,
+    max_devices: false, 
   });
 
   const [loading, setLoading] = useState(false);
@@ -525,8 +522,7 @@ const PlanForm = ({
       description: "",
       price: "",
       duration_days: "",
-      max_devices: "",
-      max_profiles: "",
+      max_devices: "", 
     };
 
     // Name validation
@@ -554,8 +550,8 @@ const PlanForm = ({
       newErrors.price = "Price must be a valid number";
     } else if (Number(form.price) <= 0) {
       newErrors.price = "Price must be greater than 0";
-    } else if (Number(form.price) > 999999) {
-      newErrors.price = "Price must be less than 999,999";
+    } else if (Number(form.price) > 992222222) {
+      newErrors.price = "Price must be less than 99 GBP";
     }
 
     // Duration validation
@@ -580,17 +576,6 @@ const PlanForm = ({
       newErrors.max_devices = "Max devices cannot exceed 100";
     }
 
-    // Max profiles validation
-    if (!form.max_profiles || form.max_profiles === "") {
-      newErrors.max_profiles = "Max profiles is required";
-    } else if (isNaN(Number(form.max_profiles))) {
-      newErrors.max_profiles = "Max profiles must be a valid number";
-    } else if (Number(form.max_profiles) < 1) {
-      newErrors.max_profiles = "Must allow at least 1 profile";
-    } else if (Number(form.max_profiles) > 50) {
-      newErrors.max_profiles = "Max profiles cannot exceed 50";
-    }
-
     setErrors(newErrors);
 
     // Check if form is valid (no errors)
@@ -612,8 +597,7 @@ const PlanForm = ({
       description: true,
       price: true,
       duration_days: true,
-      max_devices: true,
-      max_profiles: true,
+      max_devices: true, 
     });
 
     // Validate before submitting
@@ -626,28 +610,83 @@ const PlanForm = ({
       setLoading(true);
 
       if (initial) {
-        // 🔥 UPDATE
-        await axios.put(`${API_BASE}api/v1/payments/plans/${initial.id}`, form,{headers:{
-          Authorization:`Bearer ${Cookies.get('access_token')}`
-        }});
+        await axios.put(`${API_BASE}api/v1/payments/plans/${initial.id}`, form, {
+          headers: {
+            Authorization: `Bearer ${Cookies.get('access_token')}`
+          }
+        });
         toast.success("Plan updated successfully!");
+
       } else {
-        // ➕ CREATE NEW
-        await axios.post(`${API_BASE}api/v1/payments/plans`, form,{headers:{
-          Authorization:`Bearer ${Cookies.get('access_token')}`
-        }});
+        await axios.post(`${API_BASE}api/v1/payments/plans`, form, {
+          headers: {
+            Authorization: `Bearer ${Cookies.get('access_token')}`
+          }
+        });
+        setForm({
+        name: "",
+        description: "",
+        price: "",
+        currency: "GBP",
+        duration_days: "",
+        max_devices: "",
+        ad_supported: false,
+        is_active: true,
+      });
+      setTouched({name: false,
+    description: false,
+    price: false,
+    duration_days: false,
+    max_devices: false });  
         toast.success("Plan created successfully!");
       }
 
       onSuccess?.();
-    } catch (error:any) {
+    } catch (error: any) {
       console.error(error);
-      const message =
-        error?.response?.data?.detail ||
-        error?.response?.data?.message ||
-        "Something went wrong. Please try again.";
 
-      toast.error(message);
+      // Check if the error response contains field-specific validation errors
+      const apiErrors = error?.response?.data;
+
+      if (apiErrors && typeof apiErrors === 'object' && !apiErrors.detail && !apiErrors.message) {
+        const newErrors: any = { ...errors };
+        
+        // Map API errors to form errors
+        Object.keys(apiErrors).forEach((fieldName) => {
+          const fieldErrors = apiErrors[fieldName];
+          if (Array.isArray(fieldErrors) && fieldErrors.length > 0) {
+            newErrors[fieldName] = fieldErrors[0];
+          }
+        });
+
+        setErrors(newErrors);
+        
+        // Mark all fields with errors as touched
+        const newTouched: any = { ...touched };
+        Object.keys(apiErrors).forEach((fieldName) => {
+          newTouched[fieldName] = true;
+        });
+        setTouched(newTouched);
+
+        toast.error(
+          <div className="space-y-1">
+            <p className="font-semibold">Validation errors:</p>
+            {Object.entries(apiErrors).map(([field, messages]: [string, any]) => (
+              <p key={field} className="text-xs">
+                • <span className="font-medium">{field}:</span>{' '}
+                {Array.isArray(messages) ? messages.join(', ') : messages}
+              </p>
+            ))}
+          </div>
+        );
+      } else {
+        const message =
+          error?.response?.data?.detail ||
+          error?.response?.data?.message ||
+          "Something went wrong. Please try again.";
+
+        toast.error(message);
+      }
     } finally {
       setLoading(false);
     }
@@ -658,7 +697,7 @@ const PlanForm = ({
       {/* Header Section */}
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-white mb-2">
-          {initial ? "✏️ Edit Payment Plan" : "✨ Create New Payment Plan"}
+          {initial ? "Edit Payment Plan" : "Create New Payment Plan"}
         </h1>
         <p className="text-neutral-400">
           {initial 
@@ -686,7 +725,7 @@ const PlanForm = ({
                transition-all duration-200`}
           />
           {touched.name && errors.name && (
-            <p className="text-xs text-red-500 mt-1">⚠️ {errors.name}</p>
+            <p className="text-xs text-red-500 mt-1">{errors.name}</p>
           )}
           {!errors.name && (
             <p className="text-xs text-neutral-500 mt-1">Choose a memorable name for this plan</p>
@@ -711,7 +750,7 @@ const PlanForm = ({
                transition-all duration-200 resize-none`}
           />
           {touched.description && errors.description && (
-            <p className="text-xs text-red-500 mt-1">⚠️ {errors.description}</p>
+            <p className="text-xs text-red-500 mt-1">{errors.description}</p>
           )}
           {!errors.description && (
             <p className="text-xs text-neutral-500 mt-1">
@@ -725,10 +764,10 @@ const PlanForm = ({
           {/* Price */}
           <div>
             <label className="block text-sm font-semibold text-white mb-2">
-              💰 Price <span className="text-red-500">*</span>
+              Price <span className="text-red-500">*</span>
             </label>
             <div className="relative">
-              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-neutral-400">$</span>
+              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-neutral-400">£</span>
               <input
                 type="number"
                 step="0.01"
@@ -744,7 +783,7 @@ const PlanForm = ({
               />
             </div>
             {touched.price && errors.price && (
-              <p className="text-xs text-red-500 mt-1">⚠️ {errors.price}</p>
+              <p className="text-xs text-red-500 mt-1">{errors.price}</p>
             )}
             {!errors.price && (
               <p className="text-xs text-neutral-500 mt-1">Monthly subscription price in Great British Pound (GBP)</p>
@@ -754,7 +793,7 @@ const PlanForm = ({
           {/* Duration */}
           <div>
             <label className="block text-sm font-semibold text-white mb-2">
-              ⏱️ Duration (days) <span className="text-red-500">*</span>
+              Duration (days) <span className="text-red-500">*</span>
             </label>
             <input
               type="number"
@@ -769,7 +808,7 @@ const PlanForm = ({
                  transition-all duration-200`}
             />
             {touched.duration_days && errors.duration_days && (
-              <p className="text-xs text-red-500 mt-1">⚠️ {errors.duration_days}</p>
+              <p className="text-xs text-red-500 mt-1">{errors.duration_days}</p>
             )}
             {!errors.duration_days && (
               <p className="text-xs text-neutral-500 mt-1">How many days this plan lasts (e.g., 30 for monthly)</p>
@@ -777,12 +816,11 @@ const PlanForm = ({
           </div>
         </div>
 
-        {/* Max Devices and Profiles Row */}
+        {/* Max Devices and Ad Support Row */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Max Devices */}
           <div>
             <label className="block text-sm font-semibold text-white mb-2">
-              📱 Max Devices <span className="text-red-500">*</span>
+              Max Devices <span className="text-red-500">*</span>
             </label>
             <input
               type="number"
@@ -797,45 +835,16 @@ const PlanForm = ({
                  transition-all duration-200`}
             />
             {touched.max_devices && errors.max_devices && (
-              <p className="text-xs text-red-500 mt-1">⚠️ {errors.max_devices}</p>
+              <p className="text-xs text-red-500 mt-1">{errors.max_devices}</p>
             )}
             {!errors.max_devices && (
               <p className="text-xs text-neutral-500 mt-1">Maximum number of devices allowed per subscription</p>
             )}
           </div>
-
-          {/* Max Profiles */}
+          
           <div>
             <label className="block text-sm font-semibold text-white mb-2">
-              👥 Max Profiles <span className="text-red-500">*</span>
-            </label>
-            <input
-              type="number"
-              placeholder="4"
-              value={form.max_profiles}
-              onChange={(e) => update("max_profiles", e.target.value)}
-              onBlur={() => markTouched("max_profiles")}
-              className={`w-full px-4 py-3 bg-neutral-700/50 text-white rounded-lg 
-                 border ${touched.max_profiles && errors.max_profiles ? 'border-red-500' : 'border-neutral-600'}
-                 outline-none focus:outline-none 
-                 focus:ring-2 ${touched.max_profiles && errors.max_profiles ? 'focus:ring-red-500' : 'focus:ring-blue-500'} focus:border-transparent
-                 transition-all duration-200`}
-            />
-            {touched.max_profiles && errors.max_profiles && (
-              <p className="text-xs text-red-500 mt-1">⚠️ {errors.max_profiles}</p>
-            )}
-            {!errors.max_profiles && (
-              <p className="text-xs text-neutral-500 mt-1">Maximum number of user profiles per account</p>
-            )}
-          </div>
-        </div>
-
-        {/* Ad Support and Status Row */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Ad Supported */}
-          <div>
-            <label className="block text-sm font-semibold text-white mb-2">
-              📺 Ad Support
+              Ad Support
             </label>
             <select
               value={form.ad_supported ? "true" : "false"}
@@ -846,16 +855,18 @@ const PlanForm = ({
                  focus:ring-2 focus:ring-blue-500 focus:border-transparent
                  transition-all duration-200 cursor-pointer"
             >
-              <option value="false">🚫 No Ads - Premium Experience</option>
-              <option value="true">📢 Ad Supported - Lower Price</option>
+              <option value="false">No Ads - Premium Experience</option>
+              <option value="true">Ad Supported - Lower Price</option>
             </select>
             <p className="text-xs text-neutral-500 mt-1">Will users see advertisements?</p>
           </div>
+        </div>
 
-          {/* Active Status */}
+        {/* Plan Status */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
             <label className="block text-sm font-semibold text-white mb-2">
-              🔄 Plan Status
+              Plan Status
             </label>
             <select
               value={form.is_active ? "true" : "false"}
@@ -866,8 +877,8 @@ const PlanForm = ({
                  focus:ring-2 focus:ring-blue-500 focus:border-transparent
                  transition-all duration-200 cursor-pointer"
             >
-              <option value="true">✅ Active - Available to Users</option>
-              <option value="false">⏸️ Inactive - Hidden from Users</option>
+              <option value="true">Active - Available to Users</option>
+              <option value="false">Inactive - Hidden from Users</option>
             </select>
             <p className="text-xs text-neutral-500 mt-1">Control whether this plan is visible to new subscribers</p>
           </div>
@@ -877,14 +888,13 @@ const PlanForm = ({
       {/* Validation Summary */}
       {!isValid && Object.values(touched).some(t => t) && (
         <div className="mt-6 p-4 bg-red-500/10 border border-red-500 rounded-lg">
-          <p className="text-sm text-red-500 font-semibold mb-2">⚠️ Please fix the following errors:</p>
+          <p className="text-sm text-red-500 font-semibold mb-2">Please fix the following errors:</p>
           <ul className="text-xs text-red-400 space-y-1 list-disc list-inside">
             {errors.name && <li>{errors.name}</li>}
             {errors.description && <li>{errors.description}</li>}
             {errors.price && <li>{errors.price}</li>}
             {errors.duration_days && <li>{errors.duration_days}</li>}
-            {errors.max_devices && <li>{errors.max_devices}</li>}
-            {errors.max_profiles && <li>{errors.max_profiles}</li>}
+            {errors.max_devices && <li>{errors.max_devices}</li>} 
           </ul>
         </div>
       )}
@@ -921,7 +931,7 @@ const PlanForm = ({
               Saving...
             </span>
           ) : (
-            <span>{initial ? "💾 Update Plan" : "🚀 Create Plan"}</span>
+            <span>{initial ? "Update Plan" : "Create Plan"}</span>
           )}
         </button>
       </div>

@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
-import '@/styles/globals.css'
+  import '../styles/globals.css'
 import { Navbar } from '@/components/Navbar'
 import { AuthProvider } from '@/lib/useAuth'
 import { Toaster } from "sonner";
@@ -42,7 +42,7 @@ export default function RootLayout({
             {/* <Navbar /> */}
             <main className="flex-1">
               
-      <Toaster richColors position="bottom-right" />
+      <Toaster  closeButton richColors position="bottom-right" />
               {children}
             </main>
           {/* <footer className="bg-gray-900 text-white py-8">
