@@ -115,7 +115,7 @@ export interface FrontendMovie {
   banner_url?: string | null
   genres: FrontendMovieGenre[]
   is_ppv: boolean
-  price_dollars?: number | null
+  price?: number | null
   duration?: number | null
   release_year?: number | null
 }

@@ -9,20 +9,8 @@ import { BiLogOut } from "react-icons/bi";
 import { FiSettings as Settings, FiShield as Shield, FiFilm as Film, FiUsers as Users, FiBell as Bell, FiDatabase as Database } from "react-icons/fi";
 import { toast } from "sonner";
 import { getPlatformSettings, updatePlatformSettings, uploadPlatformLogo } from '@/lib/platformApi';
-const SettingInput = ({
-  label,
-  children,
-}: {
-  label: string
-  children: React.ReactNode
-}) => (
-  <div className="space-y-1 w-full">
-    <label className="text-xs uppercase tracking-wide text-gray-400">
-      {label}
-    </label>
-    {children}
-  </div>
-)
+import { SettingInput } from "@/components/SettingInput/SettingInput";
+ 
 
  
 export default function AdminSettingsPage() {
