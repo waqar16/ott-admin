@@ -448,6 +448,8 @@ const [videoUrlInput, setVideoUrlInput] = useState("");
     media_type: content?.media_type || 'flat',
     visibility_mode: content?.visibility_mode || 'public',
     trailerType: content?.trailerType || 'movie',
+    season_number:content?.season_number ,
+    episode_number:content?.episode_number ,
     status: content?.status || 'draft',
     is_demo_content: content?.is_demo_content || false,
     is_kid_safe: content?.is_kid_safe || false,
@@ -782,7 +784,7 @@ console.log("file",file)
   const fetchGenre = async () => {
     try {
       let fetchGenre = await axios.get(`${API_BASE}api/v1/content/genres`)
-      setAllGenre(fetchGenre?.data?.results)
+      setAllGenre(fetchGenre?.data)
     }
     catch (err) {
       console.log(err,"error")
@@ -1043,7 +1045,9 @@ console.log(file,"file")
                   ref={gridScrollRef}
                   className="  grid grid-cols-1 md:grid-cols-2 gap-2  overflow-y-auto minimal-scrollbar max-h-[55vh] md:max-h-[60vh]"
                 >
-                  <div className="md:col-span-2">
+                  {contentType =='episode'?<>
+                 <div className='col-span-2 flex flex-row items-center justify-between w-full'>
+                   <div className= "w-5/12">
                     <label className="block text-sm font-medium text-gray-300 mb-2">
                       Title *
                     </label>
@@ -1058,6 +1062,38 @@ console.log(file,"file")
                       required
                     />
                   </div>
+                  <div className="w-6/12 ">
+  <label className="block text-sm font-medium text-gray-300 mb-2">
+    Episode Number *
+  </label>
+
+  <input
+    type="number"
+    value={formData.episode_number}
+    onChange={(e) => handleChange('episode_number', e.target.value)}
+    placeholder="Enter Ep number"
+    required
+    className="w-full px-4 py-2 bg-gray-700 text-white rounded-lg outline-none
+               ring-0 focus:outline-none focus:ring-0 focus-visible:outline-none focus-visible:ring-0
+               appearance-none [&::-webkit-outer-spin-button]:appearance-none 
+               [&::-webkit-inner-spin-button]:appearance-none"
+  />
+</div></div></>:
+                  <div className="md:col-span-2">
+                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                      Title *
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.title}
+                      onChange={(e) => handleChange('title', e.target.value)}
+                      className="w-full px-4 py-2 bg-gray-700 text-white rounded-lg  outline-none ring-0 
+           focus:outline-none focus:ring-0 
+           focus-visible:outline-none focus-visible:ring-0"
+                      placeholder="Enter content title"
+                      required
+                    />
+                  </div>}
 
                   <div className={` md:col-span-2 `}>
                     <label className="block text-sm font-medium text-gray-300 mb-2">
@@ -1075,7 +1111,23 @@ console.log(file,"file")
                     />
                   </div>
 
+                {contentType =='season' && <div className="md:col-span-2">
+  <label className="block text-sm font-medium text-gray-300 mb-2">
+    Season Number *
+  </label>
 
+  <input
+    type="number"
+    value={formData.season_number}
+    onChange={(e) => handleChange('season_number', e.target.value)}
+    placeholder="Enter season number"
+    required
+    className="w-full px-4 py-2 bg-gray-700 text-white rounded-lg outline-none
+               ring-0 focus:outline-none focus:ring-0 focus-visible:outline-none focus-visible:ring-0
+               appearance-none [&::-webkit-outer-spin-button]:appearance-none 
+               [&::-webkit-inner-spin-button]:appearance-none"
+  />
+</div>}
                   {contentType != 'season' &&     <>
                   <div className='w-full grid grid-cols-3 col-span-2 gap-x-4'>
                       <MultiSelect
