@@ -71,6 +71,8 @@ export interface Content {
   rating?: string;
   director?: string;
   cast?: string[];
+  season_number?: number;
+  episode_number?:number;
   created_at: string;
   updated_at: string;
   user_id?: string;
@@ -93,13 +95,14 @@ export interface CreateContentPayload {
   genres?: string[];
   duration_seconds?: number;
   trailer_youtube_url?: string;
-
   release_date?: string;
   rating?: string;
   director?: string;
   cast?: string[];
   parent?:string;
-  seasonNumber?:number;
+  season_number?:number;
+  episode_number?:number;
+  
 }
 
 export interface UpdateContentPayload {
