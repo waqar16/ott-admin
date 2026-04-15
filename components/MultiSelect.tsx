@@ -126,7 +126,7 @@ export default function MultiSelect({ allGenre, formData, setFormData }) {
         </label>
 
         {/* Button */}
-        <div
+        {allGenre.length > 0 ?<div
           ref={buttonRef}   
           onClick={toggleOpen}
           className="w-full px-4 py-2 bg-gray-700 text-white rounded-lg flex flex-wrap gap-2 cursor-pointer border border-gray-600"
@@ -146,7 +146,10 @@ export default function MultiSelect({ allGenre, formData, setFormData }) {
               );
             })
           )}
-        </div>
+        </div>:
+        <div className="w-full px-4 py-2 bg-gray-700 text-white rounded-lg flex flex-wrap gap-2 cursor-not-allowed border border-gray-600">
+        <span className="text-gray-400">No genres available</span>
+        </div>}
       </div>
 
       {/* Dropdown (PORTAL) */}

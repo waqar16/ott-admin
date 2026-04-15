@@ -1,474 +1,18 @@
-// // "use client"
-// // import React, { useState } from "react";
-// // import { PaymentPlan } from "@/lib/types/content"; 
-// // import axios from "axios";
-// // import Cookies from "js-cookie";
-// // import { API_BASE } from "@/lib/config";  
-// // import { toast } from "sonner"; 
-// // const PlanForm = ({
-// //   initial,
-// //   onSuccess,
-// //   onClose,
-// // }: {
-// //   initial?: PaymentPlan | null;
-// //   onSuccess?: () => void;
-// //   onClose?: () => void;
-// // }) => {
-// //   const [form, setForm] = useState({
-// //     name: initial?.name || "",
-// //     description: initial?.description || "",
-// //     price: initial?.price || "",
-// //     duration_days: initial?.duration_days || "",
-// //     max_devices: initial?.max_devices || "",
-// //     max_profiles: initial?.max_profiles || "",
-// //     ad_supported: initial?.ad_supported || false,
-// //     is_active: initial?.is_active ?? true,
-// //   });
-
-// //   const [loading, setLoading] = useState(false);
-
-// //   const update = (key: string, value: any) =>
-// //     setForm((prev) => ({ ...prev, [key]: value }));
-
-// //   const handleSubmit = async () => {
-// //     try {
-// //       setLoading(true);
-
-// //       if (initial) {
-// //         // 🔥 UPDATE
-// //         await axios.put(`${API_BASE}api/v1/payments/plans/${initial.id}`, form,{headers:{
-// //           Authorization:`Bearer ${Cookies.get('access_token')}`
-// //         }});
-// //       } else {
-// //         // ➕ CREATE NEW
-// //         await axios.post(`${API_BASE}api/v1/payments/plans`, form,{headers:{
-// //           Authorization:`Bearer ${Cookies.get('access_token')}`
-// //         }});
-// //       }
-
-// //       onSuccess();
-// //     } catch (error:any) {
-// //       console.error(error);
-// //         const message =
-// //       error?.response?.data?.detail ||
-// //       error?.response?.data?.message ||
-// //       "Something went wrong. Please try again.";
-
-// //     toast.error(message);
-// //     } finally {
-// //       setLoading(false);
-// //     }
-// //   };
-
-// //   return (
-// //     <>
-// //       <div className="space-y-4 mt-12">
-
-// //         <input
-// //           type="text"
-// //           placeholder="Plan Name"
-// //           value={form.name}
-// //           onChange={(e) => update("name", e.target.value)}
-// //           className="w-full px-4 py-2 bg-neutral-700 text-white rounded-lg 
-// //              outline-none focus:outline-none 
-// //              focus:ring-0 focus:border-none"
-// //         />
-
-// //         <textarea
-// //           placeholder="Description"
-// //           value={form.description}
-// //           onChange={(e) => update("description", e.target.value)}
-// //            className="w-full px-4 py-2 bg-neutral-700 text-white rounded-lg 
-// //              outline-none focus:outline-none 
-// //              focus:ring-0 focus:border-none"
-// //         />
-
-// //         <input
-// //           type="number"
-// //           placeholder="Price"
-// //           value={form.price}
-// //           onChange={(e) => update("price", parseFloat(e.target.value))}
-// //            className="w-full px-4 py-2 bg-neutral-700 text-white rounded-lg 
-// //              outline-none focus:outline-none 
-// //              focus:ring-0 focus:border-none"
-// //         />
-
-// //         <input
-// //           type="number"
-// //           placeholder="Duration (days)"
-// //           value={form.duration_days}
-// //           onChange={(e) => update("duration_days", Number(e.target.value))}
-// //            className="w-full px-4 py-2 bg-neutral-700 text-white rounded-lg 
-// //              outline-none focus:outline-none 
-// //              focus:ring-0 focus:border-none"
-// //         />
-
-// //         <input
-// //           type="number"
-// //           placeholder="Max Devices"
-// //           value={form.max_devices}
-// //           onChange={(e) => update("max_devices", Number(e.target.value))}
-// //           className="w-full px-4 py-2 bg-neutral-700 text-white rounded-lg 
-// //              outline-none focus:outline-none 
-// //              focus:ring-0 focus:border-none"
-// //         />
-
-// //         <input
-// //           type="number"
-// //           placeholder="Max Profiles"
-// //           value={form.max_profiles}
-// //           onChange={(e) => update("max_profiles", Number(e.target.value))}
-// //            className="w-full px-4 py-2 bg-neutral-700 text-white rounded-lg 
-// //              outline-none focus:outline-none 
-// //              focus:ring-0 focus:border-none"
-// //         />
-
-// //         {/* Ad Supported */}
-// //         <select
-// //           value={form.ad_supported ? "true" : "false"}
-// //           onChange={(e) => update("ad_supported", e.target.value === "true")}
-// //            className="w-full px-4 py-2 bg-neutral-700 text-white rounded-lg 
-// //              outline-none focus:outline-none 
-// //              focus:ring-0 focus:border-none"
-// //         >
-// //           <option value="false">No Ads</option>
-// //           <option value="true">Ad Supported</option>
-// //         </select>
-
-// //         {/* Active */}
-// //         <select
-// //           value={form.is_active ? "true" : "false"}
-// //           onChange={(e) => update("is_active", e.target.value === "true")}
-// //            className="w-full px-4 py-2 bg-neutral-700 text-white rounded-lg 
-// //              outline-none focus:outline-none 
-// //              focus:ring-0 focus:border-none"
-// //         >
-// //           <option value="true">Active</option>
-// //           <option value="false">Inactive</option>
-// //         </select>
-
-// //       </div>
-
-// //       {/* Buttons */}
-// //       <div className="flex justify-end gap-3 mt-6">
-// //         <button
-// //           onClick={onClose}
-// //           className="px-4 py-2 bg-neutral-600 hover:bg-neutral-700 text-white rounded-lg"
-// //         >
-// //           Cancel
-// //         </button>
-
-// //         <button
-// //           onClick={handleSubmit}
-// //           disabled={loading}
-// //           className={`px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg ${
-// //             loading ? "opacity-50" : ""
-// //           }`}
-// //         >
-// //           {loading ? "Saving..." : initial ? "Update Plan" : "Create Plan"}
-// //         </button>
-// //       </div>
-// //     </>
-// //   );
-// // };
-
-// // export default PlanForm;
-
-// "use client"
-// import React, { useState } from "react";
-// import { PaymentPlan } from "@/lib/types/content"; 
-// import axios from "axios";
-// import Cookies from "js-cookie";
-// import { API_BASE } from "@/lib/config";  
-// import { toast } from "sonner"; 
-
-// const PlanForm = ({
-//   initial,
-//   onSuccess,
-//   onClose,
-// }: {
-//   initial?: PaymentPlan | null;
-//   onSuccess?: () => void;
-//   onClose?: () => void;
-// }) => {
-//   const [form, setForm] = useState({
-//     name: initial?.name || "",
-//     description: initial?.description || "",
-//     price: initial?.price || "",
-//     currency: "GBP",
-//     duration_days: initial?.duration_days || "",
-//     max_devices: initial?.max_devices || "",
-//     max_profiles: initial?.max_profiles || "",
-//     ad_supported: initial?.ad_supported || false,
-//     is_active: initial?.is_active ?? true,
-//   });
-
-//   const [loading, setLoading] = useState(false);
-
-//   const update = (key: string, value: any) =>
-//     setForm((prev) => ({ ...prev, [key]: value }));
-
-//   const handleSubmit = async () => {
-//     try {
-//       setLoading(true);
-
-//       if (initial) {
-//         // 🔥 UPDATE
-//         await axios.put(`${API_BASE}api/v1/payments/plans/${initial.id}`, form,{headers:{
-//           Authorization:`Bearer ${Cookies.get('access_token')}`
-//         }});
-//       } else {
-//         // ➕ CREATE NEW
-//         await axios.post(`${API_BASE}api/v1/payments/plans`, form,{headers:{
-//           Authorization:`Bearer ${Cookies.get('access_token')}`
-//         }});
-//       }
-
-//       onSuccess();
-//     } catch (error:any) {
-//       console.error(error);
-//         const message =
-//       error?.response?.data?.detail ||
-//       error?.response?.data?.message ||
-//       "Something went wrong. Please try again.";
-
-//     toast.error(message);
-//     } finally {
-//       setLoading(false);
-//     }
-//   };
-
-//   return (
-//     <div className="w-full mx-auto p-8">
-//       {/* Header Section */}
-//       <div className="mb-8">
-//         <h1 className="text-3xl font-bold text-white mb-2">
-//           {initial ? "✏️ Edit Payment Plan" : "✨ Create New Payment Plan"}
-//         </h1>
-//         <p className="text-neutral-400">
-//           {initial 
-//             ? "Update the details of your existing payment plan" 
-//             : "Set up a new subscription plan for your users"}
-//         </p>
-//       </div>
-
-//       <div className="space-y-6">
-//         {/* Plan Name */}
-//         <div>
-//           <label className="block text-sm font-semibold text-white mb-2">
-//             Plan Name <span className="text-red-500">*</span>
-//           </label>
-//           <input
-//             type="text"
-//             placeholder="e.g., Premium, Basic, Family"
-//             value={form.name}
-//             onChange={(e) => update("name", e.target.value)}
-//             className="w-full px-4 py-3 bg-neutral-700/50 text-white rounded-lg 
-//                border border-neutral-600 
-//                outline-none focus:outline-none 
-//                focus:ring-2 focus:ring-blue-500 focus:border-transparent
-//                transition-all duration-200"
-//           />
-//           <p className="text-xs text-neutral-500 mt-1">Choose a memorable name for this plan</p>
-//         </div>
-
-//         {/* Description */}
-//         <div>
-//           <label className="block text-sm font-semibold text-white mb-2">
-//             Description <span className="text-red-500">*</span>
-//           </label>
-//           <textarea
-//             placeholder="Describe what this plan includes and its key benefits..."
-//             value={form.description}
-//             onChange={(e) => update("description", e.target.value)}
-//             rows={4}
-//             className="w-full px-4 py-3 bg-neutral-700/50 text-white rounded-lg 
-//                border border-neutral-600 
-//                outline-none focus:outline-none 
-//                focus:ring-2 focus:ring-blue-500 focus:border-transparent
-//                transition-all duration-200 resize-none"
-//           />
-//           <p className="text-xs text-neutral-500 mt-1">Highlight the features and benefits of this plan</p>
-//         </div>
-
-//         {/* Price and Duration Row */}
-//         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-//           {/* Price */}
-//           <div>
-//             <label className="block text-sm font-semibold text-white mb-2">
-//               💰 Price <span className="text-red-500">*</span>
-//             </label>
-//             <div className="relative">
-//             <span className="absolute left-4 top-1/2 -translate-y-1/2 text-neutral-400">$</span>
-//               <input
-//                 type="number"
-//                 placeholder="9.99"
-//                 value={form.price}
-//                 onChange={(e) => update("price", parseFloat(e.target.value))}
-//                 className="w-full pl-8 pr-4 py-3 bg-neutral-700/50 text-white rounded-lg 
-//                    border border-neutral-600 
-//                    outline-none focus:outline-none 
-//                    focus:ring-2 focus:ring-blue-500 focus:border-transparent
-//                    transition-all duration-200"
-//               />
-//             </div>
-//             <p className="text-xs text-neutral-500 mt-1">Monthly subscription price in Great British Pound (GBP).</p>
-//           </div>
-
-//           {/* Duration */}
-//           <div>
-//             <label className="block text-sm font-semibold text-white mb-2">
-//               ⏱️ Duration (days) <span className="text-red-500">*</span>
-//             </label>
-//             <input
-//               type="number"
-//               placeholder="30"
-//               value={form.duration_days}
-//               onChange={(e) => update("duration_days", Number(e.target.value))}
-//               className="w-full px-4 py-3 bg-neutral-700/50 text-white rounded-lg 
-//                  border border-neutral-600 
-//                  outline-none focus:outline-none 
-//                  focus:ring-2 focus:ring-blue-500 focus:border-transparent
-//                  transition-all duration-200"
-//             />
-//             <p className="text-xs text-neutral-500 mt-1">How many days this plan lasts (e.g., 30 for monthly)</p>
-//           </div>
-//         </div>
-
-//         {/* Max Devices and Profiles Row */}
-//         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-//           {/* Max Devices */}
-//           <div>
-//             <label className="block text-sm font-semibold text-white mb-2">
-//               📱 Max Devices <span className="text-red-500">*</span>
-//             </label>
-//             <input
-//               type="number"
-//               placeholder="5"
-//               value={form.max_devices}
-//               onChange={(e) => update("max_devices", Number(e.target.value))}
-//               className="w-full px-4 py-3 bg-neutral-700/50 text-white rounded-lg 
-//                  border border-neutral-600 
-//                  outline-none focus:outline-none 
-//                  focus:ring-2 focus:ring-blue-500 focus:border-transparent
-//                  transition-all duration-200"
-//             />
-//             <p className="text-xs text-neutral-500 mt-1">Maximum number of devices allowed per subscription</p>
-//           </div>
-
-//           {/* Max Profiles */}
-//           <div>
-//             <label className="block text-sm font-semibold text-white mb-2">
-//               👥 Max Profiles <span className="text-red-500">*</span>
-//             </label>
-//             <input
-//               type="number"
-//               placeholder="4"
-//               value={form.max_profiles}
-//               onChange={(e) => update("max_profiles", Number(e.target.value))}
-//               className="w-full px-4 py-3 bg-neutral-700/50 text-white rounded-lg 
-//                  border border-neutral-600 
-//                  outline-none focus:outline-none 
-//                  focus:ring-2 focus:ring-blue-500 focus:border-transparent
-//                  transition-all duration-200"
-//             />
-//             <p className="text-xs text-neutral-500 mt-1">Maximum number of user profiles per account</p>
-//           </div>
-//         </div>
-
-//         {/* Ad Support and Status Row */}
-//         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-//           {/* Ad Supported */}
-//           <div>
-//             <label className="block text-sm font-semibold text-white mb-2">
-//               📺 Ad Support
-//             </label>
-//             <select
-//               value={form.ad_supported ? "true" : "false"}
-//               onChange={(e) => update("ad_supported", e.target.value === "true")}
-//               className="w-full px-4 py-3 bg-neutral-700/50 text-white rounded-lg 
-//                  border border-neutral-600 
-//                  outline-none focus:outline-none 
-//                  focus:ring-2 focus:ring-blue-500 focus:border-transparent
-//                  transition-all duration-200 cursor-pointer"
-//             >
-//               <option value="false">🚫 No Ads - Premium Experience</option>
-//               <option value="true">📢 Ad Supported - Lower Price</option>
-//             </select>
-//             <p className="text-xs text-neutral-500 mt-1">Will users see advertisements?</p>
-//           </div>
-
-//           {/* Active Status */}
-//           <div>
-//             <label className="block text-sm font-semibold text-white mb-2">
-//               🔄 Plan Status
-//             </label>
-//             <select
-//               value={form.is_active ? "true" : "false"}
-//               onChange={(e) => update("is_active", e.target.value === "true")}
-//               className="w-full px-4 py-3 bg-neutral-700/50 text-white rounded-lg 
-//                  border border-neutral-600 
-//                  outline-none focus:outline-none 
-//                  focus:ring-2 focus:ring-blue-500 focus:border-transparent
-//                  transition-all duration-200 cursor-pointer"
-//             >
-//               <option value="true">✅ Active - Available to Users</option>
-//               <option value="false">⏸️ Inactive - Hidden from Users</option>
-//             </select>
-//             <p className="text-xs text-neutral-500 mt-1">Control whether this plan is visible to new subscribers</p>
-//           </div>
-//         </div>
-//       </div>
-
-//       {/* Action Buttons */}
-//       <div className="flex justify-end gap-4 mt-10 pt-6 border-t border-neutral-700">
-//         <button
-//           onClick={onClose}
-//           className="px-6 py-3 bg-neutral-700 hover:bg-neutral-600 text-white rounded-lg
-//              font-medium transition-all duration-200 
-//              border border-neutral-600 hover:border-neutral-500"
-//         >
-//           Cancel
-//         </button>
-
-//         <button
-//           onClick={handleSubmit}
-//           disabled={loading}
-//           className={`px-8 py-3 bg-gradient-to-r from-blue-600 to-blue-700 
-//              hover:from-blue-700 hover:to-blue-800 
-//              text-white rounded-lg font-medium
-//              transition-all duration-200 
-//              shadow-lg shadow-blue-500/20 hover:shadow-blue-500/40
-//              disabled:opacity-50 disabled:cursor-not-allowed
-//              ${loading ? "animate-pulse" : ""}`}
-//         >
-//           {loading ? (
-//             <span className="flex items-center gap-2">
-//               <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
-//                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none"/>
-//                 <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"/>
-//               </svg>
-//               Saving...
-//             </span>
-//           ) : (
-//             <span>{initial ? "💾 Update Plan" : "🚀 Create Plan"}</span>
-//           )}
-//         </button>
-//       </div>
-//     </div>
-//   );
-// };
-
-// export default PlanForm;
+ 
 
 "use client"
 import React, { useState, useEffect } from "react";
+import Link from "next/link";
 import { PaymentPlan } from "@/lib/types/content"; 
 import axios from "axios";
 import Cookies from "js-cookie";
 import { API_BASE } from "@/lib/config";  
 import { toast } from "sonner"; 
-
+import FullScreenRedirectLoader from "../Loader/FullScreenRedirectLoader";
+import { BiChevronLeft } from "react-icons/bi";
+import { FiChevronsLeft } from "react-icons/fi";
+import { BsChevronLeft } from "react-icons/bs";
+import { useRouter } from "next/navigation";
 const PlanForm = ({
   initial,
   onSuccess,
@@ -478,11 +22,13 @@ const PlanForm = ({
   onSuccess?: () => void;
   onClose?: () => void;
 }) => {
+  const navigate = useRouter()
   const [form, setForm] = useState({
     name: initial?.name || "",
     description: initial?.description || "",
     price: initial?.price || "",
     currency: "GBP",
+    can_access_premium: initial?.can_access_premium || false,
     duration_days: initial?.duration_days || "",
     max_devices: initial?.max_devices || "", 
     ad_supported: initial?.ad_supported || false,
@@ -495,6 +41,7 @@ const PlanForm = ({
     price: "",
     duration_days: "",
     max_devices: "", 
+    can_access_premium:''
   });
 
   const [touched, setTouched] = useState({
@@ -503,13 +50,16 @@ const PlanForm = ({
     price: false,
     duration_days: false,
     max_devices: false, 
+    can_access_premium:false
   });
 
   const [loading, setLoading] = useState(false);
   const [isValid, setIsValid] = useState(false);
+  const [cancelClicked, setCancelClicked] = useState(false);
 
   const update = (key: string, value: any) =>
     setForm((prev) => ({ ...prev, [key]: value }));
+
 
   const markTouched = (field: string) => {
     setTouched((prev) => ({ ...prev, [field]: true }));
@@ -523,6 +73,7 @@ const PlanForm = ({
       price: "",
       duration_days: "",
       max_devices: "", 
+      can_access_premium:''
     };
 
     // Name validation
@@ -598,6 +149,8 @@ const PlanForm = ({
       price: true,
       duration_days: true,
       max_devices: true, 
+      can_access_premium: true
+
     });
 
     // Validate before submitting
@@ -630,12 +183,14 @@ const PlanForm = ({
         currency: "GBP",
         duration_days: "",
         max_devices: "",
+        can_access_premium:false,
         ad_supported: false,
         is_active: true,
       });
       setTouched({name: false,
     description: false,
     price: false,
+    can_access_premium:false,
     duration_days: false,
     max_devices: false });  
         toast.success("Plan created successfully!");
@@ -693,8 +248,19 @@ const PlanForm = ({
   };
 
   return (
+    <>
+    {cancelClicked && 
+    <FullScreenRedirectLoader message="Wait a minute"/>}
     <div className="w-full mx-auto p-8">
       {/* Header Section */}
+      <div
+      onClick={()=>{setCancelClicked(true)
+        navigate.back()
+      }}
+      className="w-full flex flex-row items-center justify-start text-neutral-400 mb-12 cursor-pointer hover:text-neutral-200 transition-colors duration-200">
+        <BsChevronLeft className="w-6 h-5  mr-1"/>
+        <p className="mt-1 ">Go Back</p>
+      </div>
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-white mb-2">
           {initial ? "Edit Payment Plan" : "Create New Payment Plan"}
@@ -882,6 +448,24 @@ const PlanForm = ({
             </select>
             <p className="text-xs text-neutral-500 mt-1">Control whether this plan is visible to new subscribers</p>
           </div>
+             <div>
+            <label className="block text-sm font-semibold text-white mb-2">
+              Premium Content Accessibility
+            </label>
+            <select
+              value={form.can_access_premium ? "true" : "false"}
+              onChange={(e) => update("can_access_premium", e.target.value === "true")}
+              className="w-full px-4 py-3 bg-neutral-700/50 text-white rounded-lg 
+                 border border-neutral-600 
+                 outline-none focus:outline-none 
+                 focus:ring-2 focus:ring-blue-500 focus:border-transparent
+                 transition-all duration-200 cursor-pointer"
+            >
+              <option value="true">Yes</option>
+              <option value="false">No</option>
+            </select>
+            <p className="text-xs text-neutral-500 mt-1">Control whether this plan is visible to new subscribers</p>
+          </div>
         </div>
       </div>
 
@@ -901,14 +485,15 @@ const PlanForm = ({
 
       {/* Action Buttons */}
       <div className="flex justify-end gap-4 mt-10 pt-6 border-t border-neutral-700">
-        <button
-          onClick={onClose}
+        <Link
+        href={'/admin/payment-plans'}
+          onClick={()=>{setCancelClicked(true)}}
           className="px-6 py-3 bg-neutral-700 hover:bg-neutral-600 text-white rounded-lg
              font-medium transition-all duration-200 
              border border-neutral-600 hover:border-neutral-500"
         >
           Cancel
-        </button>
+        </Link>
 
         <button
           onClick={handleSubmit}
@@ -936,6 +521,7 @@ const PlanForm = ({
         </button>
       </div>
     </div>
+    </>
   );
 };
 

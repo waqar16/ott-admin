@@ -1,7 +1,7 @@
 "use client";
 import React, { useCallback, useEffect, useState } from "react";
 import Cookies from "js-cookie";
-import { API_BASE, FRONTEND_BASE } from "@/lib/config";
+import { API_BASE, API_CONFIG, FRONTEND_BASE } from "@/lib/config";
 
 import {
   Content,
@@ -19,6 +19,7 @@ import {
   deleteContent,
   getContent,
   getStreamingUrl,
+  getAuthHeaders,
 } from '@/lib/contentApi';
 import { uploadWithCallback, validateFile, formatFileSize } from '@/lib/uploadHelper';
 import CE from "./admin/content/ContentEditor.client";
@@ -35,6 +36,8 @@ import EpisodePlayerModal from "./EpisodePlayerModal";
 import UploadTrailerClient from "./admin/content/UploadTrailerClient";
 import RoundLoader from "./Loader/RoundLoader";
 import Link from "next/link";
+import { apiClient } from "@/lib/api";
+import SkeletonLoader from "./Loader/SkeletonLoader";
 export interface Episode {
   id: number;
   episode_number: number;
@@ -227,7 +230,7 @@ export function SeriesItem({ series, refresh, setSeriesList, editSeriesHandler, 
       {open && (
         <div className="mt-4 ml-6 space-y-4">
           {series.children?.map((season, index) => (
-            <SeasonItem setSeriesList={setSeriesList} key={index} season={season} refresh={refresh} series={series} />
+            <SeasonItem setSeriesList={setSeriesList} key={index} season={season}   series={series} />
           ))}
 
           {/* Add Season */}
@@ -328,14 +331,11 @@ export function SeriesItem({ series, refresh, setSeriesList, editSeriesHandler, 
 }
 
 
-export function SeasonItem({ season, refresh, series, setSeriesList }) {
+export function SeasonItem({ season, series, setSeriesList }) {
 
-  const [open, setOpen] = useState(false);
-  console.log("series", series)
+  const [open, setOpen] = useState(false); 
   const [showAddEpisode, setShowAddEpisode] = useState(false);
-  const [editSeason, setEditSeason] = useState<Content | null>(null);
-  const [epNumber, setEpNumber] = useState("");
-  const [epTitle, setEpTitle] = useState("");
+  const [editSeason, setEditSeason] = useState<Content | null>(null);  
   const [playingEpisode, setPlayingEpisode] = useState<any | null>(null);
   const [episodeToDelete, setEpisodeToDelete] = useState<Content | null>(null);
   const [seasonToDelete, setSeasonToDelete] = useState<Content | null>(null);
@@ -343,8 +343,56 @@ export function SeasonItem({ season, refresh, series, setSeriesList }) {
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
   const [openSeasonMenuId, setOpenSeasonMenuId] = useState<string | null>(null);
   const [deleting,setDeleting] = useState(false);
+  const [loadingSeasonId, setLoadingSeasonId] = useState<string | null>(null);
+ const refreshSeason = async (seasonId: string, seriesId: string) => {
+      setLoadingSeasonId(seasonId);
+  try {
+      const url =  
+        `${API_CONFIG.baseUrl}api/v1/content/frontend/season/full/${seasonId}`;
+        const response = await fetch(url, {
+          method: 'GET',
+          headers: getAuthHeaders(),
+        });
+const updatedSeason = await response.json();
+         setSeriesList(prev =>
+      prev.map(series => {
+        if (series.id !== seriesId) return series;
+
+        return {
+          ...series,
+          children: (series.children || []).map((season: any) =>
+            season.id === seasonId ? updatedSeason : season
+          ),
+        };
+      })
+    );
+    // const res = await apiClient.get(`${API_CONFIG.baseUrl}api/v1/content/frontend/season/full/${seasonId}`);
+    // const updatedSeason = res.data;
+
+    // setSeasons(prev =>
+    //   prev.map(season =>
+    //     season.id === seasonId ? updatedSeason : season
+    //   )
+    // );
+  } catch (err) {
+    console.error("Failed to refresh season", err);
+  }
+   finally {
+    setLoadingSeasonId(null);
+  }
+};
   return (
-    <div className="border-l-2 border-blue-500 pl-4 bg-neutral-700 rounded-lg p-4 shadow-sm">
+    <>
+    {loadingSeasonId === season.id ? 
+      <div className="bg-neutral-700 w-full h-[9vh] flex flex-row items-center justify-between px-8">
+        <SkeletonLoader className="bg-neutral-500 w-20 h-4"/>
+        <div className="flex flex-row justify-end items-center space-x-4">
+        <SkeletonLoader className="bg-neutral-500 w-4 h-4"/>
+        <SkeletonLoader className="bg-neutral-500 w-4 h-4"/>
+
+        </div>
+      </div>:
+      <div className="border-l-2 border-blue-500 pl-4 bg-neutral-700 rounded-lg p-4 shadow-sm">
       {/* Season Header */}
       <div
         className="cursor-pointer flex items-center justify-between hover:bg-neutral-600 rounded-md p-2 transition-colors"
@@ -356,15 +404,19 @@ export function SeasonItem({ season, refresh, series, setSeriesList }) {
           <span className="text-sm text-gray-300">- {season.title}</span>
         </div>
         <div className="relative">
-          <button
-            onClick={(e) => {
-              refresh();
-            }}
-            className="p-2 rounded-full hover:bg-neutral-500 transition-colors"
-            title="Season options"
-          >
-            <BiRefresh className="w-5 h-5 text-gray-300" />
-          </button>
+         <button
+  onClick={(e) => {
+    e.stopPropagation();
+ refreshSeason(season.id, series.id);
+  }}
+  className="p-2 rounded-full hover:bg-neutral-500 transition-colors"
+>
+  {loadingSeasonId === season.id ? (
+    <span className="animate-spin">⏳</span>
+  ) : (
+    <BiRefresh className="w-5 h-5 text-gray-300" />
+  )}
+</button>
           <button
             onClick={(e) => {
               e.stopPropagation();
@@ -422,7 +474,7 @@ export function SeasonItem({ season, refresh, series, setSeriesList }) {
                   const thumbnail =
                     ep.thumbnail_url ||
                     ep.banner_url ||
-                    "/placeholder-video.jpg";
+                    "/thumbnail.svg";
 
                   return (
                     <div
@@ -435,18 +487,28 @@ export function SeasonItem({ season, refresh, series, setSeriesList }) {
                       // }}
                     >
                  
-<Link
-  href={`${FRONTEND_BASE}admin/watch/${ep.id}?media_type=episode`}
-  className="group block cursor-pointer"
-                               target="_blank"
+<div
+  onClick={(e) => {
+    e.stopPropagation();
 
+    if (ep.ingest_status !== "ready") {
+      toast.error("Video is not ready yet");
+      return;
+    }
+
+    window.open(
+      `${FRONTEND_BASE}admin/watch/${ep.id}?media_type=episode`,
+      "_blank"
+    );
+  }}
+  className="group block cursor-pointer"
 >
   <div className="relative aspect-video bg-gray-700 overflow-hidden rounded-lg">
-    <img
-      src={thumbnail}
-      alt={ep.title}
-      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-    />
+   <img
+  src={thumbnail || "/thumbnail.svg"}
+  alt={ep.title}
+  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+/>
 
     {/* Play Button Overlay */}
     <div className="absolute inset-0 flex items-center justify-center bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -486,7 +548,7 @@ export function SeasonItem({ season, refresh, series, setSeriesList }) {
       )}
     </div>
   </div>
-</Link>
+</div>
 
 
                       {/* Title and Info */}
@@ -574,10 +636,10 @@ export function SeasonItem({ season, refresh, series, setSeriesList }) {
                 setContent={setSeriesList}
                 content={null}
                 onClose={() => {
-                  refresh();
+                  refreshSeason(season.id, series.id);
                   setShowAddEpisode(false)}}
                 onSuccess={() => {
-                  refresh();
+                  refreshSeason(season.id, series.id);
                   setShowAddEpisode(false)}}
                 contentType={'episode'}
                 parentId={season?.id}
@@ -728,6 +790,7 @@ export function SeasonItem({ season, refresh, series, setSeriesList }) {
       )}
 
     </div>
+    }</>
   );
 }
 
