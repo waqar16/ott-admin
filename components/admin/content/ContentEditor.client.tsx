@@ -1139,11 +1139,11 @@ console.log(file,"file")
 </div>}
                   {contentType != 'season' &&     <>
                   <div className='w-full grid grid-cols-3 col-span-2 gap-x-4'>
-                      <MultiSelect
+                     {contentType != 'episode' &&  <MultiSelect
                       allGenre={allGenre}
                       formData={formData}
                       setFormData={setFormData}
-                    />
+                    />}
                     {
                       contentType == 'trailer' &&
                       <>
@@ -1177,7 +1177,7 @@ console.log(file,"file")
   }))
 }
                         />
-                        <SingleSelect
+                       {contentType != 'episode' &&  <SingleSelect
                           label="Visibility Mode"
                           options={VISIBILITY_MODES}
                           value={String(formData.visibility_mode)}
@@ -1187,7 +1187,7 @@ console.log(file,"file")
     visibility_mode: id as VisibilityMode
   }))
 }
-                        />
+                        />}
                   </div>
                    
                    { formData.content_type!='episode' && <div className="flex items-center">

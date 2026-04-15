@@ -770,7 +770,7 @@ export default function Analytics() {
 
       {/* Revenue Analytics */}
       <div>
-        {(hasData(data.revenueSummary) ||
+        {(
         hasData(data.revenueTimeseries, 'results') ||
         hasData(data.revenuePlan, 'results') ||
         hasData(data.paymentStatus, 'results') ||
@@ -944,6 +944,7 @@ export default function Analytics() {
                 { key: "title", label: "Title" },
                 { key: "avg_dropoff_percent", label: "Avg Dropoff", format: (v: number) => `${v?.toFixed(1) || 0}%` },
                 { key: "peak_dropoff_time_seconds", label: "Peak Dropoff Time", format: formatSeconds },
+                { key: "duration_seconds", label: "Duration Seconds", format: formatSeconds },
               ]}
               data={data.dropoffAnalysis.results}
             />
