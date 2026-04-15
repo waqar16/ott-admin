@@ -667,8 +667,14 @@ const updatedSeason = await response.json();
       {editEpisode && <CE
         setContent={setSeriesList}
         content={editEpisode}
-        onClose={() => setEditEpisode(null)}
-        onSuccess={() => setEditEpisode(null)}
+        onClose={() => {setEditEpisode(null)
+refreshSeason(season.id, series.id);
+
+        }}
+        onSuccess={() => {setEditEpisode(null)
+refreshSeason(season.id, series.id);
+
+        }}
         contentType={'episode'}
         parentId={season?.id}
         seasonNumber={(Number(season?.children?.length) || 0) + 1}
