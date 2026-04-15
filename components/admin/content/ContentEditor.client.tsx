@@ -479,11 +479,20 @@ const [videoUrlInput, setVideoUrlInput] = useState("");
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
+    console.log("formData.episode_number",formData.episode_number)
     if (!formData.title.trim()) {
       toast.error('Title is required');
       return;
     }
-
+if (
+  formData.content_type === "episode" &&
+  (formData.episode_number === undefined ||
+   formData.episode_number === null 
+    )
+) {
+  toast.error("Episode number is required");
+  return;
+}
     if (!formData.description.trim()) {
        toast.error('Description is required');
       return;
@@ -1005,7 +1014,7 @@ console.log(file,"file")
 <ol className="items-center w-full space-y-4 sm:flex sm:space-x-2 sm:space-y-0 rtl:space-x-reverse justify-between">
   {contentSteps[contentType].map((s, index) => (
 
-  <li className="flex items-center text-fg-brand space-x-3 rtl:space-x-reverse w-full" key={index }>
+  <li className="flex items-center  justify-center   rounded-xl text-fg-brand space-x-3 rtl:space-x-reverse w-full" key={index }>
          
         {step == (index+1)?
         <div className="flex items-center justify-center  bg-neutral-tertiary rounded-full   shrink-0 ">
@@ -1070,7 +1079,7 @@ console.log(file,"file")
   <input
     type="number"
     value={formData.episode_number}
-    onChange={(e) => handleChange('episode_number', e.target.value)}
+    onChange={(e) => handleChange('episode_number', Number(e.target.value))}
     placeholder="Enter Ep number"
     required
     className="w-full px-4 py-2 bg-gray-700 text-white rounded-lg outline-none
@@ -1181,7 +1190,7 @@ console.log(file,"file")
                         />
                   </div>
                    
-                    <div className="flex items-center">
+                   { formData.content_type!='episode' && <div className="flex items-center">
                       <input
                         type="checkbox"
                         id="is_kid_safe"
@@ -1192,8 +1201,8 @@ console.log(file,"file")
                       <label htmlFor="is_kid_safe" className="ml-2 text-sm text-gray-300">
                         Kid Safe Content
                       </label>
-                    </div>
- {formData.content_type!='trailer' &&
+                    </div>}
+ {formData.content_type!='trailer' && formData.content_type!='episode' &&
                      <div className="flex items-center">
                       <input
                         type="checkbox"
@@ -1206,7 +1215,7 @@ console.log(file,"file")
                         Is Demo Content?
                       </label>
                     </div>}
-                    {contentType!='democontent' && <div className="flex items-center">
+                    {contentType!='democontent' && formData.content_type!='episode' && <div className="flex items-center">
                       <input
                         type="checkbox"
                         id="is_ppv"

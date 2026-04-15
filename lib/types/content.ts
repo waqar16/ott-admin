@@ -365,7 +365,7 @@ export interface PaymentPlan {
   duration_days: number;
   max_devices: number;
   max_profiles: number;
-  
+  can_access_premium: boolean;
   ad_supported: boolean;
   stripe_price_id: string;
   is_active: boolean;

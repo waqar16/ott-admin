@@ -506,7 +506,7 @@ const PaymentPlansPage = () => {
               <ul className="text-neutral-300 text-sm space-y-1">
                 <li>Duration: {plan.duration_days} days</li>
                 <li>Devices: {plan.max_devices}</li>
-                <li>Profiles: {plan.max_profiles}</li>
+                <li>Can Access Premium: {plan.can_access_premium ? "Yes" : "No"}</li>
                 <li>Ad Supported: {plan.ad_supported ? "Yes" : "No"}</li>
                 <li>Status: {plan.is_active ? "Active" : "Inactive"}</li>
               </ul>

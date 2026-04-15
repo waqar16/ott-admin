@@ -139,7 +139,7 @@ let mockContentStore = [...MOCK_CONTENT];
 /**
  * Build authorization headers for authenticated requests
  */
-function getAuthHeaders(): HeadersInit {
+export function getAuthHeaders(): HeadersInit {
   const token = getAccessToken();
   const headers: HeadersInit = {
     'Content-Type': 'application/json',
