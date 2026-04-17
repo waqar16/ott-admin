@@ -97,14 +97,17 @@ export default function CreatorReportPage() {
       </div>
 
       {/* Top Performer */}
-      <PerformerCard title="Top Performer" performer={data.top_performer} />
+      {data.top_performer!=null && <PerformerCard title="Top Performer" performer={data.top_performer} />}
 
       {/* Lowest Performer */}
-      <PerformerCard title="Lowest Performer" performer={data.lowest_performer} />
+      {data.lowest_performer!=null &&  <PerformerCard title="Lowest Performer" performer={data.lowest_performer} />}
 
       {/* Creators List */}
       <div className="space-y-4">
         <h2 className="text-xl font-semibold">All Creators</h2>
+        {data?.creators?.length == 0 ? 
+          <h1>No Creator to show</h1>:
+       <>
         {data.creators.map((creator, index) => (
           <div key={index} className="bg-neutral-800 p-4 rounded-xl">
             <div className="flex justify-between">
@@ -136,7 +139,8 @@ export default function CreatorReportPage() {
               </div>
             </div>
           </div>
-        ))}
+        ))}</>
+       }
       </div>
     </div>
   );
