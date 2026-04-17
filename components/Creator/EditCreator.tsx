@@ -226,7 +226,7 @@ export default function CreatorEditor({ setEditUser, creator, setUsers }: Creato
       if(userCreation.data.id) {
         setEditUser(null);
         toast.success("Creator created successfully");
-        setUsers((prev) => [...prev, userCreation]); 
+        setUsers((prev) => [...prev, userCreation.data]); 
       } else {
         toast.error(userCreation.error ||   "Error occurred while creating");
       } 

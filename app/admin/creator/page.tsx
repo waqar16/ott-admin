@@ -188,10 +188,11 @@ export default async function AdminCreatorsPage() {
               >
                 Cancel
               </button>
-              {/* <button
+              <button
                 onClick={async () => {
-                  let contentDeletion = await deleteCreator(seriesToDelete)
-                  if (contentDeletion == 200) {
+                  let contentDeletion = await deleteCreator(seriesToDelete.id??'');
+                  console.log(contentDeletion)
+                  if (contentDeletion == 204) {
                     setUsers(
                       prev=>prev.filter((u) => u.id !== seriesToDelete.id)
                     )
@@ -206,7 +207,7 @@ export default async function AdminCreatorsPage() {
                 className="px-4 py-2 rounded bg-red-600 hover:bg-red-700"
               >
                 Delete
-              </button> */}
+              </button>
             </div>
           </div>
         </div>

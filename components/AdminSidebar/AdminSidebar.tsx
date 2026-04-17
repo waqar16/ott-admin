@@ -16,7 +16,7 @@ import {
   FiUserPlus,
   FiMessageSquare
 } from "react-icons/fi";
-import { BiFolder, BiMovie, BiPlus, BiTv } from "react-icons/bi";
+import { BiDollar, BiFolder, BiMovie, BiPlus, BiTv } from "react-icons/bi";
 import { GrAnalytics, GrDocumentCloud, GrPlan } from "react-icons/gr";
 import { BsCash, BsFileBarGraph, BsPersonFillGear, BsQuestionDiamondFill, BsSubscript } from "react-icons/bs";
 import FullScreenLoader from "../Loader/FullScreenLoader";
@@ -93,6 +93,16 @@ onClick={() => {
           className={`${linkBase} ${isActive("/admin/creator") ? activeClass : ""}`}
         >
           <FiUsers size={18} /> Creators
+        </Link>
+          <Link
+onClick={() => {
+  if (pathname !== "/admin/revenue") {
+    setIsNavigating(true);
+  }
+}}          href={"/admin/revenue"}
+          className={`${linkBase} ${isActive("/admin/revenue") ? activeClass : ""}`}
+        >
+          <BiDollar size={18} />Creators  Revenue
         </Link>
         {/* Users dropdown */}
         <div className="w-11/12">
