@@ -1,7 +1,7 @@
  
-const BASE_URL = "https://k8v2hqmyaa.execute-api.us-east-1.amazonaws.com/staging/api/v1/content/creators";
 import axios from "axios";
 import Cookies from "js-cookie";
+import { API_BASE } from "./config";
 
 export type Creator = {
   id?: string;
@@ -11,6 +11,7 @@ export type Creator = {
   phone?: string | null;
 };
 
+const BASE_URL = `${API_BASE}api/v1/content/creators`;
 /* =========================
    GET ALL CREATORS
 ========================= */
@@ -120,18 +121,14 @@ export async function updateCreator(payload: Creator & { id: string }) {
 /* =========================
    DELETE CREATOR
 ========================= */
-export async function deleteCreator(creator:Creator) { 
-  const res = await axios.delete(`${BASE_URL}`, { 
+export async function deleteCreator(id:string) { 
+  const res = await axios.delete(`${BASE_URL}/${id}`, { 
     headers: {
       "Content-Type": "application/json", 
       Authorization: `Bearer ${Cookies.get('access_token')}`,
     }
-  }); 
-  if (res.status!=200) {
-    throw new Error("Failed to fetch users");
-  }
-  const data = await res.data
-  console.log(data)
+  });  
+  const data = await res.status 
 return res.status
    
 }
