@@ -84,6 +84,16 @@ onClick={() => {
         >
           <BsFileBarGraph size={18} /> Analytics
         </Link>
+        <Link
+onClick={() => {
+  if (pathname !== "/admin/creator") {
+    setIsNavigating(true);
+  }
+}}          href={"/admin/creator"}
+          className={`${linkBase} ${isActive("/admin/creator") ? activeClass : ""}`}
+        >
+          <FiUsers size={18} /> Creators
+        </Link>
         {/* Users dropdown */}
         <div className="w-11/12">
           <button

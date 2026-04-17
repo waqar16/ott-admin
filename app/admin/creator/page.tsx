@@ -1,24 +1,25 @@
 "use client"
+import CreatorEditor from "@/components/Creator/EditCreator";
 import SkeletonLoader from "@/components/Loader/SkeletonLoader" 
-import EditUser from "@/components/User/UpdateUser";
-import { deleteUser, getUsers, User } from "@/lib/userApi";
+ 
+import { deleteCreator,getCreators,Creator } from "@/lib/creatorApi";
 import { useEffect, useState } from "react";
 import { BiRefresh } from "react-icons/bi";
 import { toast } from "sonner";
 type EditUserProps = {
-  user: User ;
-  setEditUser: React.Dispatch<React.SetStateAction<User | null>>;
+  user: Creator ;
+  setEditUser: React.Dispatch<React.SetStateAction<Creator | null>>;
 };
-export default async function AdminUsersPage() {
-  const [users, setUsers] = useState<User[]>([])
-      const [seriesToDelete, setSeriesToDelete] = useState<User | null>(null);
-  
+export default async function AdminCreatorsPage() {
+  const [users, setUsers] = useState<Creator[]>([])
+      const [seriesToDelete, setSeriesToDelete] = useState<Creator | null>(null);
+  const [showCreateForm, setShowCreateForm] = useState<boolean>(false);
   const [usersFetchLoading, setUsersFetchLoading] = useState<boolean>(true)
-  const [editUser, setEditUser] = useState<User | null>(null)
+  const [editUser, setEditUser] = useState<Creator | null>(null)
 
   async function fetch() {
     setUsersFetchLoading(true)
-      const usersToFetch = await getUsers();
+      const usersToFetch = await getCreators();
       if (Array.isArray(usersToFetch)) {
         setUsers(usersToFetch)
       }
@@ -31,18 +32,29 @@ export default async function AdminUsersPage() {
   }, [])
   return (
    <>
-    {editUser?
-      <EditUser setEditUser={setEditUser} user={editUser} setUsers={setUsers}/>:
+   {(editUser || showCreateForm) ? (
+  <CreatorEditor 
+    setEditUser={(value) => {
+      setEditUser(value);
+      setShowCreateForm(false);
+    }} 
+    creator={editUser} 
+    setUsers={setUsers}
+  />
+)
+      :
       <div className="p-2 md:p-6 text-white space-y-6 bg-black md:mt-0 mt-16"> 
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold">Users Management</h1>
-          <p className="text-gray-400">Analytics & control of all users</p>
+          <h1 className="text-3xl font-bold">Creators Management</h1>
+          <p className="text-gray-400">Analytics & control of all creators</p>
         </div>
 
-        {/* <button className="px-4 py-2 bg-blue-600 rounded-lg hover:bg-blue-700">
-          + Add User
-        </button> */}
+        <button className="px-4 py-2 bg-blue-600 rounded-lg hover:bg-blue-700"
+        onClick={() => setShowCreateForm(true)}
+        >
+          + Add Creator
+        </button>
       </div>
 
       {/* Stats */}
@@ -52,7 +64,7 @@ export default async function AdminUsersPage() {
         <StatBox title="Active Today" value="892" change="+5%" />
        </div> */}
 
-      {/* User Table */}
+      {/* Creator Table */}
       {usersFetchLoading ?
       <div className="w-full flex flex-col items-start ">
          <div className='flex flex-row items-center w-full justify-end p-2 '>
@@ -66,10 +78,10 @@ export default async function AdminUsersPage() {
             <table className="w-full text-left">
               <thead>
                 <tr className="border-b border-gray-700 text-gray-400">
-                  <th className="p-3">User</th>
+                  <th className="p-3">Name</th>
                   <th className="p-3">Email</th>
-                  <th className="p-3">Role</th>
-                  <th className="p-3">Status</th>
+                  <th className="p-3">Phone</th>
+                  <th className="p-3">Bio</th>
                   <th className="p-3 text-right">Actions</th>
                 </tr>
               </thead>
@@ -114,33 +126,25 @@ export default async function AdminUsersPage() {
             <table className="w-full text-left">
               <thead>
                 <tr className="border-b border-gray-700 text-gray-400">
-                  <th className="p-3">User</th>
+               <th className="p-3">Name</th>
                   <th className="p-3">Email</th>
-                  <th className="p-3">Role</th>
-                  <th className="p-3">Status</th>
+                  <th className="p-3">Phone</th>
+                  <th className="p-3">Bio</th>
                   <th className="p-3 text-right">Actions</th>
                 </tr>
               </thead>
 
               <tbody>
-                {users.map((u:User) => (
+                {users.map((u:Creator) => (
                   <tr
                     key={u.id}
                     className="border-b border-gray-700 hover:bg-gray-700/50 transition"
                   >
                     <td className="p-3">{u.name}</td>
-                    <td className="p-3 text-gray-300">{u.email}</td>
-                    <td className="p-3 text-gray-300">{u.role}</td>
-                    <td className="p-3">
-                      <span
-                        className={`px-3 py-1 rounded-full text-sm ${u.is_active === true
-                          ? "bg-green-600/30 text-green-400"
-                          :"bg-blue-600/30 text-blue-400"
-                          }`}
-                      >
-                        {u.is_active?'Active':'InActive'}
-                      </span>
-                    </td>
+                    <td className="p-3 text-gray-300">{u.email?? '-'}</td>
+                    <td className="p-3 text-gray-300">{u.phone?? '-'}</td>
+                    <td className="p-3 text-gray-300">{u.bio?? '-'}</td>
+                     
 
                     <td className="p-3">
                       <div className="flex justify-end gap-3">
@@ -167,7 +171,7 @@ export default async function AdminUsersPage() {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70">
           <div className="bg-gray-900 rounded-xl p-6 w-full max-w-sm">
             <h3 className="text-lg font-semibold mb-2">
-              Delete User?
+              Delete Creator?
             </h3>
             <p className="text-sm text-gray-400 mb-4">
               Are you sure you want to delete{" "}
@@ -184,9 +188,9 @@ export default async function AdminUsersPage() {
               >
                 Cancel
               </button>
-              <button
+              {/* <button
                 onClick={async () => {
-                  let contentDeletion = await deleteUser(seriesToDelete)
+                  let contentDeletion = await deleteCreator(seriesToDelete)
                   if (contentDeletion == 200) {
                     setUsers(
                       prev=>prev.filter((u) => u.id !== seriesToDelete.id)
@@ -202,7 +206,7 @@ export default async function AdminUsersPage() {
                 className="px-4 py-2 rounded bg-red-600 hover:bg-red-700"
               >
                 Delete
-              </button>
+              </button> */}
             </div>
           </div>
         </div>

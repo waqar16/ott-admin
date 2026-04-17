@@ -5,6 +5,7 @@ export type User = {
     id?: number,
     email: string,
     name: string,
+    status: 'active' | 'banned' | 'suspended',
     role: string,
     is_active: boolean
     created_at: Date

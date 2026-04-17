@@ -36,6 +36,8 @@ import SingleSelect from '@/components/SingleSelect';
 import SearchableSingleSelect from '@/components/SearchableSingleSelect';
 import { UploadToastProgress } from './UploadToastProgress';
 import GoogleDriveButton, { type DriveFile } from '@/components/GoogleDriveUploadButton/GoogleDriveButton';
+import { getCreators } from '@/lib/creatorApi';
+import MultiSelectCreator from '@/components/MultiSelectCreator';
 
 
 export interface ContentEditorProps {
@@ -397,6 +399,7 @@ export default function ContentEditor(props: ContentEditorProps) {
   const isEditing = !!content;
   const [step, setStep] = useState(1);
   const [allGenre, setAllGenre] = useState<[]>([]);
+  const [allcreators, setAllcreators] = useState<[]>([]);
   const nextStep = () => setStep((prev) => prev + 1);
   const prevStep = () => setStep((prev) => prev - 1);
   const [loading, setLoading] = useState(false);
@@ -456,6 +459,8 @@ const [videoUrlInput, setVideoUrlInput] = useState("");
     is_ppv: content?.is_ppv || false,
     price: content?.price || 0,
     genres: content?.genres || [],
+    creators: content?.creators || [],
+ 
     parent: parentId
 
   });
@@ -793,15 +798,29 @@ console.log("file",file)
   const fetchGenre = async () => {
     try {
       let fetchGenre = await axios.get(`${API_BASE}api/v1/content/genres`)
-      setAllGenre(fetchGenre?.data)
+  
+      setAllGenre(fetchGenre?.data) 
     }
     catch (err) {
       console.log(err,"error")
       setAllGenre([])
     }
   }
+   const fetchCreators = async () => {
+    try { 
+      let creators = await getCreators() 
+        if (Array.isArray(creators)) {
+        setAllcreators(creators)
+      } 
+    }
+    catch (err) {
+      console.log(err,"error")
+      setAllcreators([])
+    }
+  }
   useEffect(() => {
     fetchGenre()
+    fetchCreators()
   }, []) 
 
   const [videoUrl, setVideoUrl] = useState<string | null>(null)
@@ -982,7 +1001,7 @@ console.log(file,"file")
  
       <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 py-2 sm:p-2 md:p-8">
         {loading && !uploading && <FullScreenLoader />}
-        <div className="bg-neutral-900 sm:rounded-lg max-w-4xl w-full h-[100vh]  md:max-h-[95vh] md:h-auto">
+        <div className="bg-neutral-900 sm:rounded-lg max-w-6xl w-full h-[100vh]  md:max-h-[95vh] md:h-auto">
 
           <div className="md:mt-0 mt-8 flex items-center justify-between p-6 border-b border-gray-700 h-[10vh]">
             <h2 className="text-2xl font-bold text-white capitalize">
@@ -1138,7 +1157,7 @@ console.log(file,"file")
   />
 </div>}
                   {contentType != 'season' &&     <>
-                  <div className='w-full grid grid-cols-3 col-span-2 gap-x-4'>
+                  <div className={`w-full grid ${contentType=='movie' || contentType =='series'?'grid-cols-4':'grid-cols-3'} col-span-2 gap-x-4`}>
                      {contentType != 'episode' &&  <MultiSelect
                       allGenre={allGenre}
                       formData={formData}
@@ -1166,6 +1185,12 @@ console.log(file,"file")
                       </>
 
                     }
+                   {(contentType == 'series' || contentType =='movie') &&
+                   <MultiSelectCreator
+                      allCreators={allcreators}
+                      formData={formData}
+                      setFormData={setFormData}
+                    />}
 <SingleSelect
                           label="Media Type"
                           options={MEDIA_TYPES}
