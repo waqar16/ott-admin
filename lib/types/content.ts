@@ -61,6 +61,7 @@ export interface Content {
   is_ppv: boolean;
   price?: number;
   genres?: string[];
+  creators?: string[];
   children?:[];
   parent?:number;
   poster_url?: string;
@@ -82,6 +83,7 @@ export interface Content {
 export interface CreateContentPayload {
   title: string;
   trailer_id?:string;
+  creators?:string[];
   is_demo_content?:boolean;
   description: string;
   content_type: ContentType;
@@ -109,6 +111,8 @@ export interface UpdateContentPayload {
   title?: string;
   description?: string;
   content_type?: ContentType;
+  creators?:string[];
+
   media_type?: MediaType;
   visibility_mode?: VisibilityMode;
   trailer_youtube_url?: string;
