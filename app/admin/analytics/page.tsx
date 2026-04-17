@@ -916,8 +916,7 @@ export default function Analytics() {
             <TableCard
               title="Top Episodes"
               columns={[
-                { key: "title", label: "Title" },
-                { key: "series_title", label: "Series" },
+                { key: "title", label: "Title" }, 
                 { key: "views", label: "Views" },
               ]}
               data={data.topEpisodes.results}

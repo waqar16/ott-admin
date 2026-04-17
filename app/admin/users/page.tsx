@@ -146,14 +146,11 @@ export default async function AdminUsersPage() {
                         <button className="px-3 py-1 bg-blue-600 rounded-lg hover:bg-blue-700" onClick={()=>setEditUser(u)}>
                           Edit
                         </button>
-                        {/* {u.status !== "Banned" && (
-                        <button className="px-3 py-1 bg-yellow-500 rounded-lg hover:bg-yellow-600">
-                          Ban
-                        </button>
-                      )} */}
-                        <button className="px-3 py-1 bg-red-600 rounded-lg hover:bg-red-700"  onClick={()=>setSeriesToDelete(u)}>
+                       
+                        {u.role!='admin' && 
+                      <button className="px-3 py-1 bg-red-600 rounded-lg hover:bg-red-700"  onClick={()=>setSeriesToDelete(u)}>
                           Delete
-                        </button>
+                        </button>}
                       </div>
                     </td>
                   </tr>

@@ -37,7 +37,7 @@ export default function AdminHome() {
     async function load() { 
       const d = await getDashboardData();
       console.log(d,'d')
-      setData(d);
+      setData(d.results);
       setLoading(false);
     }
     load();
@@ -126,6 +126,8 @@ export default function AdminHome() {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <StatCard title="Views Last 24 Hours" value={data.views_last_24_hours} />
         <StatCard title="Views Last 7 Days" value={data.views_last_7_days} />
+         <StatCard title="Unique Viewers Last 24 Hours" value={data.unique_viewers_last_24_hours} />
+        <StatCard title="Unique Viewers Last 7 Days" value={data.unique_viewers_last_7_days} />
       </div>
 
       {/* Charts Section */}
@@ -141,7 +143,7 @@ function StatCard({ title, value, growth }: any) {
     <div className="bg-neutral-900 p-5 rounded-xl shadow-lg border border-neutral-800">
       <p className="text-gray-400 text-sm">{title}</p>
       <h3 className="text-2xl font-bold text-white mt-1">{value}</h3>
-      <p className="text-[var(--main-color)] text-sm mt-1">{growth} this month</p>
+      <p className="text-[var(--main-color)] text-sm mt-1">{growth}</p>
     </div>
   );
 }

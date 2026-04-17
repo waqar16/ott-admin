@@ -16,6 +16,7 @@ export default function EditUser({ setEditUser,user,setUsers }: EditUserProps) {
     name: user.name,
     email: user.email, 
     role: user.role, 
+    status: user.status,
     is_active:user.is_active
   }); 
   const [errors, setErrors] = useState<any>({});
@@ -118,6 +119,23 @@ export default function EditUser({ setEditUser,user,setUsers }: EditUserProps) {
             <option value="">Select role</option>
             <option value={String(true)}>active</option>
             <option value={String(false)}>inactive</option>
+          </select>
+
+          {errors.is_active && (
+            <p className="text-red-400 text-sm mt-1">{errors.is_active}</p>
+          )}
+        </div>
+        <div>
+          <label className="block mb-1 text-gray-300">Status</label>
+          <select
+            className="w-full p-3 bg-neutral-700 rounded-lg border border-gray-600 focus:border-blue-500"
+            value={String(form.status)}
+            onChange={(e) => setForm({ ...form, status: e.target.value })}
+          >
+            <option value="">Select role</option>
+            <option value="active">active</option>
+              <option value="banned">banned</option>
+              <option value="suspended">suspended</option> 
           </select>
 
           {errors.is_active && (
