@@ -7,6 +7,8 @@ import Cookies from "js-cookie";
 export default function CreatorReportPage() {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [downloadLoading, setDownloadLoading] = useState(false);
+  
   const [filters, setFilters] = useState({
     start_date: "",
     end_date: "",
@@ -36,7 +38,56 @@ export default function CreatorReportPage() {
       setLoading(false);
     }
   };
+const downloadExcelReport = async () => {
+  try {
+    setDownloadLoading(true);
+    const query = filters.start_date && filters.end_date
+      ? `?start_date=${filters.start_date}&end_date=${filters.end_date}`
+      : "";
 
+    const res = await axios.get(
+      `${API_BASE}api/v1/admin-dashboard/creator-report/excel${query}`,
+      { 
+        headers: {
+          "Content-Type": "application/json", 
+          Authorization: `Bearer ${Cookies.get('access_token')}`,
+        },
+        responseType: 'blob', // Important: Handle binary data
+      }
+    );
+    
+    // Create a blob from the response
+    const blob = new Blob([res.data], { 
+      type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' 
+    });
+    
+    // Create download link
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    
+    // Set filename with date range if filters exist
+    const filename = filters.start_date && filters.end_date
+      ? `creator-report_${filters.start_date}_${filters.end_date}.xlsx`
+      : `creator-report_${new Date().toISOString().split('T')[0]}.xlsx`;
+    
+    link.setAttribute('download', filename);
+    
+    // Trigger download
+    document.body.appendChild(link);
+    link.click();
+    
+    // Cleanup
+    link.parentNode.removeChild(link);
+    window.URL.revokeObjectURL(url);
+    
+  } catch (err) {
+    console.error('Error downloading report:', err);
+    // Optional: Show error toast/notification to user
+  } finally {
+    setDownloadLoading(false);
+  }
+};
   useEffect(() => {
     fetchData();
   }, []);
@@ -86,9 +137,18 @@ export default function CreatorReportPage() {
           Apply
         </button>
         </div>
+      </div> 
+        
+        <div className="flex flex-row items-center justify-end w-auto">
+          <button
+          onClick={downloadExcelReport}
+          className="bg-blue-600 px-4 py-2 rounded"
+        >
+  {downloadLoading ? 'Downloading...' : 'Download Excel Report'}
+  
+        </button> 
       </div>
-
-      {/* Summary */}
+   
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <Card title="Total Views" value={data.summary.total_unique_views} />
         <Card title="Revenue" value={data.summary.total_revenue} />
