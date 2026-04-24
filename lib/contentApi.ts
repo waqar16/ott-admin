@@ -286,7 +286,7 @@ export async function createContent(payload: CreateContentPayload): Promise<Cont
  * PATCH /api/v1/content/contents/{contentId}
  */
 export async function updateContent(
-  contentId: string,
+  contentId: string | undefined,
   payload: UpdateContentPayload
 ): Promise<Content> {
   if (USE_MOCK_DATA) {

@@ -220,7 +220,7 @@ setLoginLoading(false)
       </form>
       {loginLoading && <FullScreenLoader msg={'Signing you in'}/>}
 
-      {showRedirectLoader.show && <FullScreenRedirectLoader message={showRedirectLoader.message} />}
+      {showRedirectLoader.show && <FullScreenRedirectLoader showSideBar={false} message={showRedirectLoader.message} />}
     </div>
   );
 }

@@ -54,6 +54,7 @@ export interface Content {
   content_type: ContentType;
   trailer_url:null | string;
   media_type: MediaType;
+  is_educational?:boolean;
   visibility_mode: VisibilityMode;
   content_metadata?: ContentMetadataPayload;
   status: ContentStatus;
@@ -85,6 +86,8 @@ export interface CreateContentPayload {
   trailer_id?:string;
   creators?:string[];
   is_demo_content?:boolean;
+  is_educational:boolean;
+
   description: string;
   content_type: ContentType;
   media_type: MediaType;

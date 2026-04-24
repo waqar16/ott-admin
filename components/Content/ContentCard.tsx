@@ -36,7 +36,7 @@ const ContentCard: React.FC<ContentCardProps> = ({
     
     <div
       key={item.id}
-      className="w-full bg-gradient-to-br from-neutral-950 via-neutral-900 to-neutral-800 shadow-lg rounded-2xl flex flex-col hover:shadow-2xl transition-all duration-300 border border-white/10 overflow-hidden"
+      className="w-full bg-gradient-to-br from-neutral-950 via-neutral-900 to-neutral-800 shadow-lg rounded-2xl flex flex-col hover:shadow-2xl transition-all duration-300 border border-white/10 "
     >
       {/* Left: Thumbnail / Type */}
       <div className=" relative   z-0 w-full h-48 sm:h-32 md:h-36  rounded-t-md   shadow-xl bg-neutral-900  ">
@@ -112,7 +112,7 @@ const ContentCard: React.FC<ContentCardProps> = ({
   )}
 
   {/* Delete */}
-  <div className="relative group">
+  <div className="relative group  ">
     <button
       onClick={() => setDeleteOpen(true)}
       className="p-2 bg-black/70 backdrop-blur-sm text-white 
@@ -126,7 +126,7 @@ const ContentCard: React.FC<ContentCardProps> = ({
       rounded-md bg-red-600 px-2 py-1 text-xs text-white
       opacity-0 scale-95 translate-y-1
       transition-all duration-200 ease-out
-      group-hover:opacity-100 group-hover:scale-100 group-hover:translate-y-0"
+      group-hover:opacity-100 group-hover:scale-100 group-hover:translate-y-0 "
     >
       Delete
     </span>

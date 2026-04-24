@@ -114,7 +114,7 @@ export default function AdminSettingsPage() {
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-2 flex-wrap border-b border-blue-100 pb-2">
+      {/* <div className="flex gap-2 flex-wrap border-b border-blue-100 pb-2">
         {["General", "Security", "System", "Authentication"].map((tab) => (
           <button
             key={tab}
@@ -124,7 +124,7 @@ export default function AdminSettingsPage() {
             {tab}
           </button>
         ))}
-      </div>
+      </div> */}
 
       {selectedTab === 'General' && (
         <div className="flex w-full flex-col items-center  space-y-8">
@@ -242,7 +242,7 @@ export default function AdminSettingsPage() {
       </SettingInput>
 
       {/* Maintenance */}
-      <div className="flex items-center justify-between border border-red-900/40 bg-red-950/20 rounded-lg p-4">
+      {/* <div className="flex items-center justify-between border border-red-900/40 bg-red-950/20 rounded-lg p-4">
         <div>
           <p className="text-sm font-medium text-red-400">Maintenance Mode</p>
           <p className="text-xs text-gray-400">
@@ -259,7 +259,7 @@ export default function AdminSettingsPage() {
             }))
           }
         />
-      </div>
+      </div> */}
     </div>
 
     {/* SAVE */}

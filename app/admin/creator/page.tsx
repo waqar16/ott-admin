@@ -1,219 +1,219 @@
 "use client"
 import CreatorEditor from "@/components/Creator/EditCreator";
-import SkeletonLoader from "@/components/Loader/SkeletonLoader" 
- 
-import { deleteCreator,getCreators,Creator } from "@/lib/creatorApi";
+import SkeletonLoader from "@/components/Loader/SkeletonLoader"
+
+import { deleteCreator, getCreators, Creator } from "@/lib/creatorApi";
 import { useEffect, useState } from "react";
 import { BiRefresh } from "react-icons/bi";
 import { toast } from "sonner";
 type EditUserProps = {
-  user: Creator ;
+  user: Creator;
   setEditUser: React.Dispatch<React.SetStateAction<Creator | null>>;
 };
 export default async function AdminCreatorsPage() {
   const [users, setUsers] = useState<Creator[]>([])
-      const [seriesToDelete, setSeriesToDelete] = useState<Creator | null>(null);
+  const [seriesToDelete, setSeriesToDelete] = useState<Creator | null>(null);
   const [showCreateForm, setShowCreateForm] = useState<boolean>(false);
   const [usersFetchLoading, setUsersFetchLoading] = useState<boolean>(true)
   const [editUser, setEditUser] = useState<Creator | null>(null)
 
   async function fetch() {
     setUsersFetchLoading(true)
-      const usersToFetch = await getCreators();
-      if (Array.isArray(usersToFetch)) {
-        setUsers(usersToFetch)
-      }
-      setUsersFetchLoading(false)
+    const usersToFetch = await getCreators();
+    if (Array.isArray(usersToFetch)) {
+      setUsers(usersToFetch)
     }
+    setUsersFetchLoading(false)
+  }
   useEffect(() => {
-    
+
     fetch()
 
   }, [])
   return (
-   <>
-   {(editUser || showCreateForm) ? (
-  <CreatorEditor 
-    setEditUser={(value) => {
-      setEditUser(value);
-      setShowCreateForm(false);
-    }} 
-    creator={editUser} 
-    setUsers={setUsers}
-  />
-)
-      :
-      <div className="p-2 md:p-6 text-white space-y-6 bg-black md:mt-0 mt-16"> 
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-3xl font-bold">Creators Management</h1>
-          <p className="text-gray-400">Analytics & control of all creators</p>
-        </div>
+    <>
+      {(editUser || showCreateForm) ? (
+        <CreatorEditor
+          setEditUser={(value) => {
+            setEditUser(value);
+            setShowCreateForm(false);
+          }}
+          creator={editUser}
+          setUsers={setUsers}
+        />
+      )
+        :
+        <div className="p-2 md:p-6 text-white space-y-6 bg-black md:mt-0 mt-16">
+          <div className="flex justify-between items-center">
+            <div>
+              <h1 className="text-3xl font-bold">Creators Management</h1>
+              <p className="text-gray-400">Analytics & control of all creators</p>
+            </div>
 
-        <button className="px-4 py-2 bg-blue-600 rounded-lg hover:bg-blue-700"
-        onClick={() => setShowCreateForm(true)}
-        >
-          + Add Creator
-        </button>
-      </div>
+            <button className="px-4 py-2 bg-blue-600 rounded-lg hover:bg-blue-700"
+              onClick={() => setShowCreateForm(true)}
+            >
+              + Add Creator
+            </button>
+          </div>
 
-      {/* Stats */}
-      {/* <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {/* Stats */}
+          {/* <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <StatBox title="Total Users" value="4,921" change="+8%" />
         <StatBox title="Premium Users" value="1,232" change="+12%" />
         <StatBox title="Active Today" value="892" change="+5%" />
        </div> */}
 
-      {/* Creator Table */}
-      {usersFetchLoading ?
-      <div className="w-full flex flex-col items-start ">
-         <div className='flex flex-row items-center w-full justify-end p-2 '>
-          <SkeletonLoader className="h-[40px] w-[100px] bg-neutral-900" />
-          </div>
-        <div className="bg-black rounded-xl p-6 shadow-lg border border-neutral-800 w-full">
-         
-          <h2 className="text-xl font-semibold mb-4">All Users</h2>
+          {/* Creator Table */}
+          {usersFetchLoading ?
+            <div className="w-full flex flex-col items-start ">
+              <div className='flex flex-row items-center w-full justify-end p-2 '>
+                <SkeletonLoader className="h-[40px] w-[100px] bg-neutral-900" />
+              </div>
+              <div className="bg-black rounded-xl p-6 shadow-lg border border-neutral-800 w-full">
 
-          <div className="overflow-x-auto">
-            <table className="w-full text-left">
-              <thead>
-                <tr className="border-b border-gray-700 text-gray-400">
-                  <th className="p-3">Name</th>
-                  <th className="p-3">Email</th>
-                  <th className="p-3">Phone</th>
-                  <th className="p-3">Bio</th>
-                  <th className="p-3 text-right">Actions</th>
-                </tr>
-              </thead>
+                <h2 className="text-xl font-semibold mb-4">All Users</h2>
 
-              <tbody>
-                {[1, 2, 3].map((index, u) => (
-                  <tr
-                    key={index}
-                    className="border-b border-neutral-800   transition"
-                  >
-                    <td className="p-3"><SkeletonLoader className="h-[40px] w-[100px] bg-neutral-900" /></td>
-                    <td className="p-3"><SkeletonLoader className="h-[40px] w-[100px] bg-neutral-900" /></td>
-                    <td className="p-3"><SkeletonLoader className="h-[40px] w-[100px] bg-neutral-900" /></td>
-                    <td className="p-3"><SkeletonLoader className="h-[40px] w-[100px] bg-neutral-900" /></td>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left">
+                    <thead>
+                      <tr className="border-b border-gray-700 text-gray-400">
+                        <th className="p-3">Name</th>
+                        <th className="p-3">Email</th>
+                        <th className="p-3">Phone</th>
+                        <th className="p-3">Bio</th>
+                        <th className="p-3 text-right">Actions</th>
+                      </tr>
+                    </thead>
+
+                    <tbody>
+                      {[1, 2, 3].map((index, u) => (
+                        <tr
+                          key={index}
+                          className="border-b border-neutral-800   transition"
+                        >
+                          <td className="p-3"><SkeletonLoader className="h-[40px] w-[100px] bg-neutral-900" /></td>
+                          <td className="p-3"><SkeletonLoader className="h-[40px] w-[100px] bg-neutral-900" /></td>
+                          <td className="p-3"><SkeletonLoader className="h-[40px] w-[100px] bg-neutral-900" /></td>
+                          <td className="p-3"><SkeletonLoader className="h-[40px] w-[100px] bg-neutral-900" /></td>
 
 
 
-                    <td className="p-3">
-                      <div className="flex justify-end gap-3">
-                        <SkeletonLoader className="h-[40px] w-[100px] bg-neutral-900" />
+                          <td className="p-3">
+                            <div className="flex justify-end gap-3">
+                              <SkeletonLoader className="h-[40px] w-[100px] bg-neutral-900" />
 
-                        <SkeletonLoader className="h-[40px] w-[100px] bg-neutral-900" />
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div></div> :
-        <div className="w-full flex flex-col items-start ">
-          <div className='flex flex-row items-center w-full justify-end p-2'>
-            <button className='p-2 rounded-md bg-neutral-800 flex flex-row items-center' onClick={()=>{ 
-              fetch()
-            }}>Refresh <BiRefresh className='ml-1'/> </button>
-          </div>
-          <div className="bg-neutral-900 rounded-xl p-6 shadow-lg border border-neutral-800 w-full">
-          <h2 className="text-xl font-semibold mb-4">All Users</h2>
+                              <SkeletonLoader className="h-[40px] w-[100px] bg-neutral-900" />
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div></div> :
+            <div className="w-full flex flex-col items-start ">
+              <div className='flex flex-row items-center w-full justify-end p-2'>
+                <button className='p-2 rounded-md bg-neutral-800 flex flex-row items-center' onClick={() => {
+                  fetch()
+                }}>Refresh <BiRefresh className='ml-1' /> </button>
+              </div>
+              <div className="bg-neutral-900 rounded-xl p-6 shadow-lg border border-neutral-800 w-full">
+                <h2 className="text-xl font-semibold mb-4">All Users</h2>
 
-          <div className="overflow-x-auto">
+                <div className="overflow-x-auto">
 
-            <table className="w-full text-left">
-              <thead>
-                <tr className="border-b border-gray-700 text-gray-400">
-               <th className="p-3">Name</th>
-                  <th className="p-3">Email</th>
-                  <th className="p-3">Phone</th>
-                  <th className="p-3">Bio</th>
-                  <th className="p-3 text-right">Actions</th>
-                </tr>
-              </thead>
+                  <table className="w-full text-left">
+                    <thead>
+                      <tr className="border-b border-gray-700 text-gray-400">
+                        <th className="p-3">Name</th>
+                        <th className="p-3">Email</th>
+                        <th className="p-3">Phone</th>
+                        <th className="p-3">Bio</th>
+                        <th className="p-3 text-right">Actions</th>
+                      </tr>
+                    </thead>
 
-              <tbody>
-                {users.map((u:Creator) => (
-                  <tr
-                    key={u.id}
-                    className="border-b border-gray-700 hover:bg-gray-700/50 transition"
-                  >
-                    <td className="p-3">{u.name}</td>
-                    <td className="p-3 text-gray-300">{u.email?? '-'}</td>
-                    <td className="p-3 text-gray-300">{u.phone?? '-'}</td>
-                    <td className="p-3 text-gray-300">{u.bio?? '-'}</td>
-                     
+                    <tbody>
+                      {users.map((u: Creator) => (
+                        <tr
+                          key={u.id}
+                          className="border-b border-gray-700 hover:bg-gray-700/50 transition"
+                        >
+                          <td className="p-3">{u.name}</td>
+                          <td className="p-3 text-gray-300">{u.email ?? '-'}</td>
+                          <td className="p-3 text-gray-300">{u.phone ?? '-'}</td>
+                          <td className="p-3 text-gray-300">{u.bio ?? '-'}</td>
 
-                    <td className="p-3">
-                      <div className="flex justify-end gap-3">
-                        <button className="px-3 py-1 bg-blue-600 rounded-lg hover:bg-blue-700" onClick={()=>setEditUser(u)}>
-                          Edit
-                        </button>
-                       
-                        {u.role!='admin' && 
-                      <button className="px-3 py-1 bg-red-600 rounded-lg hover:bg-red-700"  onClick={()=>setSeriesToDelete(u)}>
-                          Delete
-                        </button>}
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-        </div>
-        
-        }
-     {seriesToDelete && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70">
-          <div className="bg-gray-900 rounded-xl p-6 w-full max-w-sm">
-            <h3 className="text-lg font-semibold mb-2">
-              Delete Creator?
-            </h3>
-            <p className="text-sm text-gray-400 mb-4">
-              Are you sure you want to delete{" "}
-              <span className="font-medium text-white">
-                {seriesToDelete.name}
-              </span>
-              ? This action cannot be undone.
-            </p>
 
-            <div className="flex justify-end gap-3">
-              <button
-                onClick={() => setSeriesToDelete(null)}
-                className="px-4 py-2 rounded bg-gray-800 hover:bg-gray-700"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={async () => {
-                  let contentDeletion = await deleteCreator(seriesToDelete.id??'');
-                  console.log(contentDeletion)
-                  if (contentDeletion == 204) {
-                    setUsers(
-                      prev=>prev.filter((u) => u.id !== seriesToDelete.id)
-                    )
-                    toast.success(`${seriesToDelete.name} is deleted successfully`)
-                  }
-                  else {
-                    toast.success(`Error deleting ${seriesToDelete.name}`)
+                          <td className="p-3">
+                            <div className="flex justify-end gap-3">
+                              <button className="px-3 py-1 bg-blue-600 rounded-lg hover:bg-blue-700" onClick={() => setEditUser(u)}>
+                                Edit
+                              </button>
 
-                  }
-                  setSeriesToDelete(null);
-                }}
-                className="px-4 py-2 rounded bg-red-600 hover:bg-red-700"
-              >
-                Delete
-              </button>
+                              {u.role != 'admin' &&
+                                <button className="px-3 py-1 bg-red-600 rounded-lg hover:bg-red-700" onClick={() => setSeriesToDelete(u)}>
+                                  Delete
+                                </button>}
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
             </div>
-          </div>
+
+          }
+          {seriesToDelete && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70">
+              <div className="bg-gray-900 rounded-xl p-6 w-full max-w-sm">
+                <h3 className="text-lg font-semibold mb-2">
+                  Delete Creator?
+                </h3>
+                <p className="text-sm text-gray-400 mb-4">
+                  Are you sure you want to delete{" "}
+                  <span className="font-medium text-white">
+                    {seriesToDelete.name}
+                  </span>
+                  ? This action cannot be undone.
+                </p>
+
+                <div className="flex justify-end gap-3">
+                  <button
+                    onClick={() => setSeriesToDelete(null)}
+                    className="px-4 py-2 rounded bg-gray-800 hover:bg-gray-700"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={async () => {
+                      let contentDeletion = await deleteCreator(seriesToDelete.id ?? '');
+                      console.log(contentDeletion)
+                      if (contentDeletion == 204) {
+                        setUsers(
+                          prev => prev.filter((u) => u.id !== seriesToDelete.id)
+                        )
+                        toast.success(`${seriesToDelete.name} is deleted successfully`)
+                      }
+                      else {
+                        toast.success(`Error deleting ${seriesToDelete.name}`)
+
+                      }
+                      setSeriesToDelete(null);
+                    }}
+                    className="px-4 py-2 rounded bg-red-600 hover:bg-red-700"
+                  >
+                    Delete
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
-      )}
-    </div>
-    }</>
+      }</>
   );
 }
 
