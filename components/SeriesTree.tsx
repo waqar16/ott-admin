@@ -107,7 +107,23 @@ export function SeriesItem({ series, refresh, setSeriesList, editSeriesHandler, 
   const [trailerUrlLoading, setTrailerUrlLoading] = useState(false);
   const [trailerUrl, setTrailerUrl] = useState(null);
   const [error,setError] = useState<string | null>(null);
+  const [menuPosition, setMenuPosition] = useState<'bottom' | 'top'>('bottom');
   const [deleting,setDeleting] = useState(false);
+  
+  // Add this useEffect in SeriesItem component
+useEffect(() => {
+  const handleClickOutside = () => {
+    setOpenSeriesMenuId(null);
+  };
+
+  if (openSeriesMenuId) {
+    document.addEventListener('click', handleClickOutside);
+  }
+
+  return () => {
+    document.removeEventListener('click', handleClickOutside);
+  };
+}, [openSeriesMenuId]);
   async function handleViewDetails(item: Content) {
     try {
       setTrailerUrlLoading(true);   
@@ -146,7 +162,17 @@ export function SeriesItem({ series, refresh, setSeriesList, editSeriesHandler, 
           <button
             onClick={(e) => {
               e.stopPropagation();
-              setOpenSeriesMenuId(prev => (prev === series.id ? null : series.id));
+              const rect = e.currentTarget.getBoundingClientRect();
+              const spaceBelow = window.innerHeight - rect.bottom;
+              const spaceAbove = rect.top;
+              
+              setMenuPosition(spaceBelow < 200 && spaceAbove > spaceBelow ? 'top' : 'bottom');
+             if (openSeriesMenuId === series.id) {
+      setOpenSeriesMenuId(null);
+    } else {
+      setOpenSeriesMenuId(series.id);
+    }
+
             }}
             className="p-2 rounded-full hover:bg-neutral-600 transition-colors"
             title="More options"
@@ -155,7 +181,12 @@ export function SeriesItem({ series, refresh, setSeriesList, editSeriesHandler, 
           </button>
 
           {openSeriesMenuId == series.id && (
-            <div className="absolute right-0 mt-2 w-40 bg-neutral-700 border border-gray-600 rounded-md shadow-lg z-50">
+            
+            <div 
+             onClick={(e) => e.stopPropagation()}
+            className={`absolute right-0 
+            ${menuPosition === 'top' ? 'bottom-full mb-2' : 'mt-2'
+}   w-40 bg-neutral-700 border border-gray-600 rounded-md shadow-lg z-50`}>
               <button
                 onClick={(e) => {
                   e.stopPropagation();

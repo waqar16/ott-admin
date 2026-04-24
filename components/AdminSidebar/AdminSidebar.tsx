@@ -52,7 +52,7 @@ export default function AdminSidebar() {
   return (
     <div className={`  w-[260px] bg-black h-screen text-gray-200 fixed left-0 top-0 shadow-xl overflow-y-auto   ${varela_round.className}`}>
       
-      {isNavigating && <FullScreenRedirectLoader message="loading"/>}
+      {isNavigating && <FullScreenRedirectLoader message="loading" showSidebar={true}/>}
       <div className="py-5 text-center border-b border-gray-700">
         <div className="flex flex-row items-center gap-2 w-full justify-center">
            
