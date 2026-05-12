@@ -5,11 +5,12 @@ import { BiCheck, BiEdit, BiLink, BiLoaderAlt, BiTrash } from "react-icons/bi"
 import { FiChevronDown, FiInfo, FiLoader, FiRotateCw, FiTablet,FiEyeOff,FiUpload } from "react-icons/fi"
 import { toast } from "sonner"
 import { getStatusBadge } from "@/utils/statusBadge"
- 
+ import { TranscodingProgress } from "@/app/admin/movie-management/page"
 import React from "react"
 import UploadTrailerClient from "../admin/content/UploadTrailerClient"
 interface ContentCardProps {
   item: Content
+  transcodingProgress?: TranscodingProgress
   handleViewDetails: (item: Content) => void
   handleEdit: (item: Content) => void
   publishContent: (id: string) => Promise<{ status: ContentStatus }>
@@ -17,6 +18,7 @@ interface ContentCardProps {
 }
 const ContentCard: React.FC<ContentCardProps> = ({
   item,
+  transcodingProgress,  
   handleViewDetails,
   handleEdit,
   publishContent,
@@ -214,16 +216,49 @@ const ContentCard: React.FC<ContentCardProps> = ({
           <p className={`text-gray-400 text-sm line-clamp-2 capitalize w-full min-h-[40px]`}>{item.description}</p>
 
           <div className="flex flex-wrap items-start justify-start gap-2 w-full  mt-2">
+{transcodingProgress && (
+  <div className="w-full mt-3">
+    <div className="flex items-center justify-between text-xs text-white mb-1">
+      <span>
+        {transcodingProgress.phase}
+      </span>
 
+      <span>
+        {transcodingProgress.progress}%
+      </span>
+    </div>
+
+    <div className="w-full h-2 bg-neutral-700 rounded-full overflow-hidden">
+      <div
+        className="h-full bg-orange-500 transition-all duration-300"
+        style={{
+          width: `${transcodingProgress.progress}%`,
+        }}
+      />
+    </div>
+
+    {transcodingProgress.status === "COMPLETE" && (
+      <p className="text-green-400 text-xs mt-1">
+        Transcoding Complete
+      </p>
+    )}
+
+    {transcodingProgress.status === "FAILED" && (
+      <p className="text-red-400 text-xs mt-1">
+        Transcoding Failed
+      </p>
+    )}
+  </div>
+)}
             {item.status !== 'published' && (
               <span className={`inline-flex items-center gap-1 rounded-full px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.18em] shadow-lg shadow-black/30 ring-1 ring-white/10 ${getStatusBadge(item.status)}`}>
                 Upload: {item.status}
               </span>
             )}
 
-            {item.ingest_status != 'failed' && <span className={`inline-flex items-center gap-1 rounded-full px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.18em] shadow-lg shadow-black/30 ring-1 ring-white/10 ${getStatusBadge(item.ingest_status)}`}>
+            {/* {item.ingest_status != 'failed' && <span className={`inline-flex items-center gap-1 rounded-full px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.18em] shadow-lg shadow-black/30 ring-1 ring-white/10 ${getStatusBadge(item.ingest_status)}`}>
               Transcoding: {item.ingest_status}
-            </span>}
+            </span>} */}
 
             {item.visibility_mode && (
               <span className={`inline-flex items-center gap-1 rounded-full px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.18em] shadow-lg shadow-black/30 ring-1 ring-white/10 ${getStatusBadge(item.visibility_mode)}`}>

@@ -42,6 +42,7 @@ import MultiSelectCreator from '@/components/MultiSelectCreator';
 
 export interface ContentEditorProps {
   content?: Content | null;
+   startTranscodingListener: (contentId: string) => void;
   setContent?: React.Dispatch<React.SetStateAction<Content[]>>;
   onClose: () => void;
   onSuccess: (content: Content) => void;
@@ -395,7 +396,7 @@ export default function ContentEditor(props: ContentEditorProps) {
   });
 
   const trailerTypes = [{ id: 'movie', name: 'Movie Trailer' }, { id: 'series', name: 'Series Trailer' }, { id: 'season', name: 'Season Trailer' }, { id: 'demo-content', name: 'Demo Content Trailer' }, { id: 'documentary', name: 'Documentary Trailer' }]
-  const { content, onClose, onSuccess, setContent, contentType, seasonNumber, parentId } = props;
+  const { content, onClose, onSuccess, setContent, contentType, seasonNumber, parentId,startTranscodingListener } = props;
   const isEditing = !!content;
   const [step, setStep] = useState(1);
   const [allGenre, setAllGenre] = useState<[]>([]);
@@ -676,6 +677,7 @@ export default function ContentEditor(props: ContentEditorProps) {
       if (uploadInit.s3_key) {
         onClose();
       }
+            startTranscodingListener(createdContent.id);
 
       result = await uploadMultipartWithCallback(uploadInit, uploadFile, createdContent.id, uploadFile.name, {
         onProgress: (progress) => {
@@ -697,19 +699,16 @@ export default function ContentEditor(props: ContentEditorProps) {
             toast.success(
               "Upload completed. Please wait for processing before publishing."
             );
+            
           }
         },
       });
 
-
-      setUploadStatus('Upload complete! Processing callback...');
+ 
+     
       setContent(prevContents => {
         return prevContents.map(c => c.id === createdContent.id ? { ...c, status: 'processing', ingest_status: 'processing' } : c);
-      });
-
-      setSuccess('File uploaded successfully! Waiting for transcoding to start...');
-      setUploadStatus('Upload complete - Asset created. Transcoding will begin shortly.');
-      setUploadProgress(100);
+      });  
 
     } catch (err) {
       const apiError = err as ApiError;
