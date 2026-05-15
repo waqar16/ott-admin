@@ -16,5 +16,5 @@
   <polygon points="185,105 185,145 225,125" fill="#ffffff" />
 
   <!-- Subtle Border -->
-  <rect x="1" y="1" width="398" height="248" rx="12" fill="none" stroke="#374151" stroke-width="2"/>
+  <rect x="1" y="1" width="398" height="248" rx="12" fill="none" stroke="#374151" strokeWidth="2"/>
 </svg>

@@ -112,6 +112,21 @@ const startTranscodingListener = (contentId: string) => {
         data.status === "COMPLETE" ||
         data.status === "FAILED"
       ) {
+         if (data.status === "COMPLETE") {
+    setContent((prev) =>
+      prev.map((item) =>
+        item.id === contentId
+          ? {
+              ...item,
+              status: "ready",
+              ingest_status: "ready",
+            }
+          : item
+      )
+    );
+
+    toast.success("Transcoding completed");
+  }
         es.close();
 
         delete sseConnections.current[contentId];

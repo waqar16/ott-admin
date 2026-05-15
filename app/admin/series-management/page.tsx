@@ -10,6 +10,8 @@ import { API_BASE } from "@/lib/config";
 import ContentEditor from "@/components/admin/content/ContentEditor.client";
 import { Content } from "@/lib/types/content";
 import { usePathname } from "next/navigation";
+import { useRef } from "react";
+import { toast } from "sonner";
 import { BiRefresh } from "react-icons/bi";
 import UploadTrailerClient from "@/components/admin/content/UploadTrailerClient";
 import AdminContentHelpPanel from '@/components/admin/content/AdminContentHelpPanel';
@@ -18,8 +20,20 @@ export default function SeriesPage() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState(""); 
   const [showAddSeries, setShowAddSeries] = useState(false);
+  const [transcodingMap, setTranscodingMap] = useState<
+  Record<
+    string,
+    {
+      progress: number;
+      phase: string;
+      status: string;
+      error?: boolean;
+    }
+  >
+>({});
 const [creatingSeries, setCreatingSeries] = useState(false);
 const [seriesTitle, setSeriesTitle] = useState("");
+const sseConnections = useRef<Record<string, EventSource>>({});
 const [seriesDescription, setSeriesDescription] = useState("");
    const [selectedContent, setSelectedContent] = useState<Content | null>(null);
   const [open,setOpen] = useState(false);
@@ -81,7 +95,103 @@ let pathname = usePathname()
   const filtered = seriesList.filter((s) =>
     s.title.toLowerCase().includes(search.toLowerCase())
   );
+const startTranscodingListener = (contentId: string) => {
+  if (sseConnections.current[contentId]) return;
 
+  const es = new EventSource(
+    `http://3.236.253.230/api/v1/content/transcoding-progress/${contentId}`
+  );
+
+  sseConnections.current[contentId] = es;
+
+  es.onmessage = (event) => {
+    if (event.data === "ping") return;
+
+    try {
+      const data = JSON.parse(event.data);
+
+      setTranscodingMap((prev) => ({
+        ...prev,
+        [contentId]: {
+          progress: data.progress ?? 0,
+          phase: data.phase,
+          status: data.status,
+        },
+      }));
+
+      // UPDATE EPISODE LIVE
+      setSeriesList((prev) =>
+        prev.map((series) => ({
+          ...series,
+          children: series.children?.map((season: any) => ({
+            ...season,
+            children: season.children?.map((ep: any) =>
+              ep.id === contentId
+                ? {
+                    ...ep,
+                    ingest_status:
+                      data.status === "COMPLETE"
+                        ? "ready"
+                        : "processing",
+                  }
+                : ep
+            ),
+          })),
+        }))
+      );
+
+      if (
+        data.status === "COMPLETE" ||
+        data.status === "FAILED"
+      ) {
+        if (data.status === "COMPLETE") {
+          toast.success("Episode transcoding completed");
+        }
+
+        es.close();
+
+        delete sseConnections.current[contentId];
+
+        setTimeout(() => {
+          setTranscodingMap((prev) => {
+            const updated = { ...prev };
+            delete updated[contentId];
+            return updated;
+          });
+        }, 3000);
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  es.onerror = () => {
+    es.close();
+    delete sseConnections.current[contentId];
+  };
+};
+
+useEffect(() => {
+  seriesList.forEach((series) => {
+    series.children?.forEach((season: any) => {
+      season.children?.forEach((ep: any) => {
+        if (
+          ep.ingest_status === "processing" &&
+          !sseConnections.current[ep.id]
+        ) {
+          startTranscodingListener(ep.id);
+        }
+      });
+    });
+  });
+}, [seriesList]);
+useEffect(() => {
+  return () => {
+    Object.values(sseConnections.current).forEach((es) => {
+      es.close();
+    });
+  };
+}, []);
   return (
     <div className="min-h-screen   text-white p-2 md:p-6 mt-16 md:mt-0">
       {/* Top Section */}
@@ -119,6 +229,8 @@ let pathname = usePathname()
           refresh={fetchSeries}
            setSelectedContent={setSelectedContent}
           editSeriesHandler={()=>{setShowAddSeries(true)}}
+            transcodingMap={transcodingMap}
+            startTranscodingListener={startTranscodingListener}
         />
       )}
       {showAddSeries && (
@@ -187,6 +299,7 @@ let pathname = usePathname()
               setShowAddSeries(false)
             fetchSeries()
             }}
+            startTranscodingListener={startTranscodingListener}
              onSuccess={()=>setShowAddSeries(false)}
              contentType={'series'}
            />
