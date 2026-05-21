@@ -33,8 +33,8 @@ copy .env.example .env.local
 ```env
 NEXT_PUBLIC_API_BASE=http://localhost:3000
 NEXT_PUBLIC_FRONTEND_BASE=http://localhost:3000  
-NEXT_PUBLIC_GOOGLE_CLIENT_ID=389690607444-0cddas9sh7l47up8jrij2s57rr347gdm.apps.googleusercontent.com
-NEXT_PUBLIC_GOOGLE_API_KEY=AIzaSyB6Mp89P0tuD86atEBCpiLKm0yJ_i1f3_8
+NEXT_PUBLIC_GOOGLE_CLIENT_ID 
+NEXT_PUBLIC_GOOGLE_API_KEY 
 ```
 
 > Use `NEXT_PUBLIC_USE_MOCK_DATA=true` for local development and testing without requiring real backend or Stripe services.
