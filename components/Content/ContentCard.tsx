@@ -4,19 +4,109 @@ import { Content, ContentStatus } from "@/lib/types/content"
 import { BiCheck, BiEdit, BiLink, BiLoaderAlt, BiTrash } from "react-icons/bi"
 import { FiChevronDown, FiInfo, FiLoader, FiRotateCw, FiTablet,FiEyeOff,FiUpload } from "react-icons/fi"
 import { toast } from "sonner"
-import { getStatusBadge } from "@/utils/statusBadge"
- 
+// import { getStatusBadge } from "@/utils/statusBadge"
+ import { TranscodingProgress } from "@/app/admin/movie-management/page"
 import React from "react"
 import UploadTrailerClient from "../admin/content/UploadTrailerClient"
 interface ContentCardProps {
   item: Content
+  transcodingProgress?: TranscodingProgress
   handleViewDetails: (item: Content) => void
   handleEdit: (item: Content) => void
   publishContent: (id: string) => Promise<{ status: ContentStatus }>
   fetchContent: () => void 
 }
+export const getStatusBadge = (status?: string) => {
+  switch (status) {
+    case "draft":
+      return "bg-gray-500/20 text-gray-300 border border-gray-500/30";
+
+    case "uploaded":
+      return "bg-cyan-500/20 text-cyan-300 border border-cyan-500/30";
+
+    case "ready":
+      return "bg-green-500/20 text-green-300 border border-green-500/30";
+
+    case "published":
+      return "bg-emerald-500/20 text-emerald-300 border border-emerald-500/30";
+
+    case "inactive":
+      return "bg-yellow-500/20 text-yellow-300 border border-yellow-500/30";
+
+    case "failed":
+      return "bg-red-500/20 text-red-300 border border-red-500/30";
+
+    case "archived":
+      return "bg-purple-500/20 text-purple-300 border border-purple-500/30";
+
+    default:
+      return "bg-neutral-700 text-neutral-300 border border-neutral-600";
+  }
+};
+const getTranscodingTextColor = (
+  phase?: string,
+  status?: string
+) => {
+  if (status === "FAILED") {
+    return "text-red-400";
+  }
+
+  if (status === "COMPLETE") {
+    return "text-green-400";
+  }
+
+  switch (phase) {
+    case "PROBING":
+      return "text-yellow-400";
+
+    case "TRANSCODING":
+      return "text-blue-400";
+
+    case "UPLOADING":
+      return "text-purple-400";
+
+    default:
+      return "text-orange-400";
+  }
+};
+const getTranscodingColor = (
+  phase?: string,
+  status?: string
+) => {
+  if (status === "FAILED") {
+    return "bg-red-500";
+  }
+
+  if (status === "COMPLETE") {
+    return "bg-green-500";
+  }
+
+  switch (phase) {
+    case "UPLOADING FILE":
+      return "bg-cyan-500";
+
+    case "PROBING":
+      return "bg-yellow-500";
+
+    case "TRANSCODING":
+      return "bg-blue-500";
+
+    case "UPLOADING":
+      return "bg-purple-500";
+
+    case "COMPLETE":
+      return "bg-green-500";
+
+    case "FAILED":
+      return "bg-red-500";
+
+    default:
+      return "bg-orange-500";
+  }
+};
 const ContentCard: React.FC<ContentCardProps> = ({
   item,
+  transcodingProgress,  
   handleViewDetails,
   handleEdit,
   publishContent,
@@ -213,56 +303,153 @@ const ContentCard: React.FC<ContentCardProps> = ({
            <h3 className={`text-xl font-bold text-white capitalize w-full font-bold line-clamp-1`}>{item.title}</h3>
           <p className={`text-gray-400 text-sm line-clamp-2 capitalize w-full min-h-[40px]`}>{item.description}</p>
 
-          <div className="flex flex-wrap items-start justify-start gap-2 w-full  mt-2">
+          <div className="w-full mt-4 space-y-3">
 
-            {item.status !== 'published' && (
-              <span className={`inline-flex items-center gap-1 rounded-full px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.18em] shadow-lg shadow-black/30 ring-1 ring-white/10 ${getStatusBadge(item.status)}`}>
-                Upload: {item.status}
-              </span>
-            )}
+  {/* TRANSCODING CARD */}
+  {transcodingProgress && (
+    <div className="rounded-2xl border border-white/10 bg-neutral-950/70 p-4 backdrop-blur-md">
 
-            {item.ingest_status != 'failed' && <span className={`inline-flex items-center gap-1 rounded-full px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.18em] shadow-lg shadow-black/30 ring-1 ring-white/10 ${getStatusBadge(item.ingest_status)}`}>
-              Transcoding: {item.ingest_status}
-            </span>}
+      <div className="flex items-center justify-between mb-3">
+        <div className="flex flex-col">
+          <span className="text-[11px] uppercase tracking-[0.25em] text-neutral-500 font-semibold">
+            Transcoding
+          </span>
 
-            {item.visibility_mode && (
-              <span className={`inline-flex items-center gap-1 rounded-full px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.18em] shadow-lg shadow-black/30 ring-1 ring-white/10 ${getStatusBadge(item.visibility_mode)}`}>
-                Visibility: {item.visibility_mode}
-              </span>
-            )}
+          <span
+            className={`text-sm font-bold ${getTranscodingTextColor(
+              transcodingProgress.phase,
+              transcodingProgress.status
+            )}`}
+          >
+            {transcodingProgress.phase}
+          </span>
+        </div>
 
-            {item.is_kid_safe && (
-              <span className="px-1 py-1 bg-green-900/50 text-green-300 text-[8px] rounded  flex items-center gap-1">
-                🧒 Kid Safe
-              </span>
-            )}
+        {/* <div
+          className={`px-3 py-1 rounded-full text-[11px] font-bold border
+          ${
+            transcodingProgress.status === "COMPLETE"
+              ? "bg-green-500/15 text-green-300 border-green-500/30"
+              : transcodingProgress.status === "FAILED"
+              ? "bg-red-500/15 text-red-300 border-red-500/30"
+              : "bg-blue-500/15 text-blue-300 border-blue-500/30"
+          }`}
+        >
+          {transcodingProgress.status}
+        </div> */}
+      </div>
 
-            {item.is_ppv && (
-              <span className="px-2 py-1 bg-purple-900/50 text-purple-300 rounded text-[8px]">
-                PPV ${((item?.price || 0)) }
-              </span>
-            )}
-            {item.ingest_status === 'failed' &&
-              <div className="w-full flex flex-row items-center">
+      <div className="w-full h-2 rounded-full bg-neutral-800 overflow-hidden">
+        <div
+          className={`h-full transition-all duration-500 ${getTranscodingColor(
+            transcodingProgress.phase,
+            transcodingProgress.status
+          )}`}
+          style={{
+            width: `${transcodingProgress.progress}%`,
+          }}
+        />
+      </div>
 
-                <button
-                  onClick={async () => {
-                    // Retry Transcoding Logic Here
-                    let retry = await retryTranscoding(item.id)
-                    if (retry) {
-                      toast.success("Transcoding Retry Initiated")
-                      fetchContent()
-                    } else {
-                      toast.error("Transcoding Retry Failed")
-                    }
+      <div className="flex justify-between mt-2 text-xs">
+        <span className="text-neutral-400">
+          Processing Video
+        </span>
 
+        <span className="font-semibold text-white">
+          {transcodingProgress.progress}%
+        </span>
+      </div>
+    </div>
+  )}
 
-                  }}
-                  className="text-[8px] flex flex-row items-center bg-neutral-800   p-1 rounded-lg  text-white rounded-lg  "
-                >
-                  Transcoding Failed. Retry? <FiRotateCw size={10} className="ml-1" />
-                </button></div>}
-          </div>
+  {/* STATUS GRID */}
+  <div className="grid grid-cols-2 gap-3">
+
+  {/* Upload Status */}
+  {item.status !== "published" && (
+    <div className="rounded-2xl bg-neutral-900/80 border border-white/5 p-4 backdrop-blur-sm">
+      <p className="text-[10px] uppercase tracking-[0.22em] text-neutral-500 mb-2">
+        Upload
+      </p>
+
+      <div
+        className={`inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-medium ring-1 ring-inset ${getStatusBadge(
+          item.status
+        )}`}
+      >
+ 
+        {item.status}
+      </div>
+    </div>
+  )}
+
+  {/* Visibility */}
+  {item.visibility_mode && (
+    <div className="rounded-2xl bg-neutral-900/80 border border-white/5 p-4 backdrop-blur-sm">
+      <p className="text-[10px] uppercase tracking-[0.22em] text-neutral-500 mb-2">
+        Visibility
+      </p>
+
+      <div
+        className={`inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-medium ring-1 ring-inset ${getStatusBadge(
+          item.visibility_mode
+        )}`}
+      >
+        {item.visibility_mode}
+      </div>
+    </div>
+  )}
+
+  {/* Kid Safe */}
+  {item.is_kid_safe && (
+    <div className="rounded-2xl bg-green-500/10 border border-green-500/20 p-4">
+      <p className="text-[10px] uppercase tracking-[0.22em] text-green-200/60 mb-2">
+        Audience
+      </p>
+
+      <div className="inline-flex items-center gap-2 rounded-full bg-green-500/15 px-3 py-1.5 text-sm font-medium text-green-300 ring-1 ring-green-400/20">
+        <div className="h-1.5 w-1.5 rounded-full bg-green-300" />
+        Kid Safe
+      </div>
+    </div>
+  )}
+
+  {/* PPV */}
+  {item.is_ppv && (
+    <div className="rounded-2xl bg-purple-500/10 border border-purple-500/20 p-4">
+      <p className="text-[10px] uppercase tracking-[0.22em] text-purple-200/60 mb-2">
+        Monetization
+      </p>
+
+      <div className="inline-flex items-center gap-2 rounded-full bg-purple-500/15 px-3 py-1.5 text-sm font-medium text-purple-300 ring-1 ring-purple-400/20">
+        <div className="h-1.5 w-1.5 rounded-full bg-purple-300" />
+        PPV • ${item?.price || 0}
+      </div>
+    </div>
+  )}
+</div>
+
+  {/* FAILED RETRY */}
+  {item.ingest_status === "failed" && (
+    <button
+      onClick={async () => {
+        let retry = await retryTranscoding(item.id);
+
+        if (retry) {
+          toast.success("Transcoding Retry Initiated");
+          fetchContent();
+        } else {
+          toast.error("Transcoding Retry Failed");
+        }
+      }}
+      className="w-full flex items-center justify-center gap-2 rounded-xl border border-red-500/20 bg-red-500/10 py-3 text-sm font-semibold text-red-300 hover:bg-red-500/20 transition"
+    >
+      <FiRotateCw size={16} />
+      Retry Transcoding
+    </button>
+  )}
+</div>
 
         
         </div>

@@ -59,6 +59,9 @@ interface SeriesTreeProps {
   setSeriesList: React.Dispatch<React.SetStateAction<Content[]>>;
   refresh: () => Promise<void>;
   editSeriesHandler?: () => void;
+  transcodingMap: Record<string, any>;
+   startTranscodingListener: (contentId: string) => void;
+
   setSelectedContent?: React.Dispatch<React.SetStateAction<Content | null>>;
 }
 interface SeriesItemProps {
@@ -66,6 +69,9 @@ interface SeriesItemProps {
   setSeriesList: React.Dispatch<React.SetStateAction<Content[]>>;
   refresh: () => Promise<void>;
   editSeriesHandler?: () => void;
+  transcodingMap: Record<string, any>;
+   startTranscodingListener: (contentId: string) => void;
+
   setSelectedContent?: React.Dispatch<React.SetStateAction<Content | null>>;
 }
 export default function SeriesTree({
@@ -73,14 +79,16 @@ export default function SeriesTree({
   setSeriesList,
   refresh,
   editSeriesHandler,
-  setSelectedContent
+  transcodingMap,
+  setSelectedContent,
+  startTranscodingListener
 }: SeriesTreeProps) {
   return (
     <div className="space-y-6">
       {seriesList.length > 0 ? (
         <>
           {seriesList.map((series) => (
-            <SeriesItem key={series.id} series={series} refresh={refresh} setSelectedContent={setSelectedContent} setSeriesList={setSeriesList} editSeriesHandler={editSeriesHandler} />
+            <SeriesItem startTranscodingListener={startTranscodingListener} transcodingMap={transcodingMap} key={series.id} series={series} refresh={refresh} setSelectedContent={setSelectedContent} setSeriesList={setSeriesList} editSeriesHandler={editSeriesHandler} />
           ))}
         </>
       ) : (
@@ -93,45 +101,45 @@ export default function SeriesTree({
   );
 }
 
- 
-export function SeriesItem({ series, refresh, setSeriesList, editSeriesHandler, setSelectedContent }: SeriesItemProps) {
+
+export function SeriesItem({ series,transcodingMap, refresh, setSeriesList, editSeriesHandler, setSelectedContent,startTranscodingListener }: SeriesItemProps) {
   const [open, setOpen] = useState(false);
   const [selectedSeasonContent, setSelectedSeasonContent] = useState<Content | null>(null);
-  const [trailerOpen,setTrailerOpen] = useState(false);
+  const [trailerOpen, setTrailerOpen] = useState(false);
   const [showAddSeason, setShowAddSeason] = useState(false);
   const [seasonNumber, setSeasonNumber] = useState("");
-    const [seriesToDelete, setSeriesToDelete] = useState<Content | null>(null);
-  const [editSeries, setEditSeries] = useState<Content | null>(null); 
+  const [seriesToDelete, setSeriesToDelete] = useState<Content | null>(null);
+  const [editSeries, setEditSeries] = useState<Content | null>(null);
   const [openSeriesMenuId, setOpenSeriesMenuId] = useState<string | null>(null);
   const [showSeriesDetails, setShowSeriesDetails] = useState(false);
   const [trailerUrlLoading, setTrailerUrlLoading] = useState(false);
   const [trailerUrl, setTrailerUrl] = useState(null);
-  const [error,setError] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
   const [menuPosition, setMenuPosition] = useState<'bottom' | 'top'>('bottom');
-  const [deleting,setDeleting] = useState(false);
-  
+  const [deleting, setDeleting] = useState(false);
+
   // Add this useEffect in SeriesItem component
-useEffect(() => {
-  const handleClickOutside = () => {
-    setOpenSeriesMenuId(null);
-  };
+  useEffect(() => {
+    const handleClickOutside = () => {
+      setOpenSeriesMenuId(null);
+    };
 
-  if (openSeriesMenuId) {
-    document.addEventListener('click', handleClickOutside);
-  }
+    if (openSeriesMenuId) {
+      document.addEventListener('click', handleClickOutside);
+    }
 
-  return () => {
-    document.removeEventListener('click', handleClickOutside);
-  };
-}, [openSeriesMenuId]);
+    return () => {
+      document.removeEventListener('click', handleClickOutside);
+    };
+  }, [openSeriesMenuId]);
   async function handleViewDetails(item: Content) {
     try {
-      setTrailerUrlLoading(true);   
-      setShowSeriesDetails(true);  
+      setTrailerUrlLoading(true);
+      setShowSeriesDetails(true);
       try {
         const urlPayload = await getStreamingUrl(item.trailer_id || "");
         setTrailerUrlLoading(false);
-        console.log("urlPayload.dash_url",urlPayload.hls_url)
+        console.log("urlPayload.dash_url", urlPayload.hls_url)
         setTrailerUrl(urlPayload.hls_url);
       } catch (rendErr) {
         console.error('Error fetching renditions:', rendErr);
@@ -141,7 +149,7 @@ useEffect(() => {
     } catch (err) {
       const apiError = err as ApiError;
       setError(apiError.message || 'Failed to load content details');
-    } finally { 
+    } finally {
     }
   }
   return (
@@ -165,13 +173,13 @@ useEffect(() => {
               const rect = e.currentTarget.getBoundingClientRect();
               const spaceBelow = window.innerHeight - rect.bottom;
               const spaceAbove = rect.top;
-              
+
               setMenuPosition(spaceBelow < 200 && spaceAbove > spaceBelow ? 'top' : 'bottom');
-             if (openSeriesMenuId === series.id) {
-      setOpenSeriesMenuId(null);
-    } else {
-      setOpenSeriesMenuId(series.id);
-    }
+              if (openSeriesMenuId === series.id) {
+                setOpenSeriesMenuId(null);
+              } else {
+                setOpenSeriesMenuId(series.id);
+              }
 
             }}
             className="p-2 rounded-full hover:bg-neutral-600 transition-colors"
@@ -181,12 +189,12 @@ useEffect(() => {
           </button>
 
           {openSeriesMenuId == series.id && (
-            
-            <div 
-             onClick={(e) => e.stopPropagation()}
-            className={`absolute right-0 
+
+            <div
+              onClick={(e) => e.stopPropagation()}
+              className={`absolute right-0 
             ${menuPosition === 'top' ? 'bottom-full mb-2' : 'mt-2'
-}   w-40 bg-neutral-700 border border-gray-600 rounded-md shadow-lg z-50`}>
+                }   w-40 bg-neutral-700 border border-gray-600 rounded-md shadow-lg z-50`}>
               <button
                 onClick={(e) => {
                   e.stopPropagation();
@@ -261,7 +269,14 @@ useEffect(() => {
       {open && (
         <div className="mt-4 ml-6 space-y-4">
           {series.children?.map((season, index) => (
-            <SeasonItem setSeriesList={setSeriesList} key={index} season={season}   series={series} />
+      <SeasonItem
+  setSeriesList={setSeriesList}
+  key={index}
+  season={season}
+  series={series}
+  transcodingMap={transcodingMap}
+  startTranscodingListener={startTranscodingListener}
+/>
           ))}
 
           {/* Add Season */}
@@ -286,7 +301,7 @@ useEffect(() => {
           )}
         </div>
       )}
- {seriesToDelete && (
+      {seriesToDelete && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70">
           <div className="bg-neutral-900 rounded-xl p-6 w-full max-w-sm">
             <h3 className="text-lg font-semibold mb-2">
@@ -315,8 +330,8 @@ useEffect(() => {
                   if (contentDeletion == 204) {
                     setSeriesList((prev: Content[]) =>
                       prev.filter(
-                                (child: Content) => child.id !== seriesToDelete.id
-                              )
+                        (child: Content) => child.id !== seriesToDelete.id
+                      )
                     );
 
                     toast.success(`${seriesToDelete.title} is deleted successfully`)
@@ -336,7 +351,7 @@ useEffect(() => {
           </div>
         </div>
       )}
-{showSeriesDetails  && (
+      {showSeriesDetails && (
         <ContentDetailsModal
           open={showSeriesDetails}
           detailContent={series}
@@ -344,495 +359,521 @@ useEffect(() => {
             refresh();
           }}
           videoUrl={trailerUrl}
-          videoUrlLoading={trailerUrlLoading} 
-          publishContent={publishContent}  
+          videoUrlLoading={trailerUrlLoading}
+          publishContent={publishContent}
         />
       )}
 
-      {trailerOpen && 
-      <UploadTrailerClient trailer_id={series.trailer_id}
-      content={series}
-      trailer_url={series.trailer_url || ""}
-      setOpen={setTrailerOpen}
-      
-      
-      />}
+      {trailerOpen &&
+        <UploadTrailerClient trailer_id={series.trailer_id}
+          content={series}
+          trailer_url={series.trailer_url || ""}
+          setOpen={setTrailerOpen}
+
+
+        />}
     </div>
   );
 }
 
 
-export function SeasonItem({ season, series, setSeriesList }) {
+export function SeasonItem({ season, series, setSeriesList,startTranscodingListener,transcodingMap }: { season: Content; series: Content; setSeriesList: React.Dispatch<React.SetStateAction<Content[]>>; startTranscodingListener: (contentId: string) => void; transcodingMap: Record<string, any> }) {
 
-  const [open, setOpen] = useState(false); 
+  const [open, setOpen] = useState(false);
   const [showAddEpisode, setShowAddEpisode] = useState(false);
-  const [editSeason, setEditSeason] = useState<Content | null>(null);  
+  const [editSeason, setEditSeason] = useState<Content | null>(null);
   const [playingEpisode, setPlayingEpisode] = useState<any | null>(null);
   const [episodeToDelete, setEpisodeToDelete] = useState<Content | null>(null);
   const [seasonToDelete, setSeasonToDelete] = useState<Content | null>(null);
   const [editEpisode, setEditEpisode] = useState<Content | null>(null);
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
   const [openSeasonMenuId, setOpenSeasonMenuId] = useState<string | null>(null);
-  const [deleting,setDeleting] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const [loadingSeasonId, setLoadingSeasonId] = useState<string | null>(null);
- const refreshSeason = async (seasonId: string, seriesId: string) => {
-      setLoadingSeasonId(seasonId);
-  try {
-      const url =  
+  const refreshSeason = async (seasonId: string, seriesId: string) => {
+    setLoadingSeasonId(seasonId);
+    try {
+      const url =
         `${API_CONFIG.baseUrl}api/v1/content/frontend/season/full/${seasonId}`;
-        const response = await fetch(url, {
-          method: 'GET',
-          headers: getAuthHeaders(),
-        });
-const updatedSeason = await response.json();
-         setSeriesList(prev =>
-      prev.map(series => {
-        if (series.id !== seriesId) return series;
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: getAuthHeaders(),
+      });
+      const updatedSeason = await response.json();
+      setSeriesList(prev =>
+        prev.map(series => {
+          if (series.id !== seriesId) return series;
 
-        return {
-          ...series,
-          children: (series.children || []).map((season: any) =>
-            season.id === seasonId ? updatedSeason : season
-          ),
-        };
-      })
-    );
-    // const res = await apiClient.get(`${API_CONFIG.baseUrl}api/v1/content/frontend/season/full/${seasonId}`);
-    // const updatedSeason = res.data;
+          return {
+            ...series,
+            children: (series.children || []).map((season: any) =>
+              season.id === seasonId ? updatedSeason : season
+            ),
+          };
+        })
+      );
+      // const res = await apiClient.get(`${API_CONFIG.baseUrl}api/v1/content/frontend/season/full/${seasonId}`);
+      // const updatedSeason = res.data;
 
-    // setSeasons(prev =>
-    //   prev.map(season =>
-    //     season.id === seasonId ? updatedSeason : season
-    //   )
-    // );
-  } catch (err) {
-    console.error("Failed to refresh season", err);
-  }
-   finally {
-    setLoadingSeasonId(null);
-  }
-};
+      // setSeasons(prev =>
+      //   prev.map(season =>
+      //     season.id === seasonId ? updatedSeason : season
+      //   )
+      // );
+    } catch (err) {
+      console.error("Failed to refresh season", err);
+    }
+    finally {
+      setLoadingSeasonId(null);
+    }
+  };
   return (
     <>
-    {loadingSeasonId === season.id ? 
-      <div className="bg-neutral-700 w-full h-[9vh] flex flex-row items-center justify-between px-8">
-        <SkeletonLoader className="bg-neutral-500 w-20 h-4"/>
-        <div className="flex flex-row justify-end items-center space-x-4">
-        <SkeletonLoader className="bg-neutral-500 w-4 h-4"/>
-        <SkeletonLoader className="bg-neutral-500 w-4 h-4"/>
+      {loadingSeasonId === season.id ?
+        <div className="bg-neutral-700 w-full h-[9vh] flex flex-row items-center justify-between px-8">
+          <SkeletonLoader className="bg-neutral-500 w-20 h-4" />
+          <div className="flex flex-row justify-end items-center space-x-4">
+            <SkeletonLoader className="bg-neutral-500 w-4 h-4" />
+            <SkeletonLoader className="bg-neutral-500 w-4 h-4" />
 
-        </div>
-      </div>:
-      <div className="border-l-2 border-blue-500 pl-4 bg-neutral-700 rounded-lg p-4 shadow-sm">
-      {/* Season Header */}
-      <div
-        className="cursor-pointer flex items-center justify-between hover:bg-neutral-600 rounded-md p-2 transition-colors"
-        onClick={() => setOpen(!open)}
-      >
-        <div className="flex items-center gap-3">
-          <span className="text-blue-400 text-lg">{open ? "▼" : "▶"}</span>
-          <span className="font-semibold text-lg text-white">Season {season.season_number}</span>
-          <span className="text-sm text-gray-300">- {season.title}</span>
-        </div>
-        <div className="relative">
-         <button
-  onClick={(e) => {
-    e.stopPropagation();
- refreshSeason(season.id, series.id);
-  }}
-  className="p-2 rounded-full hover:bg-neutral-500 transition-colors"
->
-  {loadingSeasonId === season.id ? (
-    <span className="animate-spin">⏳</span>
-  ) : (
-    <BiRefresh className="w-5 h-5 text-gray-300" />
-  )}
-</button>
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              setOpenSeasonMenuId(prev => (prev === season.id ? null : season.id));
-            }}
-            className="p-2 rounded-full hover:bg-neutral-500 transition-colors"
-            title="Season options"
+          </div>
+        </div> :
+        <div className="border-l-2 border-blue-500 pl-4 bg-neutral-700 rounded-lg p-4 shadow-sm">
+          {/* Season Header */}
+          <div
+            className="cursor-pointer flex items-center justify-between hover:bg-neutral-600 rounded-md p-2 transition-colors"
+            onClick={() => setOpen(!open)}
           >
-            <FiMoreVertical className="w-5 h-5 text-gray-300" />
-          </button>
-
-          {openSeasonMenuId == season.id && (
-            <div className="absolute right-0 mt-2 w-40 bg-neutral-600 border border-gray-500 rounded-md shadow-lg z-[9999999]">
+            <div className="flex items-center gap-3">
+              <span className="text-blue-400 text-lg">{open ? "▼" : "▶"}</span>
+              <span className="font-semibold text-lg text-white">Season {season.season_number}</span>
+              <span className="text-sm text-gray-300">- {season.title}</span>
+            </div>
+            <div className="relative">
               <button
                 onClick={(e) => {
                   e.stopPropagation();
-                  setOpenSeasonMenuId(null);
-                  setEditSeason(season);
+                  refreshSeason(season.id, series.id);
                 }}
-                className="flex items-center gap-2 w-full px-3 py-2 text-sm hover:bg-neutral-500 transition-colors"
+                className="p-2 rounded-full hover:bg-neutral-500 transition-colors"
               >
-                <BiPencil className="w-4 h-4" />
-                Edit Season
+                {loadingSeasonId === season.id ? (
+                  <span className="animate-spin">⏳</span>
+                ) : (
+                  <BiRefresh className="w-5 h-5 text-gray-300" />
+                )}
               </button>
               <button
                 onClick={(e) => {
                   e.stopPropagation();
-                  setOpenSeasonMenuId(null);
-                  setSeasonToDelete(season);
+                  setOpenSeasonMenuId(prev => (prev === season.id ? null : season.id));
                 }}
-                className="flex items-center gap-2 w-full px-3 py-2 text-sm text-red-400 hover:bg-neutral-500 transition-colors"
+                className="p-2 rounded-full hover:bg-neutral-500 transition-colors"
+                title="Season options"
               >
-                <BsTrash2 className="w-4 h-4" />
-                Delete Season
+                <FiMoreVertical className="w-5 h-5 text-gray-300" />
               </button>
+
+              {openSeasonMenuId == season.id && (
+                <div className="absolute right-0 mt-2 w-40 bg-neutral-600 border border-gray-500 rounded-md shadow-lg z-[9999999]">
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setOpenSeasonMenuId(null);
+                      setEditSeason(season);
+                    }}
+                    className="flex items-center gap-2 w-full px-3 py-2 text-sm hover:bg-neutral-500 transition-colors"
+                  >
+                    <BiPencil className="w-4 h-4" />
+                    Edit Season
+                  </button>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setOpenSeasonMenuId(null);
+                      setSeasonToDelete(season);
+                    }}
+                    className="flex items-center gap-2 w-full px-3 py-2 text-sm text-red-400 hover:bg-neutral-500 transition-colors"
+                  >
+                    <BsTrash2 className="w-4 h-4" />
+                    Delete Season
+                  </button>
+                </div>
+              )}
             </div>
-          )}
-        </div>
-      </div>
+          </div>
 
-      {/* Episodes */}
-      {open && (
-        <div className="mt-4 ml-6">
-          <div className="bg-neutral-600 rounded-lg p-4">
-            <div className="flex flex-row items-start w-full justify-between mb-4">
-              <div className="w-full flex flex-row items-center">
-                <span className="font-bold text-lg capitalize text-white">{season.title}</span>
-              </div>
-            </div>
-            <span className="font-medium text-gray-400 text-sm block mb-4">{season.description}</span>
+          {/* Episodes */}
+          {open && (
+            <div className="mt-4 ml-6">
+              <div className="bg-neutral-600 rounded-lg p-4">
+                <div className="flex flex-row items-start w-full justify-between mb-4">
+                  <div className="w-full flex flex-row items-center">
+                    <span className="font-bold text-lg capitalize text-white">{season.title}</span>
+                  </div>
+                </div>
+                <span className="font-medium text-gray-400 text-sm block mb-4">{season.description}</span>
 
-            {season.children?.length > 0 && (
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                {season.children.map((ep) => {
-                  const thumbnail =
-                    ep.thumbnail_url ||
-                    ep.banner_url ||
-                    "/thumbnail.svg";
+                {season.children?.length > 0 && (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                    {season.children.map((ep) => {
+                      const thumbnail =
+                        ep.thumbnail_url ||
+                        ep.banner_url ||
+                        "/thumbnail.svg";
 
-                  return (
-                    <div
-                      key={ep.id}
-                      className={`group relative bg-neutral-700   shadow-md hover:shadow-lg transition-shadow ${ep.ingest_status === 'ready' ? 'cursor-pointer' : ''}`}
-                      // onClick={() => {
-                      //   if (ep.ingest_status === 'ready') {
-                      //     setPlayingEpisode(ep);
-                      //   }
-                      // }}
-                    >
-                 
-<div
-  onClick={(e) => {
-    e.stopPropagation();
+                      return (
+                        <div
+                          key={ep.id}
+                          className={`group relative bg-neutral-700   shadow-md hover:shadow-lg transition-shadow ${ep.ingest_status === 'ready' ? 'cursor-pointer' : ''}`}
+                        // onClick={() => {
+                        //   if (ep.ingest_status === 'ready') {
+                        //     setPlayingEpisode(ep);
+                        //   }
+                        // }}
+                        >
 
-    if (ep.ingest_status !== "ready") {
-      toast.error("Video is not ready yet");
-      return;
-    }
+                          <div
+                            onClick={(e) => {
+                              e.stopPropagation();
 
-    window.open(
-      `${FRONTEND_BASE}admin/watch/${ep.id}?media_type=episode`,
-      "_blank"
-    );
-  }}
-  className="group block cursor-pointer"
+                              if (ep.ingest_status !== "ready") {
+                                toast.error("Video is not ready yet");
+                                return;
+                              }
+
+                              window.open(
+                                `${FRONTEND_BASE}admin/watch/${ep.id}?media_type=episode`,
+                                "_blank"
+                              );
+                            }}
+                            className="group block cursor-pointer"
+                          >
+                            <div className="relative aspect-video bg-gray-700 overflow-hidden rounded-lg">
+                              <img
+                                src={thumbnail || "/thumbnail.svg"}
+                                alt={ep.title}
+                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                              />
+
+                              {/* Play Button Overlay */}
+                            {/* Play Button Overlay */}
+<div className={`absolute inset-0 flex items-center justify-center bg-black/30 transition-opacity
+  ${ep.ingest_status === "processing" 
+    ? "opacity-100"           // always visible when processing
+    : "opacity-0 group-hover:opacity-100"  // hover-only for ready
+  }`}
 >
-  <div className="relative aspect-video bg-gray-700 overflow-hidden rounded-lg">
-   <img
-  src={thumbnail || "/thumbnail.svg"}
-  alt={ep.title}
-  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-/>
-
-    {/* Play Button Overlay */}
-    <div className="absolute inset-0 flex items-center justify-center bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity">
-      {ep.ingest_status === "processing" ? (
-        <div className="text-xs flex flex-col items-center text-white">
-          <RoundLoader />
-          <span className="text-center mt-1">Processing</span>
-        </div>
-      ) : (
-        <div className="w-12 h-12 rounded-full bg-black/70 flex items-center justify-center">
-          <span className="text-white text-xl">▶</span>
-        </div>
-      )}
+  {ep.ingest_status === "processing" ? (
+    <div className="text-xs flex flex-col items-center text-white w-28">
+      <RoundLoader />
+      <span className="text-center mt-2 font-medium">
+        {transcodingMap?.[ep.id]?.phase || "Transcoding"}
+      </span>
+      <div className="w-full h-1.5 bg-white/20 rounded-full mt-2 overflow-hidden">
+        <div
+          className="h-full bg-blue-500 transition-all duration-500"
+          style={{
+            width: `${transcodingMap?.[ep.id]?.progress || 0}%`,
+          }}
+        />
+      </div>
+      <span className="text-[10px] mt-1 text-gray-300">
+        {transcodingMap?.[ep.id]?.progress || 0}%
+      </span>
     </div>
-
-    {/* Episode Number */}
-    <span className="absolute top-2 left-2 text-xs bg-black/70 px-2 py-1 rounded text-white">
-      Ep {ep.episode_number}
-    </span>
-
-    {/* Status Badge */}
-    <div className="absolute top-2 right-2">
-      {ep.ingest_status !== "ready" ? (
-        <span className="text-xs bg-orange-600 text-white rounded-full px-2 py-1">
-          {ep.ingest_status}
-        </span>
-      ) : (
-        <span
-          className={`text-xs rounded-full px-2 py-1 ${
-            ep.status === "published"
-              ? "bg-green-600 text-white"
-              : "bg-yellow-600 text-black"
-          }`}
-        >
-          {ep.status === "published" ? "Published" : "Ready"}
-        </span>
-      )}
+  ) : (
+    <div className="w-12 h-12 rounded-full bg-black/70 flex items-center justify-center">
+      <span className="text-white text-xl">▶</span>
     </div>
-  </div>
+  )}
 </div>
 
+                              {/* Episode Number */}
+                              <span className="absolute top-2 left-2 text-xs bg-black/70 px-2 py-1 rounded text-white">
+                                Ep {ep.episode_number}
+                              </span>
 
-                      {/* Title and Info */}
-                      <div className="p-3">
-                        <div className="flex justify-between items-start">
-                          <div className="flex-1 min-w-0">
-                            <p className="text-sm font-medium text-white line-clamp-2 mb-1">
-                              {ep.title}
-                            </p>
-                            <p className="text-xs text-gray-400">
-                              Season {season.season_number}
-                            </p>
-                          </div>
-                          <div className="relative ml-2">
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setOpenMenuId(prev => (prev === ep.id ? null : ep.id));
-                              }}
-                              className="p-1 rounded hover:bg-neutral-500 transition-colors"
-                              title="Episode options"
-                            >
-                              <FiMoreVertical className="w-4 h-4 text-gray-300" />
-                            </button>
-
-                            {openMenuId === ep.id && (
-                              <div className="absolute right-0 mt-1 w-40 bg-neutral-600 border border-gray-500 rounded-md shadow-lg z-50">
-                                <button
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    setOpenMenuId(null);
-                                    setEditEpisode(ep);
-                                  }}
-                                  className="flex items-center gap-2 w-full px-3 py-2 text-sm hover:bg-neutral-500 transition-colors"
-                                >
-                                  <BiPencil className="w-4 h-4" />
-                                  Edit Episode
-                                </button>
-                                <button
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    setOpenMenuId(null);
-                                    setEpisodeToDelete(ep);
-                                  }}
-                                  className="flex items-center gap-2 w-full px-3 py-2 text-sm text-red-400 hover:bg-neutral-500 transition-colors"
-                                >
-                                  <BsTrash2 className="w-4 h-4" />
-                                  Delete Episode
-                                </button>
-                                {ep.ingest_status === 'ready' && ep.status !== 'published' && (
-                                  <button
-                                    onClick={async (e) => {
-                                      e.stopPropagation();
-                                      let pc = await publishContent(ep.id);
-                                      setOpenMenuId(null);
-                                    }}
-                                    className="flex items-center gap-2 w-full px-3 py-2 text-sm text-yellow-400 hover:bg-neutral-500 transition-colors"
+                              {/* Status Badge */}
+                              <div className="absolute top-2 right-2">
+                                {ep.ingest_status !== "ready" ? (
+                                  <span className="text-xs bg-orange-600 text-white rounded-full px-2 py-1">
+                                    {ep.ingest_status}
+                                  </span>
+                                ) : (
+                                  <span
+                                    className={`text-xs rounded-full px-2 py-1 ${ep.status === "published"
+                                        ? "bg-green-600 text-white"
+                                        : "bg-yellow-600 text-black"
+                                      }`}
                                   >
-                                    <BiCheck className="w-4 h-4" />
-                                    Publish
-                                  </button>
+                                    {ep.status === "published" ? "Published" : "Ready"}
+                                  </span>
                                 )}
                               </div>
-                            )}
+                            </div>
+                          </div>
+
+
+                          {/* Title and Info */}
+                          <div className="p-3">
+                            <div className="flex justify-between items-start">
+                              <div className="flex-1 min-w-0">
+                                <p className="text-sm font-medium text-white line-clamp-2 mb-1">
+                                  {ep.title}
+                                </p>
+                                <p className="text-xs text-gray-400">
+                                  Season {season.season_number}
+                                </p>
+                              </div>
+                              <div className="relative ml-2">
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setOpenMenuId(prev => (prev === ep.id ? null : ep.id));
+                                  }}
+                                  className="p-1 rounded hover:bg-neutral-500 transition-colors"
+                                  title="Episode options"
+                                >
+                                  <FiMoreVertical className="w-4 h-4 text-gray-300" />
+                                </button>
+
+                                {openMenuId === ep.id && (
+                                  <div className="absolute right-0 mt-1 w-40 bg-neutral-600 border border-gray-500 rounded-md shadow-lg z-50">
+                                    <button
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        setOpenMenuId(null);
+                                        setEditEpisode(ep);
+                                      }}
+                                      className="flex items-center gap-2 w-full px-3 py-2 text-sm hover:bg-neutral-500 transition-colors"
+                                    >
+                                      <BiPencil className="w-4 h-4" />
+                                      Edit Episode
+                                    </button>
+                                    <button
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        setOpenMenuId(null);
+                                        setEpisodeToDelete(ep);
+                                      }}
+                                      className="flex items-center gap-2 w-full px-3 py-2 text-sm text-red-400 hover:bg-neutral-500 transition-colors"
+                                    >
+                                      <BsTrash2 className="w-4 h-4" />
+                                      Delete Episode
+                                    </button>
+                                    {ep.ingest_status === 'ready' && ep.status !== 'published' && (
+                                      <button
+                                        onClick={async (e) => {
+                                          e.stopPropagation();
+                                          let pc = await publishContent(ep.id);
+                                          setOpenMenuId(null);
+                                        }}
+                                        className="flex items-center gap-2 w-full px-3 py-2 text-sm text-yellow-400 hover:bg-neutral-500 transition-colors"
+                                      >
+                                        <BiCheck className="w-4 h-4" />
+                                        Publish
+                                      </button>
+                                    )}
+                                  </div>
+                                )}
+                              </div>
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    </div>
-                  );
-                })}
+                      );
+                    })}
+                  </div>
+                )}
+
+                {/* Add Episode */}
+                <button
+                  className="mt-4 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-md transition-colors flex items-center gap-2"
+                  onClick={() => setShowAddEpisode(true)}
+                >
+                  <span>+</span> Add New Episode
+                </button>
+
+                {/* Add Episode Modal */}
+                {showAddEpisode && (
+                  <CE
+                    setContent={setSeriesList}
+                    content={null}
+                    onClose={() => {
+                      refreshSeason(season.id, series.id);
+                      setShowAddEpisode(false)
+                    }}
+                    onSuccess={() => {
+                      refreshSeason(season.id, series.id);
+                      setShowAddEpisode(false)
+                    }}
+                    contentType={'episode'}
+                    parentId={season?.id}
+                    startTranscodingListener={startTranscodingListener}
+                    seasonNumber={(Number(season?.children?.length) || 0) + 1}
+                  />
+                )}
               </div>
-            )}
-
-            {/* Add Episode */}
-            <button
-              className="mt-4 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-md transition-colors flex items-center gap-2"
-              onClick={() => setShowAddEpisode(true)}
-            >
-              <span>+</span> Add New Episode
-            </button>
-
-            {/* Add Episode Modal */}
-            {showAddEpisode && (
-              <CE
-                setContent={setSeriesList}
-                content={null}
-                onClose={() => {
-                  refreshSeason(season.id, series.id);
-                  setShowAddEpisode(false)}}
-                onSuccess={() => {
-                  refreshSeason(season.id, series.id);
-                  setShowAddEpisode(false)}}
-                contentType={'episode'}
-                parentId={season?.id}
-                seasonNumber={(Number(season?.children?.length) || 0) + 1}
-              />
-            )}
-          </div>
-        </div>
-      )}
-      {playingEpisode && (
-        <EpisodePlayerModal
-          episode={playingEpisode}
-          onClose={() => setPlayingEpisode(null)}
-        />
-      )}
-      {editSeason && <CE
-        setContent={setSeriesList}
-        content={editSeason}
-        onClose={() => setEditSeason(null)}
-        onSuccess={() => setEditSeason(null)}
-        contentType={'season'}
-        parentId={series?.id}
-        seasonNumber={(Number(series?.children?.length) || 0) + 1}
-      />}
-      {editEpisode && <CE
-        setContent={setSeriesList}
-        content={editEpisode}
-        onClose={() => {setEditEpisode(null)
-refreshSeason(season.id, series.id);
-
-        }}
-        onSuccess={() => {setEditEpisode(null)
-refreshSeason(season.id, series.id);
-
-        }}
-        contentType={'episode'}
-        parentId={season?.id}
-        seasonNumber={(Number(season?.children?.length) || 0) + 1}
-      />}
-      {episodeToDelete && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70">
-          <div className="bg-neutral-900 rounded-xl p-6 w-full max-w-sm">
-            <h3 className="text-lg font-semibold mb-2">
-              Delete Episode?
-            </h3>
-            <p className="text-sm text-gray-400 mb-4">
-              Are you sure you want to delete{" "}
-              <span className="font-medium text-white">
-                {episodeToDelete.title}
-              </span>
-              ? This action cannot be undone.
-            </p>
-
-            <div className="flex justify-end gap-3">
-              <button
-                onClick={() => setEpisodeToDelete(null)}
-                className="px-4 py-2 rounded bg-neutral-800 hover:bg-gray-700"
-              >
-                Cancel
-              </button>
-              <button
-              disabled={deleting}
-                onClick={async () => {
-                  setDeleting(true)
-                  let contentDeletion = await deleteContent(episodeToDelete.id)
-                  setDeleting(false)
-                  
-                  if (contentDeletion == 204) {
-                    setSeriesList((prev: Content[]) =>
-                      prev.map((series: Content) => ({
-                        ...series,
-                        children: series.children?.map((s: Content) =>
-                          s.id === season.id
-                            ? {
-                              ...season,
-                              children: (s.children || []).filter(
-                                (child: Content) => child.id !== episodeToDelete.id
-                              ),
-                            }
-                            : season
-                        ),
-                      }))
-                    );
-
-                    toast.success(`${episodeToDelete.title} is deleted successfully`)
-                  }
-                  else {
-                    toast.success(`Error deleting ${episodeToDelete.title}`)
-
-                  }
-                  setEpisodeToDelete(null);
-                }}
-                className="px-4 py-2 rounded bg-red-600 hover:bg-red-700"
-              >
-                {deleting?'Deleting...':'Delete'}
-              </button>
             </div>
-          </div>
-        </div>
-      )}
-      {seasonToDelete && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70">
-          <div className="bg-neutral-900 rounded-xl p-6 w-full max-w-sm">
-            <h3 className="text-lg font-semibold mb-2">
-              Delete Season?
-            </h3>
-            <p className="text-sm text-gray-400 mb-4">
-              Are you sure you want to delete{" "}
-              <span className="font-medium text-white">
-                {seasonToDelete.title}
-              </span>
-              ? This action cannot be undone.
-            </p>
+          )}
+          {playingEpisode && (
+            <EpisodePlayerModal
+              episode={playingEpisode}
+              onClose={() => setPlayingEpisode(null)}
+            />
+          )}
+          {editSeason && <CE
+            setContent={setSeriesList}
+            content={editSeason}
+            onClose={() => setEditSeason(null)}
+            onSuccess={() => setEditSeason(null)}
+            contentType={'season'}
+            startTranscodingListener={startTranscodingListener}
 
-            <div className="flex justify-end gap-3">
-              <button
-                onClick={() => setSeasonToDelete(null)}
-                className="px-4 py-2 rounded bg-neutral-800 hover:bg-gray-700"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={async () => {
-                  let contentDeletion = await deleteContent(seasonToDelete.id)
-                  if (contentDeletion == 204) {
+            parentId={series?.id}
+            seasonNumber={(Number(series?.children?.length) || 0) + 1}
+          />}
+          {editEpisode && <CE
+            setContent={setSeriesList}
+            content={editEpisode}
+            onClose={() => {
+              setEditEpisode(null)
+              refreshSeason(season.id, series.id);
 
-                    setSeriesList((prev: Content[]) =>
-                      prev.map(s =>
-                        s.id == series.id
-                          ? {
-                            ...s,
-                            children: (s.children || []).filter(
-                              (child: Content) => child.id !== seasonToDelete.id
+            }}
+            onSuccess={() => {
+              setEditEpisode(null)
+              refreshSeason(season.id, series.id);
+
+            }}
+            startTranscodingListener={startTranscodingListener}
+            contentType={'episode'}
+            parentId={season?.id}
+            seasonNumber={(Number(season?.children?.length) || 0) + 1}
+          />}
+          {episodeToDelete && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70">
+              <div className="bg-neutral-900 rounded-xl p-6 w-full max-w-sm">
+                <h3 className="text-lg font-semibold mb-2">
+                  Delete Episode?
+                </h3>
+                <p className="text-sm text-gray-400 mb-4">
+                  Are you sure you want to delete{" "}
+                  <span className="font-medium text-white">
+                    {episodeToDelete.title}
+                  </span>
+                  ? This action cannot be undone.
+                </p>
+
+                <div className="flex justify-end gap-3">
+                  <button
+                    onClick={() => setEpisodeToDelete(null)}
+                    className="px-4 py-2 rounded bg-neutral-800 hover:bg-gray-700"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    disabled={deleting}
+                    onClick={async () => {
+                      setDeleting(true)
+                      let contentDeletion = await deleteContent(episodeToDelete.id)
+                      setDeleting(false)
+
+                      if (contentDeletion == 204) {
+                        setSeriesList((prev: Content[]) =>
+                          prev.map((series: Content) => ({
+                            ...series,
+                            children: series.children?.map((s: Content) =>
+                              s.id === season.id
+                                ? {
+                                  ...season,
+                                  children: (s.children || []).filter(
+                                    (child: Content) => child.id !== episodeToDelete.id
+                                  ),
+                                }
+                                : season
                             ),
-                          }
-                          : s
-                      )
-                    );
-                    toast.success(`${seasonToDelete.title} is deleted successfully`)
-                  }
-                  else {
-                    toast.success(`Error deleting ${seasonToDelete.title}`)
+                          }))
+                        );
 
-                  }
-                  setSeasonToDelete(null);
-                }}
-                className="px-4 py-2 rounded bg-red-600 hover:bg-red-700"
-              >
-                Delete
-              </button>
+                        toast.success(`${episodeToDelete.title} is deleted successfully`)
+                      }
+                      else {
+                        toast.success(`Error deleting ${episodeToDelete.title}`)
+
+                      }
+                      setEpisodeToDelete(null);
+                    }}
+                    className="px-4 py-2 rounded bg-red-600 hover:bg-red-700"
+                  >
+                    {deleting ? 'Deleting...' : 'Delete'}
+                  </button>
+                </div>
+              </div>
             </div>
-          </div>
-        </div>
-      )}
+          )}
+          {seasonToDelete && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70">
+              <div className="bg-neutral-900 rounded-xl p-6 w-full max-w-sm">
+                <h3 className="text-lg font-semibold mb-2">
+                  Delete Season?
+                </h3>
+                <p className="text-sm text-gray-400 mb-4">
+                  Are you sure you want to delete{" "}
+                  <span className="font-medium text-white">
+                    {seasonToDelete.title}
+                  </span>
+                  ? This action cannot be undone.
+                </p>
 
-    </div>
-    }</>
+                <div className="flex justify-end gap-3">
+                  <button
+                    onClick={() => setSeasonToDelete(null)}
+                    className="px-4 py-2 rounded bg-neutral-800 hover:bg-gray-700"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={async () => {
+                      let contentDeletion = await deleteContent(seasonToDelete.id)
+                      if (contentDeletion == 204) {
+
+                        setSeriesList((prev: Content[]) =>
+                          prev.map(s =>
+                            s.id == series.id
+                              ? {
+                                ...s,
+                                children: (s.children || []).filter(
+                                  (child: Content) => child.id !== seasonToDelete.id
+                                ),
+                              }
+                              : s
+                          )
+                        );
+                        toast.success(`${seasonToDelete.title} is deleted successfully`)
+                      }
+                      else {
+                        toast.success(`Error deleting ${seasonToDelete.title}`)
+
+                      }
+                      setSeasonToDelete(null);
+                    }}
+                    className="px-4 py-2 rounded bg-red-600 hover:bg-red-700"
+                  >
+                    Delete
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+        </div>
+      }</>
   );
 }
 
 
 
- 
- 
+
+
 

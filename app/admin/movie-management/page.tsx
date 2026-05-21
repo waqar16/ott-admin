@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { Content, ContentFilters, ApiError, Rendition } from '@/lib/types/content';
 import { listContent, getContent, getRenditions, getStreamingUrl, publishContent } from '@/lib/contentApi';
@@ -19,6 +19,12 @@ import { FiTablet } from 'react-icons/fi';
 import ContentCard from '@/components/Content/ContentCard';
 import AdminContentHelpPanel from '@/components/admin/content/AdminContentHelpPanel';
 import { varela_round } from '@/app/layout';
+export interface TranscodingProgress {
+  progress: number;
+  phase: string;
+  status: string;
+  error?: boolean;
+}
 function formatBitrate(bitrate: number): string {
   if (bitrate >= 1000000) {
     return `${(bitrate / 1000000).toFixed(1)} Mbps`;
@@ -28,6 +34,9 @@ function formatBitrate(bitrate: number): string {
   return `${bitrate} bps`;
 }
 export default function ContentManagementPage() {
+  const [transcodingMap, setTranscodingMap] = useState<
+  Record<string, TranscodingProgress>
+>({});
   // TODO: Add proper authentication check when NextAuth is ready
   // For now, allow access to admin pages
   const pathname = usePathname()
@@ -65,6 +74,94 @@ const [page, setPage] = useState(1);
 const [totalCount, setTotalCount] = useState(0);
 const [hasNext, setHasNext] = useState(false);
 const [hasPrev, setHasPrev] = useState(false);
+const sseConnections = useRef<Record<string, EventSource>>({});
+const startTranscodingListener = (contentId: string) => {
+  // Prevent duplicate listeners
+  if (sseConnections.current[contentId]) {
+    return;
+  }
+
+  const es = new EventSource(
+    `http://3.236.253.230/api/v1/content/transcoding-progress/${contentId}`
+  );
+
+  sseConnections.current[contentId] = es;
+
+  es.onopen = () => {
+    console.log("SSE Connected:", contentId);
+  };
+
+  es.onmessage = (event) => {
+    if (event.data === "ping") return;
+
+    try {
+      console.log("SSE MESSAGE:", event.data);
+
+      const data = JSON.parse(event.data);
+
+      setTranscodingMap((prev) => ({
+        ...prev,
+        [contentId]: {
+          progress: data.progress ?? 0,
+          phase: data.phase,
+          status: data.status,
+        },
+      }));
+
+      if (
+        data.status === "COMPLETE" ||
+        data.status === "FAILED"
+      ) {
+         if (data.status === "COMPLETE") {
+    setContent((prev) =>
+      prev.map((item) =>
+        item.id === contentId
+          ? {
+              ...item,
+              status: "ready",
+              ingest_status: "ready",
+            }
+          : item
+      )
+    );
+
+    toast.success("Transcoding completed");
+  }
+        es.close();
+
+        delete sseConnections.current[contentId];
+
+        setTimeout(() => {
+          setTranscodingMap((prev) => {
+            const updated = { ...prev };
+            delete updated[contentId];
+            return updated;
+          });
+        }, 3000);
+      }
+    } catch (err) {
+      console.error("SSE Parse Error", err);
+    }
+  };
+
+  es.onerror = (err) => {
+    console.error("SSE Error", err);
+
+    setTranscodingMap((prev) => ({
+      ...prev,
+      [contentId]: {
+        ...prev[contentId],
+        error: true,
+        status: "FAILED",
+        phase: "FAILED",
+      },
+    }));
+
+    es.close();
+
+    delete sseConnections.current[contentId];
+  };
+};
   const fetchContent = useCallback(async () => {
     try {
       setLoading(true);
@@ -140,7 +237,13 @@ const [hasPrev, setHasPrev] = useState(false);
 
 
 
-
+useEffect(() => {
+  return () => {
+    Object.values(sseConnections.current).forEach((es) => {
+      es.close();
+    });
+  };
+}, []);
   return (
     <div className={`min-h-screen   text-white `}>
       {/* Header */}
@@ -194,14 +297,15 @@ const [hasPrev, setHasPrev] = useState(false);
              <> <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
 
                 {content && content.map((item) => (
-                  <ContentCard
-                    key={item.id}
-                    item={item}
-                    handleViewDetails={handleViewDetails}
-                    handleEdit={handleEdit}
-                    publishContent={publishContent}
-                    fetchContent={fetchContent} 
-                  />
+                 <ContentCard
+  key={item.id}
+  item={item}
+  transcodingProgress={transcodingMap[item.id]}
+  handleViewDetails={handleViewDetails}
+  handleEdit={handleEdit}
+  publishContent={publishContent}
+  fetchContent={fetchContent}
+/>
                 ))}
 
 
@@ -242,6 +346,7 @@ const [hasPrev, setHasPrev] = useState(false);
           setContent={setContent}
           onClose={handleEditorClose}
           onSuccess={handleEditorSuccess}
+          startTranscodingListener={startTranscodingListener}
           contentType={pathname.includes('movie') ? 'movie' :
             pathname.includes('document') ? 'documentary' :
               pathname.includes('trailer') ? 'trailer' :
