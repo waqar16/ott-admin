@@ -1,151 +1,147 @@
-"use client" 
-import { updateUser, createUserType, getUsers, User } from "@/lib/userApi"; 
-import { useEffect, useState } from "react";
-import { BiCross, BiX } from "react-icons/bi";
-import { toast } from "sonner";
-import { Skeleton } from "three";
+'use client'
+
+import React, { useState } from 'react'
+import { updateUser, User } from '@/lib/userApi'
+import { toast } from 'sonner'
 
 type EditUserProps = {
-  user: User ;
-  setEditUser: React.Dispatch<React.SetStateAction<User | null>>;
-  setUsers:React.Dispatch<React.SetStateAction<User[]>>;
-};
+  user: User
+  setEditUser: React.Dispatch<React.SetStateAction<User | null>>
+  setUsers: React.Dispatch<React.SetStateAction<User[]>>
+}
 
-export default function EditUser({ setEditUser,user,setUsers }: EditUserProps) {
-  const [form, setForm] = useState<User >({
-    name: user.name,
-    email: user.email, 
-    role: user.role, 
-    status: user.status,
-    is_active:user.is_active
-  }); 
-  const [errors, setErrors] = useState<any>({});
+export default function EditUser({ setEditUser, user, setUsers }: EditUserProps) {
+  const [form, setForm] = useState<User>({
+    name: user.name || '',
+    email: user.email || '',
+    role: user.role || 'user',
+    status: user.status || 'active',
+    is_active: user.is_active ?? true,
+  })
+  const [errors, setErrors] = useState<any>({})
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false)
 
   // Validation function
   const validate = () => {
-    let temp: any = {};
+    let temp: any = {}
 
-    if (!form.name.trim()) temp.name = "Full name is required.";
-    if (!form.email.trim()) temp.email = "Email is required.";
-    else if (!/\S+@\S+\.\S+/.test(form.email))
-      temp.email = "Invalid email format.";
+    if (!form.name || !form.name.trim()) temp.name = 'Full name is required.'
+    if (!form.email || !form.email.trim()) temp.email = 'Email is required.'
+    else if (!/\S+@\S+\.\S+/.test(form.email)) temp.email = 'Invalid email format.'
 
-    
-    if (!form.role) temp.role = "Please select a role.";
-    // if (!form.subscription) temp.subscription = "Please select subscription.";
+    if (!form.role) temp.role = 'Please select a role.'
 
-    setErrors(temp);
-    return Object.keys(temp).length === 0;
-  };
+    setErrors(temp)
+    return Object.keys(temp).length === 0
+  }
 
-  const submitForm = async(e: any) => {
-    e.preventDefault();
+  const submitForm = async (e: React.FormEvent) => {
+    e.preventDefault()
 
-    if (!validate()) return;
+    if (!validate()) return
 
-    let userCreation = await updateUser({id:user.id,...form});
-    console.log("userCreation",userCreation)
-    if(userCreation.msg == "User updated successfully") {
-        setEditUser(null);
-      toast.success(userCreation.msg)
-     setUsers((prev) =>
-    prev.map((u) =>
-      u.id == user.id
-        ? {id:user.id,...form} // 👈 update only this user
-        : u
-    )
-  ); 
+    try {
+      setIsSubmitting(true)
+      let userCreation = await updateUser({ id: user.id, ...form })
+      console.log('userCreation', userCreation)
+
+      if (userCreation && (userCreation.msg === 'User updated successfully' || userCreation.status === 200 || userCreation.id)) {
+        setEditUser(null)
+        toast.success(userCreation.msg || 'User saved successfully')
+        setUsers((prev) => {
+          const exists = prev.some((u) => u.id === user.id)
+          if (exists) {
+            return prev.map((u) => (u.id === user.id ? { ...u, ...form } : u))
+          }
+          return [{ id: userCreation.id || Date.now(), ...form, created_at: new Date() }, ...prev]
+        })
+      } else {
+        toast.error(userCreation?.msg || 'Error occurred while updating user')
+      }
+    } catch (err: any) {
+      console.error('Error saving user:', err)
+      toast.error('Error occurred while updating user')
+    } finally {
+      setIsSubmitting(false)
     }
-    else{
-            toast.error("Error Occurred while updating")
-
-    } 
-  };
+  }
 
   return (
-    <div className="p-2 md:p-6 w-full mx-auto text-white   md:mt-0 mt-16">
-      <div className="flex flex-row items-start w-full justify-between">
-        <div className="fex flex-col items-start ">
-          <h1 className="text-3xl font-bold mb-2">Create New User</h1>
-      <p className="text-neutral-400 mb-6">Fill details to create a new user.</p>
-        </div>
-        <BiX size={40} onClick={()=>setEditUser(null)} className="cursor-pointer"/>
-      </div>
-
-      <form
-        onSubmit={submitForm}
-        className="space-y-6 bg-neutral-800 p-6 rounded-xl border border-neutral-700 shadow-xl"
-      >
-        {/* Name */}
-        <div>
-          <label className="block mb-1 text-gray-300">Full Name</label>
+    <div className="h-full flex flex-col justify-between overflow-y-auto p-6 sm:p-8 bg-background text-foreground space-y-6">
+      <form onSubmit={submitForm} className="space-y-6 flex-1">
+        {/* Full Name */}
+        <div className="space-y-1.5">
+          <label className="block text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+            Full Name <span className="text-rose-500">*</span>
+          </label>
           <input
             type="text"
-            className="w-full p-3 bg-neutral-700 rounded-lg outline-none border border-gray-600 focus:border-blue-500"
+            className="w-full px-3.5 py-2.5 bg-background border border-input text-foreground rounded-lg text-sm outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition-all placeholder:text-muted-foreground"
             placeholder="John Doe"
             value={form.name}
             onChange={(e) => setForm({ ...form, name: e.target.value })}
           />
-          {errors.name && (
-            <p className="text-red-400 text-sm mt-1">{errors.name}</p>
-          )}
+          {errors.name && <p className="text-rose-500 text-xs mt-1 font-medium">{errors.name}</p>}
         </div>
 
         {/* Email */}
-        <div>
-          <label className="block mb-1 text-gray-300">Email Address</label>
+        <div className="space-y-1.5">
+          <label className="block text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+            Email Address <span className="text-rose-500">*</span>
+          </label>
           <input
             type="email"
-            className="w-full p-3 bg-neutral-700 rounded-lg outline-none border border-gray-600 focus:border-blue-500"
+            className="w-full px-3.5 py-2.5 bg-background border border-input text-foreground rounded-lg text-sm outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition-all placeholder:text-muted-foreground"
             placeholder="example@email.com"
             value={form.email}
             onChange={(e) => setForm({ ...form, email: e.target.value })}
           />
-          {errors.email && (
-            <p className="text-red-400 text-sm mt-1">{errors.email}</p>
-          )}
+          {errors.email && <p className="text-rose-500 text-xs mt-1 font-medium">{errors.email}</p>}
         </div>
 
-       
+        {/* Grid for Active Status & Status enum */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          {/* Active Status boolean */}
+          <div className="space-y-1.5">
+            <label className="block text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              Account State
+            </label>
+            <select
+              className="w-full px-3.5 py-2.5 bg-background border border-input text-foreground rounded-lg text-sm outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition-all"
+              value={String(form.is_active)}
+              onChange={(e) => setForm({ ...form, is_active: e.target.value === 'true' })}
+            >
+              <option value="true">Active</option>
+              <option value="false">Inactive</option>
+            </select>
+          </div>
 
-        {/* Role */}
-        <div>
-          <label className="block mb-1 text-gray-300">Active Status</label>
-          <select
-            className="w-full p-3 bg-neutral-700 rounded-lg border border-gray-600 focus:border-blue-500"
-            value={String(form.is_active)}
-            onChange={(e) => setForm({ ...form, is_active: Boolean(e.target.value) })}
-          >
-            <option value="">Select role</option>
-            <option value={String(true)}>active</option>
-            <option value={String(false)}>inactive</option>
-          </select>
-
-          {errors.is_active && (
-            <p className="text-red-400 text-sm mt-1">{errors.is_active}</p>
-          )}
+          {/* Detailed Status */}
+          <div className="space-y-1.5">
+            <label className="block text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              Status Tag
+            </label>
+            <select
+              className="w-full px-3.5 py-2.5 bg-background border border-input text-foreground rounded-lg text-sm outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition-all"
+              value={form.status}
+              onChange={(e) =>
+                setForm({ ...form, status: e.target.value as 'active' | 'banned' | 'suspended' })
+              }
+            >
+              <option value="active">Active</option>
+              <option value="banned">Banned</option>
+              <option value="suspended">Suspended</option>
+            </select>
+          </div>
         </div>
-        <div>
-          <label className="block mb-1 text-gray-300">Status</label>
-          <select
-            className="w-full p-3 bg-neutral-700 rounded-lg border border-gray-600 focus:border-blue-500"
-            value={String(form.status)}
-            onChange={(e) => setForm({ ...form, status: e.target.value })}
-          >
-            <option value="">Select role</option>
-            <option value="active">active</option>
-              <option value="banned">banned</option>
-              <option value="suspended">suspended</option> 
-          </select>
 
-          {errors.is_active && (
-            <p className="text-red-400 text-sm mt-1">{errors.is_active}</p>
-          )}
-        </div>
-<div>
-          <label className="block mb-1 text-gray-300">User Role</label>
+        {/* User Role */}
+        <div className="space-y-1.5">
+          <label className="block text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+            User Role <span className="text-rose-500">*</span>
+          </label>
           <select
-            className="w-full p-3 bg-neutral-700 rounded-lg border border-gray-600 focus:border-blue-500"
+            className="w-full px-3.5 py-2.5 bg-background border border-input text-foreground rounded-lg text-sm outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition-all"
             value={form.role}
             onChange={(e) => setForm({ ...form, role: e.target.value })}
           >
@@ -153,41 +149,33 @@ export default function EditUser({ setEditUser,user,setUsers }: EditUserProps) {
             <option value="user">User</option>
             <option value="admin">Admin</option>
             <option value="beta_tester">Tester</option>
+            <option value="creator">Creator</option>
           </select>
-
-          {errors.role && (
-            <p className="text-red-400 text-sm mt-1">{errors.role}</p>
-          )}
+          {errors.role && <p className="text-rose-500 text-xs mt-1 font-medium">{errors.role}</p>}
         </div>
-        {/* Subscription */}
-        {/* <div>
-          <label className="block mb-1 text-gray-300">Subscription</label>
-          <select
-            className="w-full p-3 bg-neutral-700 rounded-lg border border-gray-600 focus:border-blue-500"
-            value={form.subscription}
-            onChange={(e) =>
-              setForm({ ...form, subscription: e.target.value })
-            }
+
+        {/* Footer Actions */}
+        <div className="pt-6 border-t border-border/60 flex items-center justify-end gap-3">
+          <button
+            type="button"
+            onClick={() => setEditUser(null)}
+            className="px-4 py-2.5 text-sm font-semibold rounded-lg text-foreground bg-accent hover:bg-accent/80 border border-border transition-all cursor-pointer"
           >
-            <option value="">Select subscription</option>
-            <option value="Free">Free</option>
-            <option value="Premium">Premium</option>
-            <option value="VIP">VIP</option>
-          </select>
-
-          {errors.subscription && (
-            <p className="text-red-400 text-sm mt-1">{errors.subscription}</p>
-          )}
-        </div> */}
-
-        {/* Submit */}
-        <button
-          type="submit"
-          className="w-full p-3 bg-[var(--main-color)] rounded-lg text-lg font-semibold hover:bg-blue-700"
-        >
-          Update User
-        </button>
+            Cancel
+          </button>
+          <button
+            type="submit"
+            disabled={isSubmitting}
+            className="px-5 py-2.5 text-sm font-semibold rounded-lg text-primary-foreground bg-primary hover:bg-primary/90 active:scale-[0.98] transition-all shadow-sm disabled:opacity-60 cursor-pointer"
+          >
+            {isSubmitting
+              ? 'Saving...'
+              : user.id
+              ? 'Update User'
+              : 'Create User'}
+          </button>
+        </div>
       </form>
     </div>
-  );
+  )
 }

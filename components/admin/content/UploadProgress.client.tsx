@@ -1,24 +1,24 @@
-'use client';
+'use client'
 
 interface UploadProgressProps {
-  progress: number;
-  status: string;
-  showRetry?: boolean;
-  onRetry?: () => void;
+  progress: number
+  status: string
+  showRetry?: boolean
+  onRetry?: () => void
 }
 
-export default function UploadProgress({ 
-  progress, 
-  status, 
+export default function UploadProgress({
+  progress,
+  status,
   showRetry = false,
-  onRetry 
+  onRetry,
 }: UploadProgressProps) {
   return (
     <div className="bg-neutral-900 rounded-lg p-4 space-y-3">
       {/* Progress Bar */}
       <div className="relative">
         <div className="h-4 bg-gray-600 rounded-full overflow-hidden">
-          <div 
+          <div
             className="h-full bg-blue-500 transition-all duration-300 ease-out"
             style={{ width: `${progress}%` }}
           />
@@ -32,14 +32,11 @@ export default function UploadProgress({
       <div className="flex items-center justify-between">
         <p className="text-sm text-gray-300">{status}</p>
         {showRetry && onRetry && (
-          <button
-            onClick={onRetry}
-            className="text-xs text-blue-400 hover:text-blue-300 underline"
-          >
+          <button onClick={onRetry} className="text-xs text-blue-400 hover:text-blue-300 underline">
             Retry
           </button>
         )}
       </div>
     </div>
-  );
+  )
 }

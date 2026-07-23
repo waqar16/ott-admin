@@ -9,6 +9,7 @@ This folder contains advanced video player components for the OTT platform with 
 An advanced HLS video player with adaptive bitrate streaming, quality selection UI, custom controls, and full keyboard accessibility.
 
 **Features:**
+
 - HLS.js integration for adaptive bitrate streaming
 - Automatic quality switching with manual override
 - Custom video controls (play/pause, seek, volume, fullscreen)
@@ -22,6 +23,7 @@ An advanced HLS video player with adaptive bitrate streaming, quality selection 
 - **Screen reader support**
 
 **Keyboard Controls:**
+
 - `Space` or `K` - Play/Pause
 - `←` (Left Arrow) or `J` - Seek backward 10 seconds
 - `→` (Right Arrow) or `L` - Seek forward 10 seconds
@@ -31,24 +33,25 @@ An advanced HLS video player with adaptive bitrate streaming, quality selection 
 - `F` - Toggle fullscreen
 
 **Props:**
+
 ```typescript
 interface VideoPlayerProps {
-  src: string;              // HLS stream URL (.m3u8)
-  poster?: string;          // Poster image URL
-  autoPlay?: boolean;       // Auto-play on load (default: false)
-  controls?: boolean;       // Show custom controls (default: true)
-  initialBitrate?: number;  // Starting quality level (-1 for auto)
-  onQualityChange?: (level: number, bitrate: number) => void;
-  onError?: (error: string) => void;
-  className?: string;
+  src: string // HLS stream URL (.m3u8)
+  poster?: string // Poster image URL
+  autoPlay?: boolean // Auto-play on load (default: false)
+  controls?: boolean // Show custom controls (default: true)
+  initialBitrate?: number // Starting quality level (-1 for auto)
+  onQualityChange?: (level: number, bitrate: number) => void
+  onError?: (error: string) => void
+  className?: string
 }
 ```
 
 **Usage Example:**
-```tsx
-import { VideoPlayer } from '@/players';
 
-<VideoPlayer
+```tsx
+import { VideoPlayer } from '@/players'
+;<VideoPlayer
   src="https://cdn.example.com/video.m3u8"
   poster="https://cdn.example.com/poster.jpg"
   autoPlay={false}
@@ -69,6 +72,7 @@ import { VideoPlayer } from '@/players';
 A VR/360° video player built with React Three Fiber and HLS.js for immersive content with WebXR support, Cardboard mode, and accessibility features.
 
 **Features:**
+
 - **WebXR immersive VR mode** (for compatible VR headsets)
 - **Google Cardboard mode toggle** (for mobile VR viewers)
 - 360° video playback mapped to inside-out sphere
@@ -85,12 +89,14 @@ A VR/360° video player built with React Three Fiber and HLS.js for immersive co
 - **VR mode detection and UI adaptation**
 
 **WebXR Support:**
+
 - Automatic detection of WebXR availability
 - "Enter VR" button when supported
 - Seamless transition to immersive VR mode
 - Works with Oculus Quest, HTC Vive, and other WebXR devices
 
 **Keyboard Controls:**
+
 - `Space` or `K` - Play/Pause
 - `←` (Left Arrow) or `J` - Seek backward 10 seconds
 - `→` (Right Arrow) or `L` - Seek forward 10 seconds
@@ -101,21 +107,23 @@ A VR/360° video player built with React Three Fiber and HLS.js for immersive co
 - `V` - Open VR mode menu
 
 **Props:**
+
 ```typescript
 interface VRPlayerProps {
-  src: string;              // HLS stream URL (.m3u8)
-  poster?: string;          // Poster image URL
-  is360?: boolean;          // Enable 360° mode (default: true)
-  isStereo?: boolean;       // Enable stereoscopic rendering (default: false)
-  initialBitrate?: number;  // Starting quality level (-1 for auto)
-  autoPlay?: boolean;       // Auto-play on load (default: false)
-  onQualityChange?: (level: number, bitrate: number) => void;
-  onError?: (error: string) => void;
-  className?: string;
+  src: string // HLS stream URL (.m3u8)
+  poster?: string // Poster image URL
+  is360?: boolean // Enable 360° mode (default: true)
+  isStereo?: boolean // Enable stereoscopic rendering (default: false)
+  initialBitrate?: number // Starting quality level (-1 for auto)
+  autoPlay?: boolean // Auto-play on load (default: false)
+  onQualityChange?: (level: number, bitrate: number) => void
+  onError?: (error: string) => void
+  className?: string
 }
 ```
 
 **Usage Example:**
+
 ```tsx
 import { VRPlayer } from '@/players';
 
@@ -148,6 +156,7 @@ import { VRPlayer } from '@/players';
 Both players are fully accessible with:
 
 ### ARIA Labels
+
 - All buttons have descriptive `aria-label` attributes
 - Current state announced (e.g., "Pause video" vs "Play video")
 - Keyboard shortcuts included in labels
@@ -155,18 +164,21 @@ Both players are fully accessible with:
 - Quality menu items with resolution and bitrate info
 
 ### Keyboard Navigation
+
 - All controls accessible via keyboard
 - Logical tab order
 - Standard media player shortcuts (Space, K, J, L, M, F)
 - Arrow keys for volume and seeking
 
 ### Screen Reader Support
+
 - Decorative icons marked with `aria-hidden="true"`
 - Interactive elements properly labeled
 - Menu roles for dropdowns
 - State changes announced via ARIA
 
 ### Visual Feedback
+
 - Clear focus indicators on all controls
 - Tooltips showing keyboard shortcuts
 - Progress bar with time display
@@ -175,10 +187,12 @@ Both players are fully accessible with:
 ## VR Mode Features
 
 ### WebXR Detection
+
 VRPlayer automatically detects WebXR support:
+
 ```typescript
 if (navigator.xr) {
-  const supported = await navigator.xr.isSessionSupported('immersive-vr');
+  const supported = await navigator.xr.isSessionSupported('immersive-vr')
 }
 ```
 
@@ -202,7 +216,9 @@ if (navigator.xr) {
    - Native VR headset integration
 
 ### VR Mode Indicator
+
 Top-right corner shows current mode:
+
 - "360° View | Drag to look around"
 - "📱 Cardboard" - Cardboard VR active
 - "🥽 VR Mode" - WebXR immersive active
@@ -218,6 +234,7 @@ Both players expect HLS streams in the following format:
 - **Adaptive Bitrate:** Multiple quality levels (optional but recommended)
 
 **Example HLS manifest structure:**
+
 ```
 master.m3u8
 ├── 1080p/
@@ -231,6 +248,7 @@ master.m3u8
 ## Stereoscopic Video Format
 
 For VRPlayer with `isStereo={true}`, videos must be encoded in **side-by-side** format:
+
 - Left eye view on the left half
 - Right eye view on the right half
 - Each eye receives 50% of the horizontal resolution
@@ -244,6 +262,7 @@ pnpm install
 ```
 
 **Dependencies:**
+
 - `hls.js` - HTTP Live Streaming
 - `@react-three/fiber` - React renderer for Three.js
 - `@react-three/drei` - Helper components
@@ -253,15 +272,17 @@ pnpm install
 ## Browser Support
 
 ### VideoPlayer
+
 - **Modern Browsers:** Chrome, Firefox, Edge, Opera (via HLS.js)
 - **Safari:** Native HLS support
 - **Mobile:** iOS Safari, Chrome Mobile, Firefox Mobile
 - **Accessibility:** Full keyboard and screen reader support
 
 ### VRPlayer
+
 - **Desktop:** Chrome, Firefox, Edge, Safari (WebGL required)
 - **Mobile:** Chrome Mobile, Safari iOS (WebGL required)
-- **VR Headsets:** 
+- **VR Headsets:**
   - WebXR: Oculus Quest, Meta Quest, HTC Vive, Valve Index
   - Cardboard: Any mobile device with gyroscope
 - **Accessibility:** Full keyboard and screen reader support
@@ -280,15 +301,18 @@ pnpm install
 ### VideoPlayer
 
 **Issue:** Video not playing
+
 - Check if the HLS URL is accessible
 - Verify CORS headers are set correctly
 - Check browser console for HLS.js errors
 
 **Issue:** Quality selection not appearing
+
 - Ensure HLS manifest has multiple quality levels
 - Check network tab to verify manifest is loading
 
 **Issue:** Keyboard controls not working
+
 - Ensure the player container has focus
 - Check for JavaScript errors in console
 - Verify no other handlers are preventing default
@@ -296,21 +320,25 @@ pnpm install
 ### VRPlayer
 
 **Issue:** 360° view not working
+
 - Verify WebGL is enabled in browser
 - Check if video texture is loading correctly
 - Ensure video element has `crossOrigin="anonymous"` for external sources
 
 **Issue:** Stereoscopic rendering incorrect
+
 - Verify video is in side-by-side format
 - Check that `isStereo={true}` is set
 - Ensure video aspect ratio is 2:1 for side-by-side content
 
 **Issue:** WebXR not detected
+
 - Verify device supports WebXR (use `chrome://webxr-internals`)
 - Check if HTTPS is enabled (required for WebXR)
 - Ensure browser has WebXR flag enabled
 
 **Issue:** Cardboard mode not activating
+
 - Check VR menu toggle button functionality
 - Verify `is360={true}` is set
 - Test on mobile device with gyroscope
@@ -340,6 +368,7 @@ pnpm install
 An advanced HLS video player with adaptive bitrate streaming, quality selection UI, and custom controls.
 
 **Features:**
+
 - HLS.js integration for adaptive bitrate streaming
 - Automatic quality switching with manual override
 - Custom video controls (play/pause, seek, volume, fullscreen)
@@ -350,24 +379,25 @@ An advanced HLS video player with adaptive bitrate streaming, quality selection 
 - Responsive design
 
 **Props:**
+
 ```typescript
 interface VideoPlayerProps {
-  src: string;              // HLS stream URL (.m3u8)
-  poster?: string;          // Poster image URL
-  autoPlay?: boolean;       // Auto-play on load (default: false)
-  controls?: boolean;       // Show custom controls (default: true)
-  initialBitrate?: number;  // Starting quality level (-1 for auto)
-  onQualityChange?: (level: number, bitrate: number) => void;
-  onError?: (error: string) => void;
-  className?: string;
+  src: string // HLS stream URL (.m3u8)
+  poster?: string // Poster image URL
+  autoPlay?: boolean // Auto-play on load (default: false)
+  controls?: boolean // Show custom controls (default: true)
+  initialBitrate?: number // Starting quality level (-1 for auto)
+  onQualityChange?: (level: number, bitrate: number) => void
+  onError?: (error: string) => void
+  className?: string
 }
 ```
 
 **Usage Example:**
-```tsx
-import { VideoPlayer } from '@/players';
 
-<VideoPlayer
+```tsx
+import { VideoPlayer } from '@/players'
+;<VideoPlayer
   src="https://cdn.example.com/video.m3u8"
   poster="https://cdn.example.com/poster.jpg"
   autoPlay={false}
@@ -388,6 +418,7 @@ import { VideoPlayer } from '@/players';
 A VR/360° video player built with React Three Fiber and HLS.js for immersive content.
 
 **Features:**
+
 - 360° video playback mapped to inside-out sphere
 - Stereoscopic 3D support (side-by-side format)
 - HLS.js integration for adaptive streaming
@@ -399,21 +430,23 @@ A VR/360° video player built with React Three Fiber and HLS.js for immersive co
 - Support for both 360° and standard video modes
 
 **Props:**
+
 ```typescript
 interface VRPlayerProps {
-  src: string;              // HLS stream URL (.m3u8)
-  poster?: string;          // Poster image URL
-  is360?: boolean;          // Enable 360° mode (default: true)
-  isStereo?: boolean;       // Enable stereoscopic rendering (default: false)
-  initialBitrate?: number;  // Starting quality level (-1 for auto)
-  autoPlay?: boolean;       // Auto-play on load (default: false)
-  onQualityChange?: (level: number, bitrate: number) => void;
-  onError?: (error: string) => void;
-  className?: string;
+  src: string // HLS stream URL (.m3u8)
+  poster?: string // Poster image URL
+  is360?: boolean // Enable 360° mode (default: true)
+  isStereo?: boolean // Enable stereoscopic rendering (default: false)
+  initialBitrate?: number // Starting quality level (-1 for auto)
+  autoPlay?: boolean // Auto-play on load (default: false)
+  onQualityChange?: (level: number, bitrate: number) => void
+  onError?: (error: string) => void
+  className?: string
 }
 ```
 
 **Usage Example:**
+
 ```tsx
 import { VRPlayer } from '@/players';
 
@@ -452,6 +485,7 @@ Both players expect HLS streams in the following format:
 - **Adaptive Bitrate:** Multiple quality levels (optional but recommended)
 
 **Example HLS manifest structure:**
+
 ```
 master.m3u8
 ├── 1080p/
@@ -465,6 +499,7 @@ master.m3u8
 ## Stereoscopic Video Format
 
 For VRPlayer with `isStereo={true}`, videos must be encoded in **side-by-side** format:
+
 - Left eye view on the left half
 - Right eye view on the right half
 - Each eye receives 50% of the horizontal resolution
@@ -478,6 +513,7 @@ pnpm install
 ```
 
 **Dependencies:**
+
 - `hls.js` - HTTP Live Streaming
 - `@react-three/fiber` - React renderer for Three.js
 - `@react-three/drei` - Helper components
@@ -487,11 +523,13 @@ pnpm install
 ## Browser Support
 
 ### VideoPlayer
+
 - **Modern Browsers:** Chrome, Firefox, Edge, Opera (via HLS.js)
 - **Safari:** Native HLS support
 - **Mobile:** iOS Safari, Chrome Mobile, Firefox Mobile
 
 ### VRPlayer
+
 - **Desktop:** Chrome, Firefox, Edge, Safari (WebGL required)
 - **Mobile:** Chrome Mobile, Safari iOS (WebGL required)
 - **VR Headsets:** Oculus Browser, Vive Browser (WebXR support)
@@ -509,22 +547,26 @@ pnpm install
 ### VideoPlayer
 
 **Issue:** Video not playing
+
 - Check if the HLS URL is accessible
 - Verify CORS headers are set correctly
 - Check browser console for HLS.js errors
 
 **Issue:** Quality selection not appearing
+
 - Ensure HLS manifest has multiple quality levels
 - Check network tab to verify manifest is loading
 
 ### VRPlayer
 
 **Issue:** 360° view not working
+
 - Verify WebGL is enabled in browser
 - Check if video texture is loading correctly
 - Ensure video element has `crossOrigin="anonymous"` for external sources
 
 **Issue:** Stereoscopic rendering incorrect
+
 - Verify video is in side-by-side format
 - Check that `isStereo={true}` is set
 - Ensure video aspect ratio is 2:1 for side-by-side content

@@ -7,6 +7,7 @@ This document provides comprehensive guidance for testing the Content Management
 ## Architecture
 
 ### Flow Diagram
+
 ```
 1. Admin creates content record (draft status)
    ↓
@@ -28,17 +29,20 @@ This document provides comprehensive guidance for testing the Content Management
 ### Key Components
 
 **Backend API Modules:**
+
 - `lib/types/content.ts` - TypeScript type definitions
 - `lib/contentApi.ts` - API client with all CRUD operations
 - `lib/uploadHelper.ts` - S3 presigned POST upload with progress tracking
 - `lib/mediaconvertWebhookHandler.ts` - Webhook parsing and validation
 
 **Frontend UI Components:**
+
 - `components/admin/content/ContentEditor.client.tsx` - Content creation and upload form
 - `components/admin/content/UploadProgress.client.tsx` - Upload progress display
 - `components/admin/content/RenditionsList.server.tsx` - Renditions display
 
 **Pages:**
+
 - `app/admin/content-management/page.tsx` - Main admin content management interface
 - `app/dev/content-upload-check/page.tsx` - Comprehensive API testing page
 
@@ -53,12 +57,14 @@ Base URL: `https://cmy7tz9t49.execute-api.us-east-1.amazonaws.com`
 **Description:** Create a new content record (initially in draft status).
 
 **Headers:**
+
 ```
 Authorization: Bearer <jwt_token>
 Content-Type: application/json
 ```
 
 **Request Body:**
+
 ```json
 {
   "title": "My Amazing Movie",
@@ -74,6 +80,7 @@ Content-Type: application/json
 ```
 
 **Response (201 Created):**
+
 ```json
 {
   "id": "content-123abc",
@@ -92,6 +99,7 @@ Content-Type: application/json
 ```
 
 **curl Example:**
+
 ```bash
 curl -X POST https://cmy7tz9t49.execute-api.us-east-1.amazonaws.com/content \
   -H "Authorization: Bearer YOUR_JWT_TOKEN" \
@@ -116,6 +124,7 @@ curl -X POST https://cmy7tz9t49.execute-api.us-east-1.amazonaws.com/content \
 **Description:** Retrieve a list of content with optional filtering.
 
 **Query Parameters:**
+
 - `status` - Filter by status (draft, processing, ready, published, failed)
 - `content_type` - Filter by content type (video, audio, image, vr_video, ar_experience)
 - `media_type` - Filter by media type (movie, series, short, documentary, music_video, podcast)
@@ -125,6 +134,7 @@ curl -X POST https://cmy7tz9t49.execute-api.us-east-1.amazonaws.com/content \
 - `limit` - Items per page (default: 20)
 
 **Response (200 OK):**
+
 ```json
 {
   "content": [
@@ -142,6 +152,7 @@ curl -X POST https://cmy7tz9t49.execute-api.us-east-1.amazonaws.com/content \
 ```
 
 **curl Example:**
+
 ```bash
 curl -X GET "https://cmy7tz9t49.execute-api.us-east-1.amazonaws.com/content?status=published&content_type=video" \
   -H "Authorization: Bearer YOUR_JWT_TOKEN"
@@ -156,6 +167,7 @@ curl -X GET "https://cmy7tz9t49.execute-api.us-east-1.amazonaws.com/content?stat
 **Description:** Retrieve detailed information about a specific content item, including assets and renditions.
 
 **Response (200 OK):**
+
 ```json
 {
   "id": "content-123abc",
@@ -182,6 +194,7 @@ curl -X GET "https://cmy7tz9t49.execute-api.us-east-1.amazonaws.com/content?stat
 ```
 
 **curl Example:**
+
 ```bash
 curl -X GET https://cmy7tz9t49.execute-api.us-east-1.amazonaws.com/content/content-123abc \
   -H "Authorization: Bearer YOUR_JWT_TOKEN"
@@ -196,6 +209,7 @@ curl -X GET https://cmy7tz9t49.execute-api.us-east-1.amazonaws.com/content/conte
 **Description:** Update content metadata (partial update supported).
 
 **Request Body:**
+
 ```json
 {
   "title": "Updated Title",
@@ -205,6 +219,7 @@ curl -X GET https://cmy7tz9t49.execute-api.us-east-1.amazonaws.com/content/conte
 ```
 
 **Response (200 OK):**
+
 ```json
 {
   "id": "content-123abc",
@@ -215,6 +230,7 @@ curl -X GET https://cmy7tz9t49.execute-api.us-east-1.amazonaws.com/content/conte
 ```
 
 **curl Example:**
+
 ```bash
 curl -X PATCH https://cmy7tz9t49.execute-api.us-east-1.amazonaws.com/content/content-123abc \
   -H "Authorization: Bearer YOUR_JWT_TOKEN" \
@@ -234,6 +250,7 @@ curl -X PATCH https://cmy7tz9t49.execute-api.us-east-1.amazonaws.com/content/con
 **Description:** Get S3 presigned POST URL and fields for direct browser upload.
 
 **Request Body:**
+
 ```json
 {
   "filename": "movie.mp4",
@@ -243,6 +260,7 @@ curl -X PATCH https://cmy7tz9t49.execute-api.us-east-1.amazonaws.com/content/con
 ```
 
 **Response (200 OK):**
+
 ```json
 {
   "asset_id": "asset-456def",
@@ -260,6 +278,7 @@ curl -X PATCH https://cmy7tz9t49.execute-api.us-east-1.amazonaws.com/content/con
 ```
 
 **curl Example:**
+
 ```bash
 curl -X POST https://cmy7tz9t49.execute-api.us-east-1.amazonaws.com/content/content-123abc/upload/init \
   -H "Authorization: Bearer YOUR_JWT_TOKEN" \
@@ -280,6 +299,7 @@ curl -X POST https://cmy7tz9t49.execute-api.us-east-1.amazonaws.com/content/cont
 **Description:** Upload file directly to S3 using presigned POST. Fields must be sent in **exact order** as provided.
 
 **Form Data (multipart/form-data):**
+
 ```
 key: uploads/content-123abc/asset-456def/movie.mp4
 AWSAccessKeyId: AKIAIOSFODNN7EXAMPLE
@@ -294,6 +314,7 @@ file: <binary file data>
 **Response (204 No Content):** S3 returns 204 on successful upload.
 
 **curl Example:**
+
 ```bash
 # First, get presigned POST data from /upload/init
 # Then upload to S3:
@@ -318,6 +339,7 @@ curl -X POST "https://my-bucket.s3.amazonaws.com/" \
 **⚠️ Security Note:** This endpoint should be removed or heavily restricted in production. Use S3 event notifications instead.
 
 **Request Body:**
+
 ```json
 {
   "asset_id": "asset-456def",
@@ -328,6 +350,7 @@ curl -X POST "https://my-bucket.s3.amazonaws.com/" \
 ```
 
 **Response (200 OK):**
+
 ```json
 {
   "id": "asset-456def",
@@ -340,6 +363,7 @@ curl -X POST "https://my-bucket.s3.amazonaws.com/" \
 ```
 
 **curl Example:**
+
 ```bash
 curl -X POST https://cmy7tz9t49.execute-api.us-east-1.amazonaws.com/content/content-123abc/upload/callback \
   -H "Authorization: Bearer YOUR_JWT_TOKEN" \
@@ -361,11 +385,13 @@ curl -X POST https://cmy7tz9t49.execute-api.us-east-1.amazonaws.com/content/cont
 **Description:** Upload poster or banner image. Backend handles image processing and thumbnail generation.
 
 **Path Parameters:**
+
 - `image_type` - "poster" or "banner"
 
 **Request:** `multipart/form-data` with `image` field
 
 **Response (200 OK):**
+
 ```json
 {
   "content_id": "content-123abc",
@@ -376,6 +402,7 @@ curl -X POST https://cmy7tz9t49.execute-api.us-east-1.amazonaws.com/content/cont
 ```
 
 **curl Example:**
+
 ```bash
 curl -X POST https://cmy7tz9t49.execute-api.us-east-1.amazonaws.com/content/content-123abc/images/poster \
   -H "Authorization: Bearer YOUR_JWT_TOKEN" \
@@ -391,6 +418,7 @@ curl -X POST https://cmy7tz9t49.execute-api.us-east-1.amazonaws.com/content/cont
 **Description:** Retrieve all available renditions (quality variants) for a content item.
 
 **Response (200 OK):**
+
 ```json
 {
   "content_id": "content-123abc",
@@ -423,6 +451,7 @@ curl -X POST https://cmy7tz9t49.execute-api.us-east-1.amazonaws.com/content/cont
 ```
 
 **curl Example:**
+
 ```bash
 curl -X GET https://cmy7tz9t49.execute-api.us-east-1.amazonaws.com/content/content-123abc/renditions \
   -H "Authorization: Bearer YOUR_JWT_TOKEN"
@@ -437,6 +466,7 @@ curl -X GET https://cmy7tz9t49.execute-api.us-east-1.amazonaws.com/content/conte
 **Description:** Get adaptive streaming manifest URLs (HLS/DASH) for playback.
 
 **Response (200 OK):**
+
 ```json
 {
   "content_id": "content-123abc",
@@ -449,6 +479,7 @@ curl -X GET https://cmy7tz9t49.execute-api.us-east-1.amazonaws.com/content/conte
 ```
 
 **curl Example:**
+
 ```bash
 curl -X GET https://cmy7tz9t49.execute-api.us-east-1.amazonaws.com/content/content-123abc/manifest \
   -H "Authorization: Bearer YOUR_JWT_TOKEN"
@@ -463,6 +494,7 @@ curl -X GET https://cmy7tz9t49.execute-api.us-east-1.amazonaws.com/content/conte
 **Description:** Change content status to "published", making it visible to end users.
 
 **Response (200 OK):**
+
 ```json
 {
   "id": "content-123abc",
@@ -474,6 +506,7 @@ curl -X GET https://cmy7tz9t49.execute-api.us-east-1.amazonaws.com/content/conte
 ```
 
 **curl Example:**
+
 ```bash
 curl -X POST https://cmy7tz9t49.execute-api.us-east-1.amazonaws.com/content/content-123abc/publish \
   -H "Authorization: Bearer YOUR_JWT_TOKEN"
@@ -490,6 +523,7 @@ curl -X POST https://cmy7tz9t49.execute-api.us-east-1.amazonaws.com/content/cont
 **⚠️ Security Note:** This endpoint should be removed in production. Real webhooks come from AWS EventBridge.
 
 **Request Body:**
+
 ```json
 {
   "asset_id": "asset-456def"
@@ -497,6 +531,7 @@ curl -X POST https://cmy7tz9t49.execute-api.us-east-1.amazonaws.com/content/cont
 ```
 
 **Response (200 OK):**
+
 ```json
 {
   "message": "Webhook simulation successful",
@@ -512,6 +547,7 @@ curl -X POST https://cmy7tz9t49.execute-api.us-east-1.amazonaws.com/content/cont
 ```
 
 **curl Example:**
+
 ```bash
 curl -X POST https://cmy7tz9t49.execute-api.us-east-1.amazonaws.com/content/content-123abc/webhook/simulate \
   -H "Authorization: Bearer YOUR_JWT_TOKEN" \
@@ -588,6 +624,7 @@ When `USE_MOCK_DATA=true` in `.env.local`:
 4. Perfect for frontend development without backend
 
 **Mock Data Includes:**
+
 - Sample content records with various statuses
 - Simulated upload responses
 - Mock renditions with multiple quality levels
@@ -726,6 +763,7 @@ web/
 ✅ **Troubleshooting guide** for common issues
 
 **Next Steps:**
+
 1. Test all endpoints using curl examples
 2. Use dev smoke test page for end-to-end validation
 3. Review security TODOs before production deployment

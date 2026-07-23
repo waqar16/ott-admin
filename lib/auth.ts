@@ -1,43 +1,43 @@
-import type { NextAuthOptions, User as NextAuthUser, Session } from 'next-auth';
-import type { JWT } from 'next-auth/jwt';
-import CredentialsProvider from 'next-auth/providers/credentials';
-import GoogleProvider from 'next-auth/providers/google';
-import GitHubProvider from 'next-auth/providers/github';
-import bcrypt from 'bcryptjs';
-import { getUserByEmail, getUserById } from './db/adapter';
-import { MembershipType, DEVICE_LIMITS } from './types';
+import type { NextAuthOptions, User as NextAuthUser, Session } from 'next-auth'
+import type { JWT } from 'next-auth/jwt'
+import CredentialsProvider from 'next-auth/providers/credentials'
+import GoogleProvider from 'next-auth/providers/google'
+import GitHubProvider from 'next-auth/providers/github'
+import bcrypt from 'bcryptjs'
+import { getUserByEmail, getUserById } from './db/adapter'
+import { MembershipType, DEVICE_LIMITS } from './types'
 
 // Re-export for backward compatibility
-export { MembershipType } from './types';
+export { MembershipType } from './types'
 
 // Extended user type
 export interface AppUser extends NextAuthUser {
-  id: string;
-  email: string;
-  name?: string | null;
-  membershipType: MembershipType;
-  stripeCustomerId?: string | null;
-  stripeSubscriptionId?: string | null;
-  subscriptionStatus?: 'active' | 'canceled' | 'past_due' | 'trialing' | null;
-  deviceLimit: number;
-  isKidsRingfenced: boolean;
+  id: string
+  email: string
+  name?: string | null
+  membershipType: MembershipType
+  stripeCustomerId?: string | null
+  stripeSubscriptionId?: string | null
+  subscriptionStatus?: 'active' | 'canceled' | 'past_due' | 'trialing' | null
+  deviceLimit: number
+  isKidsRingfenced: boolean
 }
 
 // Extended session type
 export interface AppSession extends Session {
-  user: AppUser;
+  user: AppUser
 }
 
 // Extend JWT type
 declare module 'next-auth/jwt' {
   interface JWT {
-    id: string;
-    membershipType: MembershipType;
-    stripeCustomerId?: string | null;
-    stripeSubscriptionId?: string | null;
-    subscriptionStatus?: string | null;
-    deviceLimit: number;
-    isKidsRingfenced: boolean;
+    id: string
+    membershipType: MembershipType
+    stripeCustomerId?: string | null
+    stripeSubscriptionId?: string | null
+    subscriptionStatus?: string | null
+    deviceLimit: number
+    isKidsRingfenced: boolean
   }
 }
 
@@ -53,21 +53,21 @@ export const authOptions: NextAuthOptions = {
       },
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) {
-          throw new Error('Missing credentials');
+          throw new Error('Missing credentials')
         }
 
         // Get user from database
-        const user = await getUserByEmail(credentials.email);
-        
+        const user = await getUserByEmail(credentials.email)
+
         if (!user || !user.hashedPassword) {
-          throw new Error('Invalid credentials');
+          throw new Error('Invalid credentials')
         }
 
         // Verify password
-        const isValid = await bcrypt.compare(credentials.password, user.hashedPassword);
-        
+        const isValid = await bcrypt.compare(credentials.password, user.hashedPassword)
+
         if (!isValid) {
-          throw new Error('Invalid credentials');
+          throw new Error('Invalid credentials')
         }
 
         // Return user object (without password)
@@ -81,7 +81,7 @@ export const authOptions: NextAuthOptions = {
           subscriptionStatus: user.subscriptionStatus,
           deviceLimit: DEVICE_LIMITS[user.membershipType],
           isKidsRingfenced: user.membershipType === MembershipType.KIDS,
-        };
+        }
       },
     }),
 
@@ -122,31 +122,31 @@ export const authOptions: NextAuthOptions = {
     async jwt({ token, user, trigger, session }) {
       // Initial sign in
       if (user) {
-        const appUser = user as AppUser;
-        token.id = appUser.id;
-        token.email = appUser.email;
-        token.membershipType = appUser.membershipType;
-        token.stripeCustomerId = appUser.stripeCustomerId;
-        token.stripeSubscriptionId = appUser.stripeSubscriptionId;
-        token.subscriptionStatus = appUser.subscriptionStatus;
-        token.deviceLimit = appUser.deviceLimit;
-        token.isKidsRingfenced = appUser.isKidsRingfenced;
+        const appUser = user as AppUser
+        token.id = appUser.id
+        token.email = appUser.email
+        token.membershipType = appUser.membershipType
+        token.stripeCustomerId = appUser.stripeCustomerId
+        token.stripeSubscriptionId = appUser.stripeSubscriptionId
+        token.subscriptionStatus = appUser.subscriptionStatus
+        token.deviceLimit = appUser.deviceLimit
+        token.isKidsRingfenced = appUser.isKidsRingfenced
       }
 
       // Update session trigger (for membership changes)
       if (trigger === 'update' && session) {
-        const updatedUser = await getUserById(token.id);
+        const updatedUser = await getUserById(token.id)
         if (updatedUser) {
-          token.membershipType = updatedUser.membershipType;
-          token.stripeCustomerId = updatedUser.stripeCustomerId;
-          token.stripeSubscriptionId = updatedUser.stripeSubscriptionId;
-          token.subscriptionStatus = updatedUser.subscriptionStatus;
-          token.deviceLimit = DEVICE_LIMITS[updatedUser.membershipType];
-          token.isKidsRingfenced = updatedUser.membershipType === MembershipType.KIDS;
+          token.membershipType = updatedUser.membershipType
+          token.stripeCustomerId = updatedUser.stripeCustomerId
+          token.stripeSubscriptionId = updatedUser.stripeSubscriptionId
+          token.subscriptionStatus = updatedUser.subscriptionStatus
+          token.deviceLimit = DEVICE_LIMITS[updatedUser.membershipType]
+          token.isKidsRingfenced = updatedUser.membershipType === MembershipType.KIDS
         }
       }
 
-      return token;
+      return token
     },
 
     // Session callback - runs when session is checked
@@ -164,56 +164,56 @@ export const authOptions: NextAuthOptions = {
           deviceLimit: token.deviceLimit,
           isKidsRingfenced: token.isKidsRingfenced,
         },
-      } as AppSession;
+      } as AppSession
     },
 
     // Redirect callback
     async redirect({ url, baseUrl }) {
       // Allows relative callback URLs
-      if (url.startsWith('/')) return `${baseUrl}${url}`;
+      if (url.startsWith('/')) return `${baseUrl}${url}`
       // Allows callback URLs on the same origin
-      else if (new URL(url).origin === baseUrl) return url;
-      return baseUrl;
+      else if (new URL(url).origin === baseUrl) return url
+      return baseUrl
     },
   },
 
   // Events
   events: {
     async signIn({ user }) {
-      console.log(`User signed in: ${user.email}`);
+      console.log(`User signed in: ${user.email}`)
     },
     async signOut({ token }) {
-      console.log(`User signed out: ${token.email}`);
+      console.log(`User signed out: ${token.email}`)
     },
   },
 
   // Debug mode
   debug: process.env.NODE_ENV === 'development',
-};
+}
 
 // Helper function to check membership access
 export function hasAccessToContent(
   membershipType: MembershipType,
   contentType: 'kids' | 'adult' | 'all'
 ): boolean {
-  if (contentType === 'all') return true;
-  if (contentType === 'kids') return true; // All users can access kids content
+  if (contentType === 'all') return true
+  if (contentType === 'kids') return true // All users can access kids content
   if (contentType === 'adult') {
-    return membershipType === MembershipType.FULL; // Only FULL members can access adult content
+    return membershipType === MembershipType.FULL // Only FULL members can access adult content
   }
-  return false;
+  return false
 }
 
 // Helper function to get membership display name
 export function getMembershipDisplayName(membershipType: MembershipType): string {
   switch (membershipType) {
     case MembershipType.FREE:
-      return 'Free Tier';
+      return 'Free Tier'
     case MembershipType.KIDS:
-      return 'Kids Plan';
+      return 'Kids Plan'
     case MembershipType.FULL:
-      return 'Full Access';
+      return 'Full Access'
     default:
-      return 'Unknown';
+      return 'Unknown'
   }
 }

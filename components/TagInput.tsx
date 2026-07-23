@@ -1,31 +1,31 @@
-import { BiX } from "react-icons/bi";
-import React from "react";
+import { BiX } from 'react-icons/bi'
+import React from 'react'
 type TagInputProps = {
-  label: string;
-  values: string[];
-  onChange: (values: string[]) => void;
-  placeholder?: string;
-};
+  label: string
+  values: string[]
+  onChange: (values: string[]) => void
+  placeholder?: string
+}
 
 export default function TagInput({
   label,
   values,
   onChange,
-  placeholder = "Type and press Enter",
+  placeholder = 'Type and press Enter',
 }: TagInputProps) {
-  const [input, setInput] = React.useState("");
+  const [input, setInput] = React.useState('')
 
   const addTag = () => {
-    const value = input.trim();
-    if (!value || values.includes(value)) return;
+    const value = input.trim()
+    if (!value || values.includes(value)) return
 
-    onChange([...values, value]);
-    setInput("");
-  };
+    onChange([...values, value])
+    setInput('')
+  }
 
   const removeTag = (tag: string) => {
-    onChange(values.filter((v) => v !== tag));
-  };
+    onChange(values.filter((v) => v !== tag))
+  }
 
   return (
     <div>
@@ -53,12 +53,12 @@ export default function TagInput({
         type="text"
         value={input}
         onChange={(e) => setInput(e.target.value)}
-        onKeyDown={(e) => e.key === "Enter" && addTag()}
+        onKeyDown={(e) => e.key === 'Enter' && addTag()}
         placeholder={placeholder}
         className="w-full px-3 py-2 bg-gray-700 text-white rounded  outline-none ring-0 
            focus:outline-none focus:ring-0 
            focus-visible:outline-none focus-visible:ring-0"
       />
     </div>
-  );
+  )
 }

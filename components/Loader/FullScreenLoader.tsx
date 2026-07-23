@@ -1,12 +1,10 @@
 // components/FullScreenLoader.tsx
-import React from "react";
+import React from 'react'
 type FullScreenLoaderProps = {
-  msg?: string;
-};
+  msg?: string
+}
 
-const FullScreenLoader: React.FC<FullScreenLoaderProps> = ({
-  msg = "Loading...",
-}) => {
+const FullScreenLoader: React.FC<FullScreenLoaderProps> = ({ msg = 'Loading...' }) => {
   return (
     <div className="fixed inset-0 z-[999999] flex items-center justify-center bg-black/60 backdrop-blur-sm">
       <div className="flex flex-col items-center gap-4">
@@ -31,12 +29,10 @@ const FullScreenLoader: React.FC<FullScreenLoaderProps> = ({
           />
         </svg>
 
-        <p className="text-white text-sm tracking-wide">
-          {msg}
-        </p>
+        <p className="text-white text-sm tracking-wide">{msg}</p>
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default FullScreenLoader;
+export default FullScreenLoader

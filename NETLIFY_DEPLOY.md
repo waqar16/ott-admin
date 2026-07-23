@@ -22,10 +22,11 @@
    - **IMPORTANT**: Install the Next.js plugin automatically when prompted
 
 3. **Set Environment Variables** (in Netlify dashboard → Site settings → Environment variables)
+
    ```
    # Required for mock mode (already set in code)
    NODE_ENV=production
-   
+
    # Optional: Set when ready for production backend
    # NEXT_PUBLIC_API_URL=https://your-api.com
    # NEXTAUTH_URL=https://your-site.netlify.app
@@ -65,14 +66,16 @@ netlify deploy --prod
 ## Current Configuration
 
 Your app is configured to run in **MOCK MODE** by default:
+
 - ✅ No backend APIs required
 - ✅ All features work with dummy data
 - ✅ No database needed
 - ✅ No authentication backend required
 
 Mock mode is controlled in `lib/config.ts`:
+
 ```typescript
-export const USE_MOCK_DATA = true;
+export const USE_MOCK_DATA = true
 ```
 
 ## Post-Deployment
@@ -99,9 +102,10 @@ After successful deployment:
 When ready to connect real backends:
 
 1. **Update Configuration**
+
    ```typescript
    // lib/config.ts
-   export const USE_MOCK_DATA = false;
+   export const USE_MOCK_DATA = false
    ```
 
 2. **Add Environment Variables in Netlify**
@@ -115,19 +119,23 @@ When ready to connect real backends:
 ## Troubleshooting
 
 ### Build Fails
+
 - Check build logs in Netlify dashboard
 - Ensure all dependencies are in `package.json`
 - Verify Node version (18+)
 
 ### Images Not Loading
+
 - Images are configured for: unsplash.com, picsum.photos, i.pravatar.cc
 - Check `next.config.js` for allowed image domains
 
 ### API Routes Not Working
+
 - Netlify automatically handles Next.js API routes
 - Check function logs in Netlify dashboard → Functions
 
 ### Environment Variables Not Working
+
 - Redeploy after adding environment variables
 - Ensure variables are prefixed with `NEXT_PUBLIC_` for client-side access
 

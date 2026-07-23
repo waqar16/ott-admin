@@ -1,14 +1,14 @@
-'use client';
+'use client'
 
-import { useState } from 'react';
-import { ApiError, checkStreamAccess, createPpvCheckout } from '@/lib/paymentsApi';
+import { useState } from 'react'
+import { ApiError, checkStreamAccess, createPpvCheckout } from '@/lib/paymentsApi'
 
 interface CheckoutButtonProps {
-  contentId: string;
-  priceCents?: number;
-  onAccess?: (streamUrl: string) => void;
-  className?: string;
-  children?: React.ReactNode;
+  contentId: string
+  priceCents?: number
+  onAccess?: (streamUrl: string) => void
+  className?: string
+  children?: React.ReactNode
 }
 
 export default function CheckoutButton({
@@ -18,54 +18,54 @@ export default function CheckoutButton({
   className = '',
   children,
 }: CheckoutButtonProps) {
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   async function handleClick() {
     try {
-      setLoading(true);
-      setError(null);
+      setLoading(true)
+      setError(null)
 
       // Check stream access
-      const accessResponse = await checkStreamAccess(contentId);
+      const accessResponse = await checkStreamAccess(contentId)
 
       if (accessResponse.access) {
         // User has access - either subscribed or already purchased
         if (accessResponse.stream_url) {
           if (onAccess) {
-            onAccess(accessResponse.stream_url);
+            onAccess(accessResponse.stream_url)
           } else {
             // Default behavior: navigate to watch page
-            window.location.href = `/watch/${contentId}`;
+            window.location.href = `/watch/${contentId}`
           }
         }
       } else if (accessResponse.is_ppv) {
         // PPV content - needs purchase
         if (accessResponse.checkout_url) {
           // Backend provided checkout URL directly
-          window.location.href = accessResponse.checkout_url;
+          window.location.href = accessResponse.checkout_url
         } else {
           // Create checkout session
-          const checkoutUrl = await createPpvCheckout(contentId);
-          window.location.href = checkoutUrl;
+          const checkoutUrl = await createPpvCheckout(contentId)
+          window.location.href = checkoutUrl
         }
       } else {
-        setError('Unable to access content. Please check your subscription status.');
-        setLoading(false);
+        setError('Unable to access content. Please check your subscription status.')
+        setLoading(false)
       }
     } catch (err) {
-      const apiError = err as ApiError;
-      
+      const apiError = err as ApiError
+
       if (apiError.needAuth) {
-        setError('Please login to access this content');
+        setError('Please login to access this content')
       } else if (apiError.status === 404) {
-        setError('Content not found');
+        setError('Content not found')
       } else {
-        setError(apiError.message || 'Failed to process request');
+        setError(apiError.message || 'Failed to process request')
       }
-      
-      console.error('Error in checkout:', err);
-      setLoading(false);
+
+      console.error('Error in checkout:', err)
+      setLoading(false)
     }
   }
 
@@ -108,9 +108,7 @@ export default function CheckoutButton({
                 {priceCents ? (
                   <>
                     <span className="mr-2">Buy Now</span>
-                    <span className="text-sm opacity-90">
-                      ${(priceCents / 100).toFixed(2)}
-                    </span>
+                    <span className="text-sm opacity-90">${(priceCents / 100).toFixed(2)}</span>
                   </>
                 ) : (
                   'Watch Now'
@@ -122,11 +120,7 @@ export default function CheckoutButton({
       </button>
 
       {/* Error Message */}
-      {error && (
-        <div className="mt-2 text-red-400 text-sm">
-          {error}
-        </div>
-      )}
+      {error && <div className="mt-2 text-red-400 text-sm">{error}</div>}
     </div>
-  );
+  )
 }

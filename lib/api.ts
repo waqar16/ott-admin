@@ -1,12 +1,12 @@
-import axios from 'axios';
-import { USE_MOCK_DATA, API_CONFIG, logMockDataUsage, API_BASE } from './config';
+import axios from 'axios'
+import { USE_MOCK_DATA, API_CONFIG, logMockDataUsage, API_BASE } from './config'
 
 // Mock mode active — replace with real API later
 if (USE_MOCK_DATA) {
-  logMockDataUsage('API Client - Using mock API endpoints');
+  logMockDataUsage('API Client - Using mock API endpoints')
 }
 
-const API_URL = API_CONFIG.baseUrl;
+const API_URL = API_CONFIG.baseUrl
 
 export interface FetchOptions extends RequestInit {
   token?: string
@@ -16,15 +16,12 @@ export interface FetchOptions extends RequestInit {
  * Generic API fetch wrapper with error handling
  */
 export const apiClient = axios.create({
-	baseURL: API_BASE,
-	headers: {
-		'Content-Type': 'application/json',
-	},
+  baseURL: API_BASE,
+  headers: {
+    'Content-Type': 'application/json',
+  },
 })
-export async function fetchAPI<T>(
-  endpoint: string,
-  options: FetchOptions = {}
-): Promise<T> {
+export async function fetchAPI<T>(endpoint: string, options: FetchOptions = {}): Promise<T> {
   const { token, ...fetchOptions } = options
 
   const headers: HeadersInit = {
@@ -59,11 +56,7 @@ export function get<T>(endpoint: string, options?: FetchOptions): Promise<T> {
 /**
  * POST request
  */
-export function post<T>(
-  endpoint: string,
-  data?: unknown,
-  options?: FetchOptions
-): Promise<T> {
+export function post<T>(endpoint: string, data?: unknown, options?: FetchOptions): Promise<T> {
   return fetchAPI<T>(endpoint, {
     ...options,
     method: 'POST',
@@ -74,11 +67,7 @@ export function post<T>(
 /**
  * PUT request
  */
-export function put<T>(
-  endpoint: string,
-  data?: unknown,
-  options?: FetchOptions
-): Promise<T> {
+export function put<T>(endpoint: string, data?: unknown, options?: FetchOptions): Promise<T> {
   return fetchAPI<T>(endpoint, {
     ...options,
     method: 'PUT',

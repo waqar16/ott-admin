@@ -1,96 +1,90 @@
 /**
  * Signup Form Component
- * 
+ *
  * Client-side registration form for new users.
  * Uses useAuth hook for authentication state management.
  */
 
-'use client';
+'use client'
 
-import { useState } from 'react';
-import { useAuth } from '@/lib/useAuth';
-import { USE_MOCK_DATA } from '@/lib/config';
-import { useRouter } from 'next/navigation';
-import FullScreenLoader from '../Loader/FullScreenLoader';
-interface SignupFormProps {
- 
-}
+import { useState } from 'react'
+import { useAuth } from '@/lib/useAuth'
+import { USE_MOCK_DATA } from '@/lib/config'
+import { useRouter } from 'next/navigation'
+import FullScreenLoader from '../Loader/FullScreenLoader'
+interface SignupFormProps {}
 
-export function SignupForm({ }: SignupFormProps) {
-  
-  const { signup, loading } = useAuth();
-  const router  = useRouter();
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [error, setError] = useState<string | null>(null);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [loginLoading,setLoginLoading] = useState(false)
+export function SignupForm({}: SignupFormProps) {
+  const { signup, loading } = useAuth()
+  const router = useRouter()
+  const [name, setName] = useState('')
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
+  const [error, setError] = useState<string | null>(null)
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [loginLoading, setLoginLoading] = useState(false)
 
   const validateForm = (): boolean => {
     if (!name.trim()) {
-      setError('Name is required');
-      return false;
+      setError('Name is required')
+      return false
     }
-    
+
     if (!email.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      setError('Please enter a valid email address');
-      return false;
+      setError('Please enter a valid email address')
+      return false
     }
-    
+
     if (password.length < 8) {
-      setError('Password must be at least 8 characters long');
-      return false;
+      setError('Password must be at least 8 characters long')
+      return false
     }
-    
+
     if (password !== confirmPassword) {
-      setError('Passwords do not match');
-      return false;
+      setError('Passwords do not match')
+      return false
     }
-    
-    return true;
-  };
+
+    return true
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     setLoginLoading(true)
-    e.preventDefault();
-    setError(null);
+    e.preventDefault()
+    setError(null)
 
     if (!validateForm()) {
-      return;
+      return
     }
 
-    setIsSubmitting(true);
+    setIsSubmitting(true)
 
     try {
-      let signupUser = await signup({ email, password, name });
-      console.log(signupUser,"signup")
-      if(signupUser?.status == 201){
-      router.push('/login')
-      setIsSubmitting(false);
-
+      let signupUser = await signup({ email, password, name })
+      console.log(signupUser, 'signup')
+      if (signupUser?.status == 201) {
+        router.push('/login')
+        setIsSubmitting(false)
+      } else {
+        setError('An Error Occurred')
       }
-       else{
-        setError('An Error Occurred');
+    } catch (err: any) {
+      console.log(err)
 
-       }
-    }  catch (err: any) {
-       console.log(err);
+      // Default fallback
+      let message = 'Unable to Signup'
 
-  // Default fallback
-  let message = "Unable to Signup";
+      // ApiError or normal Error
+      if (err?.message) {
+        message = err.message
+      }
 
-  // ApiError or normal Error
-  if (err?.message) {
-    message = err.message;
-  }
-
-  setError(message);
-      setIsSubmitting(false);
+      setError(message)
+      setIsSubmitting(false)
     }
     setLoginLoading(false)
-  };
+  }
 
   return (
     <div className="w-full max-w-md">
@@ -155,9 +149,7 @@ export function SignupForm({ }: SignupFormProps) {
             autoComplete="new-password"
             minLength={8}
           />
-          <p className="text-xs text-gray-500 mt-1">
-            Must be at least 8 characters long
-          </p>
+          <p className="text-xs text-gray-500 mt-1">Must be at least 8 characters long</p>
         </div>
 
         <div>
@@ -228,8 +220,7 @@ export function SignupForm({ }: SignupFormProps) {
           </a>
         </div>
       </form>
-      {loginLoading && <FullScreenLoader msg={'Signing you in'}/>}
-
+      {loginLoading && <FullScreenLoader msg={'Signing you in'} />}
     </div>
-  );
+  )
 }

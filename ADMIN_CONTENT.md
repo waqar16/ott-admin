@@ -9,11 +9,13 @@ The Admin Content Management system provides administrators with a powerful inte
 ### 🎛️ Content Control Flags
 
 **1. Visible Without Signup**
+
 - Controls whether content appears on landing pages and previews for non-authenticated users
 - Ideal for showcasing your best content to drive signups
 - Recommendation: Enable on 3-5 popular, high-quality titles
 
 **2. Demo Content**
+
 - Marks content as free sample that can be watched without a subscription
 - Perfect for giving users a taste of your platform
 - Recommendation: Enable on 2-3 representative titles across different genres
@@ -59,6 +61,7 @@ web/
 **Authentication:** Required (NextAuth session)
 
 **Response:**
+
 ```json
 {
   "titles": [
@@ -93,6 +96,7 @@ web/
 **Authentication:** Required
 
 **Request Body:**
+
 ```json
 {
   "id": "1",
@@ -102,6 +106,7 @@ web/
 ```
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -117,6 +122,7 @@ web/
 **Authentication:** Required
 
 **Request Body:**
+
 ```json
 {
   "ids": ["1", "2", "3"],
@@ -126,6 +132,7 @@ web/
 ```
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -141,6 +148,7 @@ web/
 **Authentication:** Required
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -154,32 +162,32 @@ web/
 
 ```typescript
 export interface CatalogTitle {
-  id: string;
-  title: string;
-  type: 'movie' | 'series';
-  genre: string[];
-  year: number;
-  duration?: number;
-  seasons?: number;
-  episodes?: number;
-  rating: string;
-  imdbRating: number;
-  description: string;
-  thumbnail: string;
-  banner: string;
-  trailer: string;
-  formats: string[];
-  isImmersive: boolean;
-  director?: string;
-  creator?: string;
-  cast: string[];
-  previewImages: string[];
-  contentType: 'kids' | 'all';
-  requiredMembership: 'FREE' | 'KIDS' | 'FULL';
-  
+  id: string
+  title: string
+  type: 'movie' | 'series'
+  genre: string[]
+  year: number
+  duration?: number
+  seasons?: number
+  episodes?: number
+  rating: string
+  imdbRating: number
+  description: string
+  thumbnail: string
+  banner: string
+  trailer: string
+  formats: string[]
+  isImmersive: boolean
+  director?: string
+  creator?: string
+  cast: string[]
+  previewImages: string[]
+  contentType: 'kids' | 'all'
+  requiredMembership: 'FREE' | 'KIDS' | 'FULL'
+
   // Admin flags
-  visibleWithoutSignup?: boolean;  // Show on landing pages
-  isDemoContent?: boolean;         // Free sample content
+  visibleWithoutSignup?: boolean // Show on landing pages
+  isDemoContent?: boolean // Free sample content
 }
 ```
 
@@ -188,6 +196,7 @@ export interface CatalogTitle {
 ### Understanding the Impact
 
 **Visible Without Signup** affects:
+
 - Landing page content previews
 - Search engine indexing (if public)
 - Social media sharing previews
@@ -195,6 +204,7 @@ export interface CatalogTitle {
 - Non-authenticated user experience
 
 **Demo Content** affects:
+
 - Free trial value proposition
 - Conversion funnel optimization
 - User onboarding experience
@@ -204,6 +214,7 @@ export interface CatalogTitle {
 ### Recommended Strategy
 
 #### Phase 1: Awareness (Visible Without Signup)
+
 ```
 Goal: Attract visitors and showcase quality
 
@@ -222,6 +233,7 @@ Goal: Attract visitors and showcase quality
 ```
 
 #### Phase 2: Engagement (Demo Content)
+
 ```
 Goal: Convert visitors to registered users
 
@@ -240,6 +252,7 @@ Goal: Convert visitors to registered users
 ```
 
 #### Phase 3: Conversion (Upgrade Prompts)
+
 ```
 Goal: Convert free users to paying subscribers
 
@@ -283,6 +296,7 @@ After demo content:
 ### Statistics Dashboard
 
 Displays real-time metrics:
+
 - **Total Titles**: All content in catalog
 - **Visible Publicly**: Content shown to non-authenticated users
 - **Demo Content**: Free sample content count
@@ -292,6 +306,7 @@ Displays real-time metrics:
 ### Content Table
 
 **Columns:**
+
 - Checkbox for bulk selection
 - Title with thumbnail and year
 - Type (movie/series)
@@ -302,6 +317,7 @@ Displays real-time metrics:
 - Actions (view title)
 
 **Features:**
+
 - Sortable and filterable
 - Individual toggle switches
 - Bulk selection (select all/deselect all)
@@ -311,6 +327,7 @@ Displays real-time metrics:
 ### Bulk Actions
 
 **Available Actions:**
+
 - Set Visible: Mark selected titles as visible without signup
 - Set Hidden: Hide selected titles from public view
 - Mark as Demo: Enable demo content flag for selected titles
@@ -329,6 +346,7 @@ Displays real-time metrics:
 ### Initial Setup
 
 1. **Navigate to Admin Panel**
+
    ```
    /admin/content
    ```
@@ -350,6 +368,7 @@ Displays real-time metrics:
 ### Daily Operations
 
 **Adding New Content:**
+
 1. Upload title to catalog
 2. Access admin panel
 3. Locate new title
@@ -357,12 +376,14 @@ Displays real-time metrics:
 5. Monitor conversion metrics
 
 **Seasonal Campaigns:**
+
 1. Use bulk actions to adjust visibility
 2. Highlight seasonal content
 3. Rotate demo content periodically
 4. Track engagement and conversions
 
 **A/B Testing:**
+
 1. Set different titles as demo content
 2. Monitor signup conversion rates
 3. Analyze user engagement
@@ -373,49 +394,53 @@ Displays real-time metrics:
 ### Route Protection
 
 **Middleware Implementation:**
+
 ```typescript
 // middleware.ts
-const isAdminRoute = pathname.startsWith('/admin');
+const isAdminRoute = pathname.startsWith('/admin')
 
 if (!token && !isPublicRoute) {
-  return NextResponse.redirect(signInUrl);
+  return NextResponse.redirect(signInUrl)
 }
 ```
 
 ### API Authentication
 
 All admin API endpoints check for valid session:
+
 ```typescript
-const session = await getServerSession(authOptions);
+const session = await getServerSession(authOptions)
 if (!session) {
-  return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 }
 ```
 
 ### Production Recommendations
 
 1. **Role-Based Access Control (RBAC)**
+
    ```typescript
    interface User {
-     id: string;
-     role: 'admin' | 'editor' | 'user';
+     id: string
+     role: 'admin' | 'editor' | 'user'
    }
-   
+
    // Check if user has admin role
    if (session.user.role !== 'admin') {
-     return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
    }
    ```
 
 2. **Audit Logging**
+
    ```typescript
    interface AdminAction {
-     userId: string;
-     action: 'update' | 'bulk_update' | 'reset';
-     titleIds: string[];
-     changes: Record<string, any>;
-     timestamp: Date;
-     ipAddress: string;
+     userId: string
+     action: 'update' | 'bulk_update' | 'reset'
+     titleIds: string[]
+     changes: Record<string, any>
+     timestamp: Date
+     ipAddress: string
    }
    ```
 
@@ -438,16 +463,18 @@ let titlesCache: CatalogTitle[] = catalogData.titles.map((title) => ({
   ...title,
   visibleWithoutSignup: title.visibleWithoutSignup ?? false,
   isDemoContent: title.isDemoContent ?? false,
-}));
+}))
 ```
 
 **Advantages:**
+
 - Fast read/write operations
 - No database setup required
 - Perfect for development and testing
 - Simple implementation
 
 **Limitations:**
+
 - Data lost on server restart
 - Not suitable for production
 - No persistence across deploys
@@ -456,6 +483,7 @@ let titlesCache: CatalogTitle[] = catalogData.titles.map((title) => ({
 ### Production Migration
 
 **Database Schema (PostgreSQL example):**
+
 ```sql
 CREATE TABLE catalog_titles (
   id VARCHAR(50) PRIMARY KEY,
@@ -473,6 +501,7 @@ CREATE INDEX idx_demo ON catalog_titles(is_demo_content);
 ```
 
 **Migration Steps:**
+
 1. Set up database (PostgreSQL, MySQL, MongoDB)
 2. Create catalog_titles table
 3. Replace in-memory cache with database queries
@@ -509,6 +538,7 @@ CREATE INDEX idx_demo ON catalog_titles(is_demo_content);
 ### Optimization for Scale
 
 **With Database:**
+
 - Add indexes on flag columns
 - Implement pagination for large catalogs
 - Cache statistics separately
@@ -516,31 +546,36 @@ CREATE INDEX idx_demo ON catalog_titles(is_demo_content);
 - Batch database writes
 
 **Caching Strategy:**
+
 ```typescript
 // Cache catalog with flags for 5 minutes
-const CACHE_TTL = 5 * 60 * 1000;
+const CACHE_TTL = 5 * 60 * 1000
 
 // Invalidate cache on updates
 async function invalidateCatalogCache() {
-  await redis.del('catalog:admin');
+  await redis.del('catalog:admin')
 }
 ```
 
 ## Troubleshooting
 
 ### Issue: Changes not persisting
+
 **Cause:** Server restart clears in-memory cache  
 **Solution:** Implement database persistence
 
 ### Issue: Unauthorized errors
+
 **Cause:** Session expired or missing  
 **Solution:** Sign in again or check NextAuth configuration
 
 ### Issue: Bulk action not working
+
 **Cause:** No titles selected  
 **Solution:** Select titles first or use "Select All"
 
 ### Issue: Statistics not updating
+
 **Cause:** Cache not refreshed  
 **Solution:** Reload page or implement real-time updates
 
@@ -588,6 +623,7 @@ async function invalidateCatalogCache() {
 ## Support
 
 For questions or issues with the admin panel:
+
 1. Check this documentation
 2. Verify authentication status
 3. Test with small updates first

@@ -1,10 +1,10 @@
 /**
  * Payments & Subscriptions API Module
- * 
+ *
  * API client for payment, subscription, and pay-per-view operations.
  * Reference: API_DOCUMENTATION_PART2.pdf - Payments & Subscriptions endpoints
  * Base URL: Uses NEXT_PUBLIC_API_BASE from environment variables
- * 
+ *
  * Implements:
  * - List subscription plans (paginated)
  * - Create Stripe checkout session for subscription
@@ -15,110 +15,117 @@
  * - List payment history
  * - Check stream access (PPV or subscription)
  * - Create PPV checkout session
- * 
+ *
  * Security Notes:
  * - All endpoints require authentication (Authorization header with JWT)
  * - Stripe checkout sessions are created server-side
  * - Payment confirmations handled via webhooks (server-side)
- * 
+ *
  * TODO: security - Confirm httpOnly cookie implementation for production
  * TODO: security - Verify Stripe webhook signature validation on backend
  * TODO: Implement unified API error handler with token refresh logic
  */
 
-import { API_BASE, USE_MOCK_DATA, logMockDataUsage } from './config';
-import { getAccessToken } from './tokenStore';
+import { API_BASE, USE_MOCK_DATA, logMockDataUsage } from './config'
+import { getAccessToken } from './tokenStore'
 
 // ============================================================================
 // TYPES
 // ============================================================================
 
 export interface Plan {
-  id: string;
-  name: string;
-  description?: string;
-  price: number;
-  currency: string;
-  duration_days: number;
-  max_devices: number;
-  max_profiles: number;
-  stripe_price_id: string;
-  features?: string[];
-  is_active: boolean;
-  created_at: string;
+  id: string
+  name: string
+  description?: string
+  price: number
+  currency: string
+  duration_days: number
+  max_devices: number
+  max_profiles: number
+  stripe_price_id: string
+  features?: string[]
+  is_active: boolean
+  created_at: string
 }
 
 export interface PlansListResponse {
-  count: number;
-  next: string | null;
-  previous: string | null;
-  results: Plan[];
+  count: number
+  next: string | null
+  previous: string | null
+  results: Plan[]
 }
 
 export interface CheckoutSessionResponse {
-  id: string;
-  url: string;
+  id: string
+  url: string
 }
 
 export interface Subscription {
-  id: string;
-  user_id: string;
-  plan_id: string;
-  plan_name: string;
-  status: 'active' | 'canceled' | 'past_due' | 'trialing' | 'incomplete' | 'incomplete_expired' | 'unpaid';
-  stripe_subscription_id: string;
-  stripe_customer_id: string;
-  current_period_start: string;
-  current_period_end: string;
-  cancel_at_period_end: boolean;
-  canceled_at?: string | null;
-  created_at: string;
-  updated_at: string;
+  id: string
+  user_id: string
+  plan_id: string
+  plan_name: string
+  status:
+    | 'active'
+    | 'canceled'
+    | 'past_due'
+    | 'trialing'
+    | 'incomplete'
+    | 'incomplete_expired'
+    | 'unpaid'
+  stripe_subscription_id: string
+  stripe_customer_id: string
+  current_period_start: string
+  current_period_end: string
+  cancel_at_period_end: boolean
+  canceled_at?: string | null
+  created_at: string
+  updated_at: string
 }
 
 export interface SubscriptionsListResponse {
-  count: number;
-  results: Subscription[];
+  count: number
+  results: Subscription[]
 }
 
 export interface Payment {
-  id: string;
-  user_id: string;
-  amount: number;
-  currency: string;
-  status: 'pending' | 'succeeded' | 'failed' | 'refunded';
-  payment_type: 'subscription' | 'ppv' | 'other';
-  stripe_payment_intent_id?: string;
-  content_id?: string;
-  created_at: string;
+  id: string
+  user_id: string
+  amount: number
+  currency: string
+  status: 'pending' | 'succeeded' | 'failed' | 'refunded'
+  payment_type: 'subscription' | 'ppv' | 'other'
+  stripe_payment_intent_id?: string
+  content_id?: string
+  created_at: string
 }
 
 export interface PaymentsListResponse {
-  count: number;
-  next: string | null;
-  previous: string | null;
-  results: Payment[];
+  count: number
+  next: string | null
+  previous: string | null
+  results: Payment[]
 }
 
 export interface StreamAccessResponse {
-  access: boolean;
-  stream_url?: string;
-  drm_key?: string;
-  expires_in_seconds?: number;
-  is_ppv?: boolean;
-  price?: number;
-  checkout_url?: string;
+  access: boolean
+  stream_url?: string
+  drm_key?: string
+  expires_in_seconds?: number
+  is_ppv?: boolean
+  price?: number
+  checkout_url?: string
 }
 
 export interface PpvCheckoutResponse {
-  checkout_url: string;
+  checkout_url: string
 }
 
 export interface ApiError {
-  status: number;
-  message: string;
-  body?: any;
-  needAuth?: boolean;
+  status: number
+  message: string
+  body?: any
+  needAuth?: boolean
 }
 
 // ============================================================================
@@ -168,7 +175,7 @@ const MOCK_PLANS: Plan[] = [
     is_active: true,
     created_at: new Date().toISOString(),
   },
-];
+]
 
 const MOCK_SUBSCRIPTION: Subscription = {
   id: 'sub-123',
@@ -183,7 +190,7 @@ const MOCK_SUBSCRIPTION: Subscription = {
   cancel_at_period_end: false,
   created_at: new Date().toISOString(),
   updated_at: new Date().toISOString(),
-};
+}
 
 const MOCK_PAYMENTS: Payment[] = [
   {
@@ -207,7 +214,7 @@ const MOCK_PAYMENTS: Payment[] = [
     content_id: 'premiere-1',
     created_at: new Date(Date.now() - 15 * 24 * 60 * 60 * 1000).toISOString(),
   },
-];
+]
 
 // ============================================================================
 // API HELPERS
@@ -217,41 +224,41 @@ const MOCK_PAYMENTS: Payment[] = [
  * Build authorization headers for authenticated requests
  */
 function getAuthHeaders(): HeadersInit {
-  const token = getAccessToken();
+  const token = getAccessToken()
   const headers: HeadersInit = {
     'Content-Type': 'application/json',
-  };
-  
-  if (token) {
-    headers['Authorization'] = `Bearer ${token}`;
   }
-  
-  return headers;
+
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`
+  }
+
+  return headers
 }
 
 /**
  * Handle API errors and create structured error object
  */
 async function handleApiError(response: Response): Promise<ApiError> {
-  let body;
+  let body
   try {
-    body = await response.json();
+    body = await response.json()
   } catch {
-    body = null;
+    body = null
   }
-  
+
   const error: ApiError = {
     status: response.status,
     message: body?.message || body?.detail || response.statusText || 'An error occurred',
     body,
-  };
-  
+  }
+
   // Mark 401 errors for auth handling
   if (response.status === 401) {
-    error.needAuth = true;
+    error.needAuth = true
   }
-  
-  return error;
+
+  return error
 }
 
 // ============================================================================
@@ -266,48 +273,48 @@ export async function listPlans({
   page = 1,
   pageSize = 20,
 }: {
-  page?: number;
-  pageSize?: number;
+  page?: number
+  pageSize?: number
 } = {}): Promise<PlansListResponse> {
   if (USE_MOCK_DATA) {
-    logMockDataUsage('listPlans');
-    
+    logMockDataUsage('listPlans')
+
     // Simulate pagination
-    const start = (page - 1) * pageSize;
-    const end = start + pageSize;
-    const paginatedPlans = MOCK_PLANS.slice(start, end);
-    
+    const start = (page - 1) * pageSize
+    const end = start + pageSize
+    const paginatedPlans = MOCK_PLANS.slice(start, end)
+
     return {
       count: MOCK_PLANS.length,
       next: end < MOCK_PLANS.length ? `page=${page + 1}` : null,
       previous: page > 1 ? `page=${page - 1}` : null,
       results: paginatedPlans,
-    };
+    }
   }
-  
+
   try {
-    const url = `${API_BASE}api/v1/payments/plans?page=${page}&page_size=${pageSize}`;
+    const url = `${API_BASE}api/v1/payments/plans?page=${page}&page_size=${pageSize}`
     const response = await fetch(url, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
       },
-    });
-    
+    })
+
     if (!response.ok) {
-      throw await handleApiError(response);
+      throw await handleApiError(response)
     }
-    
-    return await response.json();
+
+    return await response.json()
   } catch (error) {
     if ((error as ApiError).status) {
-      throw error;
+      throw error
     }
     throw {
       status: 0,
       message: 'Network error - please check your connection',
       body: error,
-    } as ApiError;
+    } as ApiError
   }
 }
 
@@ -321,52 +328,52 @@ export async function listPlans({
  */
 export async function createSubscriptionCheckout(planId: string): Promise<string> {
   if (USE_MOCK_DATA) {
-    logMockDataUsage('createSubscriptionCheckout');
-    
-    const plan = MOCK_PLANS.find(p => p.id === planId);
+    logMockDataUsage('createSubscriptionCheckout')
+
+    const plan = MOCK_PLANS.find((p) => p.id === planId)
     if (!plan) {
       throw {
         status: 404,
         message: 'Plan not found',
-      } as ApiError;
+      } as ApiError
     }
-    
+
     // Return mock Stripe checkout URL
-    return `https://checkout.stripe.com/pay/mock_${planId}_${Date.now()}`;
+    return `https://checkout.stripe.com/pay/mock_${planId}_${Date.now()}`
   }
-  
-  const token = getAccessToken();
+
+  const token = getAccessToken()
   if (!token) {
     throw {
       status: 401,
       message: 'Not authenticated — please login',
       needAuth: true,
-    } as ApiError;
+    } as ApiError
   }
-  
+
   try {
-    const url = `${API_BASE}api/v1/payments/stripe/create-checkout-session`;
+    const url = `${API_BASE}api/v1/payments/stripe/create-checkout-session`
     const response = await fetch(url, {
       method: 'POST',
       headers: getAuthHeaders(),
       body: JSON.stringify({ plan_id: planId }),
-    });
-    
+    })
+
     if (!response.ok) {
-      throw await handleApiError(response);
+      throw await handleApiError(response)
     }
-    
-    const data: CheckoutSessionResponse = await response.json();
-    return data.url;
+
+    const data: CheckoutSessionResponse = await response.json()
+    return data.url
   } catch (error) {
     if ((error as ApiError).status) {
-      throw error;
+      throw error
     }
     throw {
       status: 0,
       message: 'Network error - please check your connection',
       body: error,
-    } as ApiError;
+    } as ApiError
   }
 }
 
@@ -380,44 +387,44 @@ export async function createSubscriptionCheckout(planId: string): Promise<string
  */
 export async function listSubscriptions(): Promise<SubscriptionsListResponse> {
   if (USE_MOCK_DATA) {
-    logMockDataUsage('listSubscriptions');
-    
+    logMockDataUsage('listSubscriptions')
+
     return {
       count: 1,
       results: [MOCK_SUBSCRIPTION],
-    };
+    }
   }
-  
-  const token = getAccessToken();
+
+  const token = getAccessToken()
   if (!token) {
     throw {
       status: 401,
       message: 'Not authenticated — please login',
       needAuth: true,
-    } as ApiError;
+    } as ApiError
   }
-  
+
   try {
-    const url = `${API_BASE}api/v1/payments/subscriptions`;
+    const url = `${API_BASE}api/v1/payments/subscriptions`
     const response = await fetch(url, {
       method: 'GET',
       headers: getAuthHeaders(),
-    });
-    
+    })
+
     if (!response.ok) {
-      throw await handleApiError(response);
+      throw await handleApiError(response)
     }
-    
-    return await response.json();
+
+    return await response.json()
   } catch (error) {
     if ((error as ApiError).status) {
-      throw error;
+      throw error
     }
     throw {
       status: 0,
       message: 'Network error - please check your connection',
       body: error,
-    } as ApiError;
+    } as ApiError
   }
 }
 
@@ -427,55 +434,55 @@ export async function listSubscriptions(): Promise<SubscriptionsListResponse> {
  */
 export async function changePlan(planId: string): Promise<Subscription> {
   if (USE_MOCK_DATA) {
-    logMockDataUsage('changePlan');
-    
-    const plan = MOCK_PLANS.find(p => p.id === planId);
+    logMockDataUsage('changePlan')
+
+    const plan = MOCK_PLANS.find((p) => p.id === planId)
     if (!plan) {
       throw {
         status: 404,
         message: 'Plan not found',
-      } as ApiError;
+      } as ApiError
     }
-    
+
     return {
       ...MOCK_SUBSCRIPTION,
       plan_id: planId,
       plan_name: plan.name,
       updated_at: new Date().toISOString(),
-    };
+    }
   }
-  
-  const token = getAccessToken();
+
+  const token = getAccessToken()
   if (!token) {
     throw {
       status: 401,
       message: 'Not authenticated — please login',
       needAuth: true,
-    } as ApiError;
+    } as ApiError
   }
-  
+
   try {
-    const url = `${API_BASE}api/v1/payments/change-plan`;
+    const url = `${API_BASE}api/v1/payments/change-plan`
     const response = await fetch(url, {
       method: 'POST',
       headers: getAuthHeaders(),
       body: JSON.stringify({ plan_id: planId }),
-    });
-    
+    })
+
     if (!response.ok) {
-      throw await handleApiError(response);
+      throw await handleApiError(response)
     }
-    
-    return await response.json();
+
+    return await response.json()
   } catch (error) {
     if ((error as ApiError).status) {
-      throw error;
+      throw error
     }
     throw {
       status: 0,
       message: 'Network error - please check your connection',
       body: error,
-    } as ApiError;
+    } as ApiError
   }
 }
 
@@ -485,45 +492,45 @@ export async function changePlan(planId: string): Promise<Subscription> {
  */
 export async function cancelSubscription(): Promise<Subscription> {
   if (USE_MOCK_DATA) {
-    logMockDataUsage('cancelSubscription');
-    
+    logMockDataUsage('cancelSubscription')
+
     return {
       ...MOCK_SUBSCRIPTION,
       cancel_at_period_end: true,
       updated_at: new Date().toISOString(),
-    };
+    }
   }
-  
-  const token = getAccessToken();
+
+  const token = getAccessToken()
   if (!token) {
     throw {
       status: 401,
       message: 'Not authenticated — please login',
       needAuth: true,
-    } as ApiError;
+    } as ApiError
   }
-  
+
   try {
-    const url = `${API_BASE}api/v1/payments/cancel-subscription`;
+    const url = `${API_BASE}api/v1/payments/cancel-subscription`
     const response = await fetch(url, {
       method: 'POST',
       headers: getAuthHeaders(),
-    });
-    
+    })
+
     if (!response.ok) {
-      throw await handleApiError(response);
+      throw await handleApiError(response)
     }
-    
-    return await response.json();
+
+    return await response.json()
   } catch (error) {
     if ((error as ApiError).status) {
-      throw error;
+      throw error
     }
     throw {
       status: 0,
       message: 'Network error - please check your connection',
       body: error,
-    } as ApiError;
+    } as ApiError
   }
 }
 
@@ -533,45 +540,45 @@ export async function cancelSubscription(): Promise<Subscription> {
  */
 export async function reactivateSubscription(): Promise<Subscription> {
   if (USE_MOCK_DATA) {
-    logMockDataUsage('reactivateSubscription');
-    
+    logMockDataUsage('reactivateSubscription')
+
     return {
       ...MOCK_SUBSCRIPTION,
       cancel_at_period_end: false,
       updated_at: new Date().toISOString(),
-    };
+    }
   }
-  
-  const token = getAccessToken();
+
+  const token = getAccessToken()
   if (!token) {
     throw {
       status: 401,
       message: 'Not authenticated — please login',
       needAuth: true,
-    } as ApiError;
+    } as ApiError
   }
-  
+
   try {
-    const url = `${API_BASE}api/v1/payments/reactivate-subscription`;
+    const url = `${API_BASE}api/v1/payments/reactivate-subscription`
     const response = await fetch(url, {
       method: 'POST',
       headers: getAuthHeaders(),
-    });
-    
+    })
+
     if (!response.ok) {
-      throw await handleApiError(response);
+      throw await handleApiError(response)
     }
-    
-    return await response.json();
+
+    return await response.json()
   } catch (error) {
     if ((error as ApiError).status) {
-      throw error;
+      throw error
     }
     throw {
       status: 0,
       message: 'Network error - please check your connection',
       body: error,
-    } as ApiError;
+    } as ApiError
   }
 }
 
@@ -588,70 +595,70 @@ export async function listPayments({
   pageSize = 20,
   status,
 }: {
-  page?: number;
-  pageSize?: number;
-  status?: 'pending' | 'succeeded' | 'failed' | 'refunded';
+  page?: number
+  pageSize?: number
+  status?: 'pending' | 'succeeded' | 'failed' | 'refunded'
 } = {}): Promise<PaymentsListResponse> {
   if (USE_MOCK_DATA) {
-    logMockDataUsage('listPayments');
-    
-    let filteredPayments = [...MOCK_PAYMENTS];
+    logMockDataUsage('listPayments')
+
+    let filteredPayments = [...MOCK_PAYMENTS]
     if (status) {
-      filteredPayments = filteredPayments.filter(p => p.status === status);
+      filteredPayments = filteredPayments.filter((p) => p.status === status)
     }
-    
+
     // Simulate pagination
-    const start = (page - 1) * pageSize;
-    const end = start + pageSize;
-    const paginatedPayments = filteredPayments.slice(start, end);
-    
+    const start = (page - 1) * pageSize
+    const end = start + pageSize
+    const paginatedPayments = filteredPayments.slice(start, end)
+
     return {
       count: filteredPayments.length,
       next: end < filteredPayments.length ? `page=${page + 1}` : null,
       previous: page > 1 ? `page=${page - 1}` : null,
       results: paginatedPayments,
-    };
+    }
   }
-  
-  const token = getAccessToken();
+
+  const token = getAccessToken()
   if (!token) {
     throw {
       status: 401,
       message: 'Not authenticated — please login',
       needAuth: true,
-    } as ApiError;
+    } as ApiError
   }
-  
+
   try {
     const params = new URLSearchParams({
       page: page.toString(),
       page_size: pageSize.toString(),
-    });
-    
+    })
+
     if (status) {
-      params.append('status', status);
+      params.append('status', status)
     }
-    
-    const url = `${API_BASE}api/v1/payments/payments?${params.toString()}`;
+
+    const url = `${API_BASE}api/v1/payments/payments?${params.toString()}`
     const response = await fetch(url, {
       method: 'GET',
       headers: getAuthHeaders(),
-    });
-    
+    })
+
     if (!response.ok) {
-      throw await handleApiError(response);
+      throw await handleApiError(response)
     }
-    
-    return await response.json();
+
+    return await response.json()
   } catch (error) {
     if ((error as ApiError).status) {
-      throw error;
+      throw error
     }
     throw {
       status: 0,
       message: 'Network error - please check your connection',
       body: error,
-    } as ApiError;
+    } as ApiError
   }
 }
 
@@ -662,7 +669,7 @@ export async function listPayments({
 /**
  * Check stream access for content (subscription or PPV)
  * GET /api/v1/content/content/{contentId}/stream
- * 
+ *
  * Returns access status and either stream URL or PPV checkout information
  * Status 200: Access granted (subscription or purchased)
  * Status 402: Payment required (PPV content, not purchased)
@@ -672,72 +679,72 @@ export async function checkStreamAccess(
   quality: string = 'auto'
 ): Promise<StreamAccessResponse> {
   if (USE_MOCK_DATA) {
-    logMockDataUsage('checkStreamAccess');
-    
+    logMockDataUsage('checkStreamAccess')
+
     // Mock: Allow access to content IDs starting with "free-" or if user has subscription
-    const hasAccess = contentId.startsWith('free-') || MOCK_SUBSCRIPTION.status === 'active';
-    
+    const hasAccess = contentId.startsWith('free-') || MOCK_SUBSCRIPTION.status === 'active'
+
     if (hasAccess) {
       return {
         access: true,
         stream_url: `https://cdn.example.com/streams/${contentId}/playlist.m3u8`,
         drm_key: 'mock_drm_key_' + contentId,
         expires_in_seconds: 3600,
-      };
+      }
     }
-    
+
     // Mock PPV response
     return {
       access: false,
       is_ppv: true,
       price: 599,
       checkout_url: `https://checkout.stripe.com/pay/mock_ppv_${contentId}`,
-    };
+    }
   }
-  
-  const token = getAccessToken();
+
+  const token = getAccessToken()
   if (!token) {
     throw {
       status: 401,
       message: 'Not authenticated — please login',
       needAuth: true,
-    } as ApiError;
+    } as ApiError
   }
-  
+
   try {
-    const url = `${API_BASE}api/v1/content/content/${contentId}/stream?quality=${quality}`;
+    const url = `${API_BASE}api/v1/content/content/${contentId}/stream?quality=${quality}`
     const response = await fetch(url, {
       method: 'GET',
       headers: getAuthHeaders(),
-    });
-    
+    })
+
     if (response.ok) {
       // 200: Access granted
-      const data = await response.json();
+      const data = await response.json()
       return {
         access: true,
         ...data,
-      };
+      }
     } else if (response.status === 402) {
       // 402: Payment required (PPV)
-      const data = await response.json();
+      const data = await response.json()
       return {
         access: false,
         is_ppv: true,
         ...data,
-      };
+      }
     } else {
-      throw await handleApiError(response);
+      throw await handleApiError(response)
     }
   } catch (error) {
     if ((error as ApiError).status) {
-      throw error;
+      throw error
     }
     throw {
       status: 0,
       message: 'Network error - please check your connection',
       body: error,
-    } as ApiError;
+    } as ApiError
   }
 }
 
@@ -747,43 +754,43 @@ export async function checkStreamAccess(
  */
 export async function createPpvCheckout(contentId: string): Promise<string> {
   if (USE_MOCK_DATA) {
-    logMockDataUsage('createPpvCheckout');
-    
+    logMockDataUsage('createPpvCheckout')
+
     // Return mock checkout URL
-    return `https://checkout.stripe.com/pay/mock_ppv_${contentId}_${Date.now()}`;
+    return `https://checkout.stripe.com/pay/mock_ppv_${contentId}_${Date.now()}`
   }
-  
-  const token = getAccessToken();
+
+  const token = getAccessToken()
   if (!token) {
     throw {
       status: 401,
       message: 'Not authenticated — please login',
       needAuth: true,
-    } as ApiError;
+    } as ApiError
   }
-  
+
   try {
-    const url = `${API_BASE}api/v1/content/ppv/checkout`;
+    const url = `${API_BASE}api/v1/content/ppv/checkout`
     const response = await fetch(url, {
       method: 'POST',
       headers: getAuthHeaders(),
       body: JSON.stringify({ content_id: contentId }),
-    });
-    
+    })
+
     if (!response.ok) {
-      throw await handleApiError(response);
+      throw await handleApiError(response)
     }
-    
-    const data: PpvCheckoutResponse = await response.json();
-    return data.checkout_url;
+
+    const data: PpvCheckoutResponse = await response.json()
+    return data.checkout_url
   } catch (error) {
     if ((error as ApiError).status) {
-      throw error;
+      throw error
     }
     throw {
       status: 0,
       message: 'Network error - please check your connection',
       body: error,
-    } as ApiError;
+    } as ApiError
   }
 }

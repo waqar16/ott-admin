@@ -1,99 +1,101 @@
-import React, { useState, useEffect } from 'react';
-import { 
-  getLandingPageContent, 
-  createLandingPageContent, 
+import React, { useState, useEffect } from 'react'
+import {
+  getLandingPageContent,
+  createLandingPageContent,
   updateLandingPageContent,
   deleteLandingPageContent,
   LandingPageContent,
   CreateLandingPageContentRequest,
-  UpdateLandingPageContentRequest
-} from '../api/contentApi';
-import { Button } from '../components/ui/Button';
-import { Input } from '../components/ui/Input';
-import { Textarea } from '../components/ui/Textarea';
-import { Card } from '../components/ui/Card';
-import { toast } from 'react-hot-toast';
+  UpdateLandingPageContentRequest,
+} from '../api/contentApi'
+import { Button } from '../components/ui/Button'
+import { Input } from '../components/ui/Input'
+import { Textarea } from '../components/ui/Textarea'
+import { Card } from '../components/ui/Card'
+import { toast } from 'react-hot-toast'
 
 export default function LandingPageContentManagement() {
-  const [content, setContent] = useState<LandingPageContent | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [isEditing, setIsEditing] = useState(false);
-  const [isCreating, setIsCreating] = useState(false);
+  const [content, setContent] = useState<LandingPageContent | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [isEditing, setIsEditing] = useState(false)
+  const [isCreating, setIsCreating] = useState(false)
   const [formData, setFormData] = useState<CreateLandingPageContentRequest>({
     main_text: '',
     sub_text: '',
     description: '',
     button_text: '',
-  });
+  })
 
   useEffect(() => {
-    fetchContent();
-  }, []);
+    fetchContent()
+  }, [])
 
   const fetchContent = async () => {
     try {
-      setLoading(true);
-      const data = await getLandingPageContent();
-      setContent(data);
+      setLoading(true)
+      const data = await getLandingPageContent()
+      setContent(data)
       setFormData({
         main_text: data.main_text,
         sub_text: data.sub_text,
         description: data.description,
         button_text: data.button_text,
-      });
-      setIsCreating(false);
+      })
+      setIsCreating(false)
     } catch (error: any) {
       if (error.response?.status === 404) {
-        setIsCreating(true);
-        setContent(null);
+        setIsCreating(true)
+        setContent(null)
       } else {
-        toast.error('Failed to load landing page content');
-        console.error('Error fetching content:', error);
+        toast.error('Failed to load landing page content')
+        console.error('Error fetching content:', error)
       }
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
   const handleInputChange = (field: keyof CreateLandingPageContentRequest, value: string) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
-  };
+    setFormData((prev) => ({ ...prev, [field]: value }))
+  }
 
   const handleSave = async () => {
     try {
       if (isCreating) {
-        await createLandingPageContent(formData);
-        toast.success('Landing page content created successfully');
+        await createLandingPageContent(formData)
+        toast.success('Landing page content created successfully')
       } else if (content) {
-        const updateData: UpdateLandingPageContentRequest = {};
-        if (formData.main_text !== content.main_text) updateData.main_text = formData.main_text;
-        if (formData.sub_text !== content.sub_text) updateData.sub_text = formData.sub_text;
-        if (formData.description !== content.description) updateData.description = formData.description;
-        if (formData.button_text !== content.button_text) updateData.button_text = formData.button_text;
+        const updateData: UpdateLandingPageContentRequest = {}
+        if (formData.main_text !== content.main_text) updateData.main_text = formData.main_text
+        if (formData.sub_text !== content.sub_text) updateData.sub_text = formData.sub_text
+        if (formData.description !== content.description)
+          updateData.description = formData.description
+        if (formData.button_text !== content.button_text)
+          updateData.button_text = formData.button_text
 
-        await updateLandingPageContent(content.id, updateData);
-        toast.success('Landing page content updated successfully');
+        await updateLandingPageContent(content.id, updateData)
+        toast.success('Landing page content updated successfully')
       }
-      setIsEditing(false);
-      fetchContent();
+      setIsEditing(false)
+      fetchContent()
     } catch (error) {
-      toast.error('Failed to save landing page content');
-      console.error('Error saving content:', error);
+      toast.error('Failed to save landing page content')
+      console.error('Error saving content:', error)
     }
-  };
+  }
 
   const handleDelete = async () => {
-    if (!content || !window.confirm('Are you sure you want to delete this content?')) return;
-    
+    if (!content || !window.confirm('Are you sure you want to delete this content?')) return
+
     try {
-      await deleteLandingPageContent(content.id);
-      toast.success('Landing page content deleted successfully');
-      fetchContent();
+      await deleteLandingPageContent(content.id)
+      toast.success('Landing page content deleted successfully')
+      fetchContent()
     } catch (error) {
-      toast.error('Failed to delete landing page content');
-      console.error('Error deleting content:', error);
+      toast.error('Failed to delete landing page content')
+      console.error('Error deleting content:', error)
     }
-  };
+  }
 
   const handleCancel = () => {
     if (content) {
@@ -102,20 +104,20 @@ export default function LandingPageContentManagement() {
         sub_text: content.sub_text,
         description: content.description,
         button_text: content.button_text,
-      });
+      })
     }
-    setIsEditing(false);
-  };
+    setIsEditing(false)
+  }
 
   if (loading) {
     return (
       <div className="flex justify-center items-center min-h-screen">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
       </div>
-    );
+    )
   }
 
-  const editMode = isEditing || isCreating;
+  const editMode = isEditing || isCreating
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-4xl">
@@ -128,9 +130,7 @@ export default function LandingPageContentManagement() {
         <div className="space-y-6">
           {/* Main Text */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Main Text
-            </label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Main Text</label>
             {editMode ? (
               <Input
                 value={formData.main_text}
@@ -139,15 +139,15 @@ export default function LandingPageContentManagement() {
                 className="w-full"
               />
             ) : (
-              <p className="text-gray-900 text-lg font-semibold">{content?.main_text || 'Not set'}</p>
+              <p className="text-gray-900 text-lg font-semibold">
+                {content?.main_text || 'Not set'}
+              </p>
             )}
           </div>
 
           {/* Sub Text */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Sub Text
-            </label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Sub Text</label>
             {editMode ? (
               <Input
                 value={formData.sub_text}
@@ -162,9 +162,7 @@ export default function LandingPageContentManagement() {
 
           {/* Description */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Description
-            </label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Description</label>
             {editMode ? (
               <Textarea
                 value={formData.description}
@@ -180,9 +178,7 @@ export default function LandingPageContentManagement() {
 
           {/* Button Text */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Button Text
-            </label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Button Text</label>
             {editMode ? (
               <Input
                 value={formData.button_text}
@@ -233,5 +229,5 @@ export default function LandingPageContentManagement() {
         </div>
       </Card>
     </div>
-  );
+  )
 }

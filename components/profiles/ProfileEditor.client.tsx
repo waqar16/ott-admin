@@ -1,19 +1,25 @@
-'use client';
+'use client'
 
-import { useState, FormEvent } from 'react';
-import { Profile, ApiError, createProfile, updateProfile, CreateProfilePayload } from '@/lib/profilesApi';
+import { useState, FormEvent } from 'react'
+import {
+  Profile,
+  ApiError,
+  createProfile,
+  updateProfile,
+  CreateProfilePayload,
+} from '@/lib/profilesApi'
 
 interface ProfileEditorProps {
-  profile: Profile | null;
-  onClose: () => void;
-  onSuccess: () => void;
+  profile: Profile | null
+  onClose: () => void
+  onSuccess: () => void
 }
 
-const MATURITY_RATINGS = ['G', 'PG', 'PG-13', 'R', 'NC-17'];
-const LANGUAGES = ['en', 'es', 'fr', 'de', 'it', 'pt', 'ja', 'ko', 'zh'];
+const MATURITY_RATINGS = ['G', 'PG', 'PG-13', 'R', 'NC-17']
+const LANGUAGES = ['en', 'es', 'fr', 'de', 'it', 'pt', 'ja', 'ko', 'zh']
 
 export default function ProfileEditor({ profile, onClose, onSuccess }: ProfileEditorProps) {
-  const isEditing = !!profile;
+  const isEditing = !!profile
 
   const [formData, setFormData] = useState<CreateProfilePayload>({
     display_name: profile?.display_name || '',
@@ -23,33 +29,33 @@ export default function ProfileEditor({ profile, onClose, onSuccess }: ProfileEd
     is_kids_profile: profile?.is_kids_profile || false,
     preferred_language: profile?.preferred_language || 'en',
     maturity_rating: profile?.maturity_rating || 'PG-13',
-  });
+  })
 
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   function handleChange(field: keyof CreateProfilePayload, value: any) {
-    setFormData(prev => ({ ...prev, [field]: value }));
-    setError(null);
+    setFormData((prev) => ({ ...prev, [field]: value }))
+    setError(null)
   }
 
   async function handleSubmit(e: FormEvent) {
-    e.preventDefault();
-    
+    e.preventDefault()
+
     // Validation
     if (!formData.display_name.trim()) {
-      setError('Display name is required');
-      return;
+      setError('Display name is required')
+      return
     }
 
     if (formData.is_profile_locked && (!formData.pin || formData.pin.length !== 4)) {
-      setError('PIN must be exactly 4 digits when profile is locked');
-      return;
+      setError('PIN must be exactly 4 digits when profile is locked')
+      return
     }
 
     try {
-      setLoading(true);
-      setError(null);
+      setLoading(true)
+      setError(null)
 
       // Prepare payload (exclude PIN if not locked or if editing and PIN is empty)
       const payload: CreateProfilePayload = {
@@ -59,26 +65,26 @@ export default function ProfileEditor({ profile, onClose, onSuccess }: ProfileEd
         is_kids_profile: formData.is_kids_profile,
         preferred_language: formData.preferred_language,
         maturity_rating: formData.maturity_rating,
-      };
+      }
 
       // Only include PIN if locked and provided
       if (formData.is_profile_locked && formData.pin) {
-        payload.pin = formData.pin;
+        payload.pin = formData.pin
       }
 
       if (isEditing && profile) {
-        await updateProfile(profile.id, payload);
+        await updateProfile(profile.id, payload)
       } else {
-        await createProfile(payload);
+        await createProfile(payload)
       }
 
-      onSuccess();
+      onSuccess()
     } catch (err) {
-      const apiError = err as ApiError;
-      setError(apiError.message || 'Failed to save profile');
-      console.error('Error saving profile:', err);
+      const apiError = err as ApiError
+      setError(apiError.message || 'Failed to save profile')
+      console.error('Error saving profile:', err)
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
   }
 
@@ -90,12 +96,14 @@ export default function ProfileEditor({ profile, onClose, onSuccess }: ProfileEd
           <h2 className="text-2xl font-bold text-white">
             {isEditing ? 'Edit Profile' : 'Create Profile'}
           </h2>
-          <button
-            onClick={onClose}
-            className="text-gray-400 hover:text-white transition-colors"
-          >
+          <button onClick={onClose} className="text-gray-400 hover:text-white transition-colors">
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M6 18L18 6M6 6l12 12"
+              />
             </svg>
           </button>
         </div>
@@ -139,9 +147,7 @@ export default function ProfileEditor({ profile, onClose, onSuccess }: ProfileEd
               className="w-full px-4 py-2 bg-gray-700 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
               placeholder="https://example.com/avatar.jpg"
             />
-            <p className="text-xs text-gray-400 mt-1">
-              Leave blank for auto-generated avatar
-            </p>
+            <p className="text-xs text-gray-400 mt-1">Leave blank for auto-generated avatar</p>
           </div>
 
           {/* Kids Profile Toggle */}
@@ -183,8 +189,8 @@ export default function ProfileEditor({ profile, onClose, onSuccess }: ProfileEd
                 id="pin"
                 value={formData.pin}
                 onChange={(e) => {
-                  const value = e.target.value.replace(/\D/g, '').slice(0, 4);
-                  handleChange('pin', value);
+                  const value = e.target.value.replace(/\D/g, '').slice(0, 4)
+                  handleChange('pin', value)
                 }}
                 maxLength={4}
                 pattern="\d{4}"
@@ -200,7 +206,10 @@ export default function ProfileEditor({ profile, onClose, onSuccess }: ProfileEd
 
           {/* Preferred Language */}
           <div>
-            <label htmlFor="preferred_language" className="block text-sm font-medium text-gray-300 mb-2">
+            <label
+              htmlFor="preferred_language"
+              className="block text-sm font-medium text-gray-300 mb-2"
+            >
               Preferred Language
             </label>
             <select
@@ -219,7 +228,10 @@ export default function ProfileEditor({ profile, onClose, onSuccess }: ProfileEd
 
           {/* Maturity Rating */}
           <div>
-            <label htmlFor="maturity_rating" className="block text-sm font-medium text-gray-300 mb-2">
+            <label
+              htmlFor="maturity_rating"
+              className="block text-sm font-medium text-gray-300 mb-2"
+            >
               Maturity Rating
             </label>
             <select
@@ -234,9 +246,7 @@ export default function ProfileEditor({ profile, onClose, onSuccess }: ProfileEd
                 </option>
               ))}
             </select>
-            <p className="text-xs text-gray-400 mt-1">
-              Content above this rating will be hidden
-            </p>
+            <p className="text-xs text-gray-400 mt-1">Content above this rating will be hidden</p>
           </div>
 
           {/* Actions */}
@@ -260,5 +270,5 @@ export default function ProfileEditor({ profile, onClose, onSuccess }: ProfileEd
         </form>
       </div>
     </div>
-  );
+  )
 }

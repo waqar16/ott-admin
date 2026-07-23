@@ -1,112 +1,164 @@
-"use client";
+'use client'
 
-import { useState } from "react";
-import { FAQ } from "@/lib/faq";
-import { createFaq, updateFaq } from "@/lib/faq";
-import { toast } from "sonner";
+import React, { useState } from 'react'
+import { FAQ, createFaq, updateFaq } from '@/lib/faq'
+import { toast } from 'sonner'
+import { FiRefreshCw } from 'react-icons/fi'
 
 type Props = {
-  faq?: FAQ | null;
-  onClose: () => void;
-  onSuccess: () => void;
-};
+  faq?: FAQ | null
+  onClose: () => void
+  onSuccess: () => void
+}
 
 export default function FaqForm({ faq, onClose, onSuccess }: Props) {
-  const isEdit = Boolean(faq);
+  const isEdit = Boolean(faq)
 
-  const [question, setQuestion] = useState(faq?.question || "");
-  const [answer, setAnswer] = useState(faq?.answer || "");
-  const [isActive, setIsActive] = useState(faq?.is_active ?? true);
-  const [loading, setLoading] = useState(false);
+  const [question, setQuestion] = useState(faq?.question || '')
+  const [answer, setAnswer] = useState(faq?.answer || '')
+  const [isActive, setIsActive] = useState(faq?.is_active ?? true)
+  const [loading, setLoading] = useState(false)
 
   async function handleSubmit() {
-    if (!question || !answer) {
-      toast.error("Question and answer are required");
-      return;
+    if (!question || !question.trim() || !answer || !answer.trim()) {
+      toast.error('Question and answer are required')
+      return
     }
 
-    setLoading(true);
+    setLoading(true)
 
     const payload = {
-      question,
-      answer,
+      question: question.trim(),
+      answer: answer.trim(),
       is_active: isActive,
-    };
-
-    const status = isEdit
-      ? await updateFaq({ ...payload, id: faq!.id })
-      : await createFaq(payload);
-
-    if (status === 200 || status === 201) {
-      toast.success(isEdit ? "FAQ updated" : "FAQ created");
-      onSuccess();
-      onClose();
-    } else {
-      toast.error("Something went wrong");
     }
 
-    setLoading(false);
+    try {
+      const status = isEdit && faq?.id ? await updateFaq({ ...payload, id: faq.id }) : await createFaq(payload)
+
+      if (status === 200 || status === 201) {
+        toast.success(isEdit ? 'FAQ updated' : 'FAQ created')
+        onSuccess()
+        onClose()
+      } else {
+        toast.error('Something went wrong')
+      }
+    } catch (err) {
+      console.error('Error submitting FAQ form:', err)
+      toast.error('Something went wrong')
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70">
-      <div className="bg-neutral-900 rounded-xl p-6 w-full max-w-lg border border-neutral-800">
-        <h3 className="text-xl font-semibold mb-4">
-          {isEdit ? "Edit FAQ" : "Create FAQ"}
-        </h3>
+    <div className="h-full flex flex-col justify-between overflow-y-auto p-6 sm:p-8 bg-background text-foreground space-y-6">
+      <div className="space-y-6 flex-1">
+        {/* Question Input */}
+        <div className="space-y-1.5">
+          <label className="block text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+            Question <span className="text-rose-500">*</span>
+          </label>
+          <input
+            value={question}
+            onChange={(e) => setQuestion(e.target.value)}
+            className="w-full px-3.5 py-2.5 bg-background border border-input text-foreground rounded-lg text-sm outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition-all placeholder:text-muted-foreground"
+            placeholder="Enter FAQ question (e.g., How do I reset my password?)"
+          />
+        </div>
 
-        <div className="space-y-4">
-          {/* Question */}
-          <div>
-            <label className="text-sm text-gray-400">Question</label>
-            <input
-              value={question}
-              onChange={(e) => setQuestion(e.target.value)}
-              className="w-full mt-1 px-3 py-2 bg-black border border-neutral-700 rounded"
-              placeholder="Enter FAQ question"
-            />
+        {/* Answer Textarea */}
+        <div className="space-y-1.5">
+          <label className="block text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+            Answer Details <span className="text-rose-500">*</span>
+          </label>
+          <textarea
+            value={answer}
+            onChange={(e) => setAnswer(e.target.value)}
+            rows={6}
+            className="w-full px-3.5 py-2.5 bg-background border border-input text-foreground rounded-lg text-sm outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition-all placeholder:text-muted-foreground resize-y"
+            placeholder="Provide a clear, detailed answer..."
+          />
+        </div>
+
+        {/* Active Toggle Switch / Checkbox */}
+        <div className="p-4 rounded-xl border border-border/80 bg-card/60 flex items-center justify-between">
+          <div className="space-y-0.5">
+            <span className="text-sm font-semibold text-foreground block">
+              Publish Status
+            </span>
+            <span className="text-xs text-muted-foreground block">
+              Make this FAQ visible immediately in user support sections.
+            </span>
           </div>
 
-          {/* Answer */}
-          <div>
-            <label className="text-sm text-gray-400">Answer</label>
-            <textarea
-              value={answer}
-              onChange={(e) => setAnswer(e.target.value)}
-              rows={4}
-              className="w-full mt-1 px-3 py-2 bg-black border border-neutral-700 rounded"
-              placeholder="Enter FAQ answer"
-            />
-          </div>
-
-          {/* Active */}
-          <div className="flex items-center gap-3">
+          <label className="relative inline-flex items-center cursor-pointer">
             <input
               type="checkbox"
               checked={isActive}
               onChange={() => setIsActive(!isActive)}
+              className="peer sr-only"
             />
-            <span className="text-sm text-gray-300">Active</span>
-          </div>
-        </div>
 
-        {/* Actions */}
-        <div className="flex justify-end gap-3 mt-6">
-          <button
-            onClick={onClose}
-            className="px-4 py-2 bg-gray-800 rounded"
-          >
-            Cancel
-          </button>
-          <button
-            disabled={loading}
-            onClick={handleSubmit}
-            className="px-4 py-2 bg-blue-600 rounded hover:bg-blue-700 disabled:opacity-50"
-          >
-            {isEdit ? "Update" : "Create"}
-          </button>
+            <div
+              className="
+      relative h-6 w-11 rounded-full
+      border border-border
+      bg-muted
+      transition-colors duration-200
+
+      peer-checked:bg-primary
+      peer-checked:border-primary
+
+      after:absolute
+      after:left-0.5
+      after:top-0.4
+      after:h-5
+      after:w-5
+      after:rounded-full
+      after:bg-background
+      after:border
+      after:border-border
+      after:shadow-sm
+      after:transition-all
+      after:duration-200
+      after:content-['']
+
+      peer-checked:after:translate-x-5
+      peer-checked:after:border-primary/20
+    "
+            />
+          </label>
         </div>
       </div>
+
+      {/* Footer Actions */}
+      <div className="pt-6 border-t border-border/60 flex items-center justify-end gap-3">
+        <button
+          type="button"
+          onClick={onClose}
+          disabled={loading}
+          className="px-4 py-2.5 text-sm font-semibold rounded-lg text-foreground bg-accent hover:bg-accent/80 border border-border transition-all cursor-pointer disabled:opacity-50"
+        >
+          Cancel
+        </button>
+
+        <button
+          type="button"
+          disabled={loading}
+          onClick={handleSubmit}
+          className="inline-flex items-center justify-center gap-2 px-5 py-2.5 text-sm font-semibold rounded-lg text-primary-foreground bg-primary hover:bg-primary/90 active:scale-[0.98] transition-all shadow-sm disabled:opacity-60 cursor-pointer"
+        >
+          {loading ? (
+            <>
+              <FiRefreshCw className="w-4 h-4 animate-spin" />
+              <span>Saving...</span>
+            </>
+          ) : (
+            <span>{isEdit ? 'Update FAQ' : 'Create FAQ'}</span>
+          )}
+        </button>
+      </div>
     </div>
-  );
+  )
 }

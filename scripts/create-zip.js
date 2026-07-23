@@ -45,14 +45,14 @@ const rootDir = path.join(__dirname, '..')
 
 filesToInclude.forEach((item) => {
   const fullPath = path.join(rootDir, item)
-  
+
   if (!fs.existsSync(fullPath)) {
     console.log(`⚠️  Skipping ${item} (not found)`)
     return
   }
-  
+
   const stat = fs.statSync(fullPath)
-  
+
   if (stat.isDirectory()) {
     archive.directory(fullPath, item)
     console.log(`📁 Adding directory: ${item}`)

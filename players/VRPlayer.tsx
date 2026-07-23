@@ -1,101 +1,97 @@
-'use client';
+'use client'
 
-import { useEffect, useRef, useState } from 'react';
-import { Canvas, useThree, useFrame } from '@react-three/fiber';
-import { useTexture, OrbitControls } from '@react-three/drei';
-import * as THREE from 'three';
-import Hls from 'hls.js';
+import { useEffect, useRef, useState } from 'react'
+import { Canvas, useThree, useFrame } from '@react-three/fiber'
+import { useTexture, OrbitControls } from '@react-three/drei'
+import * as THREE from 'three'
+import Hls from 'hls.js'
 
 // WebXR polyfill types
 declare global {
   interface Navigator {
     xr?: {
-      isSessionSupported: (mode: string) => Promise<boolean>;
-      requestSession: (mode: string, options?: any) => Promise<any>;
-    };
+      isSessionSupported: (mode: string) => Promise<boolean>
+      requestSession: (mode: string, options?: any) => Promise<any>
+    }
   }
 }
 
 export interface VRPlayerProps {
-  src: string;
-  poster?: string;
-  is360?: boolean;
-  isStereo?: boolean;
-  initialBitrate?: number;
-  autoPlay?: boolean;
-  onQualityChange?: (level: number, bitrate: number) => void;
-  onError?: (error: string) => void;
-  className?: string;
+  src: string
+  poster?: string
+  is360?: boolean
+  isStereo?: boolean
+  initialBitrate?: number
+  autoPlay?: boolean
+  onQualityChange?: (level: number, bitrate: number) => void
+  onError?: (error: string) => void
+  className?: string
 }
 
 interface VideoSphereProps {
-  videoElement: HTMLVideoElement;
-  isStereo: boolean;
+  videoElement: HTMLVideoElement
+  isStereo: boolean
 }
 
 function VideoSphere({ videoElement, isStereo }: VideoSphereProps) {
-  const meshRef = useRef<THREE.Mesh>(null);
-  const [videoTexture, setVideoTexture] = useState<THREE.VideoTexture | null>(null);
+  const meshRef = useRef<THREE.Mesh>(null)
+  const [videoTexture, setVideoTexture] = useState<THREE.VideoTexture | null>(null)
 
   useEffect(() => {
     if (videoElement && videoElement.readyState >= videoElement.HAVE_CURRENT_DATA) {
-      const texture = new THREE.VideoTexture(videoElement);
-      texture.minFilter = THREE.LinearFilter;
-      texture.magFilter = THREE.LinearFilter;
-      texture.format = THREE.RGBAFormat;
-      texture.colorSpace = THREE.SRGBColorSpace;
-      
+      const texture = new THREE.VideoTexture(videoElement)
+      texture.minFilter = THREE.LinearFilter
+      texture.magFilter = THREE.LinearFilter
+      texture.format = THREE.RGBAFormat
+      texture.colorSpace = THREE.SRGBColorSpace
+
       // For stereoscopic video, we only use half the texture (side-by-side format)
       if (isStereo) {
-        texture.repeat.set(0.5, 1);
-        texture.offset.set(0, 0);
+        texture.repeat.set(0.5, 1)
+        texture.offset.set(0, 0)
       }
-      
-      setVideoTexture(texture);
+
+      setVideoTexture(texture)
     }
-  }, [videoElement, isStereo]);
+  }, [videoElement, isStereo])
 
   useFrame(() => {
     if (videoTexture && videoElement.readyState >= videoElement.HAVE_CURRENT_DATA) {
-      videoTexture.needsUpdate = true;
+      videoTexture.needsUpdate = true
     }
-  });
+  })
 
   return (
     <mesh ref={meshRef} scale={[-1, 1, 1]}>
       <sphereGeometry args={[500, 60, 40]} />
-      <meshBasicMaterial 
-        map={videoTexture} 
-        side={THREE.BackSide}
-        toneMapped={false}
-      />
+      <meshBasicMaterial map={videoTexture} side={THREE.BackSide} toneMapped={false} />
     </mesh>
-  );
+  )
 }
 
 interface SceneProps {
-  videoElement: HTMLVideoElement;
-  isStereo: boolean;
-  isCardboardMode: boolean;
-  canvasRef?: React.RefObject<HTMLCanvasElement>;
+  videoElement: HTMLVideoElement
+  isStereo: boolean
+  isCardboardMode: boolean
+  canvasRef?: React.RefObject<HTMLCanvasElement>
 }
 
 function Scene({ videoElement, isStereo, isCardboardMode }: SceneProps) {
-  const { camera, gl } = useThree();
+  const { camera, gl } = useThree()
 
   useEffect(() => {
-    camera.position.set(0, 0, 0.1);
-    camera.fov = 75;
-    camera.updateProjectionMatrix();
-  }, [camera]);
+    camera.position.set(0, 0, 0.1)
+    camera.fov = 75
+    camera.updateProjectionMatrix()
+  }, [camera])
 
   // WebXR session management
   useEffect(() => {
-    if (!gl || !gl.xr) return;
-    
+    if (!gl || !gl.xr) return
+
     // Configure XR for VR
-    gl.xr.enabled = true;
-  }, [gl]);
+    gl.xr.enabled = true
+  }, [gl])
 
   return (
     <>
@@ -111,7 +107,7 @@ function Scene({ videoElement, isStereo, isCardboardMode }: SceneProps) {
         />
       )}
     </>
-  );
+  )
 }
 
 export function VRPlayer({
@@ -125,104 +121,106 @@ export function VRPlayer({
   onError,
   className = '',
 }: VRPlayerProps) {
-  const videoRef = useRef<HTMLVideoElement>(null);
-  const hlsRef = useRef<Hls | null>(null);
-  const containerRef = useRef<HTMLDivElement>(null);
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-  
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [currentTime, setCurrentTime] = useState(0);
-  const [duration, setDuration] = useState(0);
-  const [volume, setVolume] = useState(1);
-  const [isMuted, setIsMuted] = useState(false);
-  const [showControls, setShowControls] = useState(true);
-  const [qualityLevels, setQualityLevels] = useState<{ index: number; name: string; bitrate: number }[]>([]);
-  const [currentQuality, setCurrentQuality] = useState<number>(-1);
-  const [showQualityMenu, setShowQualityMenu] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
-  const [isVideoReady, setIsVideoReady] = useState(false);
-  
+  const videoRef = useRef<HTMLVideoElement>(null)
+  const hlsRef = useRef<Hls | null>(null)
+  const containerRef = useRef<HTMLDivElement>(null)
+  const canvasRef = useRef<HTMLCanvasElement>(null)
+
+  const [isPlaying, setIsPlaying] = useState(false)
+  const [currentTime, setCurrentTime] = useState(0)
+  const [duration, setDuration] = useState(0)
+  const [volume, setVolume] = useState(1)
+  const [isMuted, setIsMuted] = useState(false)
+  const [showControls, setShowControls] = useState(true)
+  const [qualityLevels, setQualityLevels] = useState<
+    { index: number; name: string; bitrate: number }[]
+  >([])
+  const [currentQuality, setCurrentQuality] = useState<number>(-1)
+  const [showQualityMenu, setShowQualityMenu] = useState(false)
+  const [isLoading, setIsLoading] = useState(true)
+  const [isVideoReady, setIsVideoReady] = useState(false)
+
   // WebXR and VR mode states
-  const [supportsWebXR, setSupportsWebXR] = useState(false);
-  const [isInXR, setIsInXR] = useState(false);
-  const [isCardboardMode, setIsCardboardMode] = useState(false);
-  const [showVRMenu, setShowVRMenu] = useState(false);
+  const [supportsWebXR, setSupportsWebXR] = useState(false)
+  const [isInXR, setIsInXR] = useState(false)
+  const [isCardboardMode, setIsCardboardMode] = useState(false)
+  const [showVRMenu, setShowVRMenu] = useState(false)
 
   // Check WebXR support
   useEffect(() => {
     const checkWebXR = async () => {
       if (navigator.xr) {
         try {
-          const supported = await navigator.xr.isSessionSupported('immersive-vr');
-          setSupportsWebXR(supported);
+          const supported = await navigator.xr.isSessionSupported('immersive-vr')
+          setSupportsWebXR(supported)
         } catch (error) {
-          console.log('WebXR not supported:', error);
-          setSupportsWebXR(false);
+          console.log('WebXR not supported:', error)
+          setSupportsWebXR(false)
         }
       } else {
-        setSupportsWebXR(false);
+        setSupportsWebXR(false)
       }
-    };
-    
-    checkWebXR();
-  }, []);
+    }
+
+    checkWebXR()
+  }, [])
 
   // Keyboard controls for accessibility
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       // Prevent default only for player controls
-      const video = videoRef.current;
-      if (!video) return;
+      const video = videoRef.current
+      if (!video) return
 
       switch (e.key.toLowerCase()) {
         case ' ':
         case 'k':
-          e.preventDefault();
-          togglePlay();
-          break;
+          e.preventDefault()
+          togglePlay()
+          break
         case 'arrowleft':
         case 'j':
-          e.preventDefault();
-          handleSeek(Math.max(0, currentTime - 10));
-          break;
+          e.preventDefault()
+          handleSeek(Math.max(0, currentTime - 10))
+          break
         case 'arrowright':
         case 'l':
-          e.preventDefault();
-          handleSeek(Math.min(duration, currentTime + 10));
-          break;
+          e.preventDefault()
+          handleSeek(Math.min(duration, currentTime + 10))
+          break
         case 'arrowup':
-          e.preventDefault();
-          handleVolumeChange(Math.min(1, volume + 0.1));
-          break;
+          e.preventDefault()
+          handleVolumeChange(Math.min(1, volume + 0.1))
+          break
         case 'arrowdown':
-          e.preventDefault();
-          handleVolumeChange(Math.max(0, volume - 0.1));
-          break;
+          e.preventDefault()
+          handleVolumeChange(Math.max(0, volume - 0.1))
+          break
         case 'm':
-          e.preventDefault();
-          toggleMute();
-          break;
+          e.preventDefault()
+          toggleMute()
+          break
         case 'f':
-          e.preventDefault();
-          toggleFullscreen();
-          break;
+          e.preventDefault()
+          toggleFullscreen()
+          break
         case 'v':
           if (is360) {
-            e.preventDefault();
-            setShowVRMenu(!showVRMenu);
+            e.preventDefault()
+            setShowVRMenu(!showVRMenu)
           }
-          break;
+          break
       }
-    };
+    }
 
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isPlaying, currentTime, duration, volume, is360, showVRMenu]);
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [isPlaying, currentTime, duration, volume, is360, showVRMenu])
 
   useEffect(() => {
-    if (!videoRef.current) return;
+    if (!videoRef.current) return
 
-    const video = videoRef.current;
+    const video = videoRef.current
 
     // Setup HLS
     if (Hls.isSupported()) {
@@ -231,44 +229,54 @@ export function VRPlayer({
         enableWorker: true,
         lowLatencyMode: false,
         backBufferLength: 90,
-      });
+      })
 
-      hlsRef.current = hls;
-      hls.loadSource(src);
-      hls.attachMedia(video);
+      hlsRef.current = hls
+      hls.loadSource(src)
+      hls.attachMedia(video)
 
       hls.on(Hls.Events.MANIFEST_PARSED, () => {
-        setIsLoading(false);
-        
+        setIsLoading(false)
+
         const levels = hls.levels.map((level, index) => ({
           index,
           height: level.height,
           bitrate: level.bitrate,
           name: level.height ? `${level.height}p` : `Level ${index}`,
-        }));
+        }))
 
-        setQualityLevels(levels);
-        setCurrentQuality(hls.currentLevel);
+        setQualityLevels(levels)
+        setCurrentQuality(hls.currentLevel)
 
         // Apply playback preferences (bitratePreset) similar to VideoPlayer
         try {
-          const raw = localStorage.getItem('ott_playback_preferences');
+          const raw = localStorage.getItem('ott_playback_preferences')
           if (raw) {
-            const prefs = JSON.parse(raw);
+            const prefs = JSON.parse(raw)
             if (prefs?.bitratePreset && prefs.bitratePreset !== 'auto') {
-              const target = prefs.bitratePreset === 'custom' ? prefs.customBitrate * 1000 :
-                prefs.bitratePreset === 'high' ? 5000 * 1000 :
-                prefs.bitratePreset === 'medium' ? 2500 * 1000 :
-                prefs.bitratePreset === 'low' ? 1000 * 1000 : undefined;
+              const target =
+                prefs.bitratePreset === 'custom'
+                  ? prefs.customBitrate * 1000
+                  : prefs.bitratePreset === 'high'
+                    ? 5000 * 1000
+                    : prefs.bitratePreset === 'medium'
+                      ? 2500 * 1000
+                      : prefs.bitratePreset === 'low'
+                        ? 1000 * 1000
+                        : undefined
               if (target) {
-                let closest = -1; let diff = Infinity;
+                let closest = -1
+                let diff = Infinity
                 hls.levels.forEach((lvl, idx) => {
-                  const d = Math.abs(lvl.bitrate - target);
-                  if (d < diff) { diff = d; closest = idx; }
-                });
+                  const d = Math.abs(lvl.bitrate - target)
+                  if (d < diff) {
+                    diff = d
+                    closest = idx
+                  }
+                })
                 if (closest >= 0) {
-                  hls.currentLevel = closest;
-                  setCurrentQuality(closest);
+                  hls.currentLevel = closest
+                  setCurrentQuality(closest)
                 }
               }
             }
@@ -277,188 +285,188 @@ export function VRPlayer({
 
         if (autoPlay) {
           video.play().catch((error) => {
-            console.error('Autoplay failed:', error);
-            if (onError) onError('Autoplay failed');
-          });
+            console.error('Autoplay failed:', error)
+            if (onError) onError('Autoplay failed')
+          })
         }
-      });
+      })
 
       hls.on(Hls.Events.LEVEL_SWITCHED, (event, data) => {
-        setCurrentQuality(data.level);
-        const level = hls.levels[data.level];
+        setCurrentQuality(data.level)
+        const level = hls.levels[data.level]
         if (onQualityChange && level) {
-          onQualityChange(data.level, level.bitrate);
+          onQualityChange(data.level, level.bitrate)
         }
-      });
+      })
 
       hls.on(Hls.Events.ERROR, (event, data) => {
-        console.error('HLS error:', data);
+        console.error('HLS error:', data)
         if (data.fatal) {
           switch (data.type) {
             case Hls.ErrorTypes.NETWORK_ERROR:
-              hls.startLoad();
-              break;
+              hls.startLoad()
+              break
             case Hls.ErrorTypes.MEDIA_ERROR:
-              hls.recoverMediaError();
-              break;
+              hls.recoverMediaError()
+              break
             default:
-              if (onError) onError('Fatal playback error');
-              break;
+              if (onError) onError('Fatal playback error')
+              break
           }
         }
-      });
+      })
 
       return () => {
-        hls.destroy();
-      };
+        hls.destroy()
+      }
     } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
-      video.src = src;
-      setIsLoading(false);
+      video.src = src
+      setIsLoading(false)
 
       if (autoPlay) {
         video.play().catch((error) => {
-          console.error('Autoplay failed:', error);
-          if (onError) onError('Autoplay failed');
-        });
+          console.error('Autoplay failed:', error)
+          if (onError) onError('Autoplay failed')
+        })
       }
     } else {
-      console.error('HLS is not supported');
-      if (onError) onError('HLS is not supported in this browser');
-      setIsLoading(false);
+      console.error('HLS is not supported')
+      if (onError) onError('HLS is not supported in this browser')
+      setIsLoading(false)
     }
-  }, [src, autoPlay, initialBitrate, onError, onQualityChange]);
+  }, [src, autoPlay, initialBitrate, onError, onQualityChange])
 
   useEffect(() => {
-    const video = videoRef.current;
-    if (!video) return;
+    const video = videoRef.current
+    if (!video) return
 
-    const handlePlay = () => setIsPlaying(true);
-    const handlePause = () => setIsPlaying(false);
-    const handleTimeUpdate = () => setCurrentTime(video.currentTime);
-    const handleDurationChange = () => setDuration(video.duration);
+    const handlePlay = () => setIsPlaying(true)
+    const handlePause = () => setIsPlaying(false)
+    const handleTimeUpdate = () => setCurrentTime(video.currentTime)
+    const handleDurationChange = () => setDuration(video.duration)
     const handleVolumeChange = () => {
-      setVolume(video.volume);
-      setIsMuted(video.muted);
-    };
+      setVolume(video.volume)
+      setIsMuted(video.muted)
+    }
     const handleLoadedData = () => {
-      setIsVideoReady(true);
-    };
+      setIsVideoReady(true)
+    }
 
-    video.addEventListener('play', handlePlay);
-    video.addEventListener('pause', handlePause);
-    video.addEventListener('timeupdate', handleTimeUpdate);
-    video.addEventListener('durationchange', handleDurationChange);
-    video.addEventListener('volumechange', handleVolumeChange);
-    video.addEventListener('loadeddata', handleLoadedData);
+    video.addEventListener('play', handlePlay)
+    video.addEventListener('pause', handlePause)
+    video.addEventListener('timeupdate', handleTimeUpdate)
+    video.addEventListener('durationchange', handleDurationChange)
+    video.addEventListener('volumechange', handleVolumeChange)
+    video.addEventListener('loadeddata', handleLoadedData)
 
     return () => {
-      video.removeEventListener('play', handlePlay);
-      video.removeEventListener('pause', handlePause);
-      video.removeEventListener('timeupdate', handleTimeUpdate);
-      video.removeEventListener('durationchange', handleDurationChange);
-      video.removeEventListener('volumechange', handleVolumeChange);
-      video.removeEventListener('loadeddata', handleLoadedData);
-    };
-  }, []);
+      video.removeEventListener('play', handlePlay)
+      video.removeEventListener('pause', handlePause)
+      video.removeEventListener('timeupdate', handleTimeUpdate)
+      video.removeEventListener('durationchange', handleDurationChange)
+      video.removeEventListener('volumechange', handleVolumeChange)
+      video.removeEventListener('loadeddata', handleLoadedData)
+    }
+  }, [])
 
   const togglePlay = () => {
     if (videoRef.current) {
       if (isPlaying) {
-        videoRef.current.pause();
+        videoRef.current.pause()
       } else {
-        videoRef.current.play();
+        videoRef.current.play()
       }
     }
-  };
+  }
 
   const handleSeek = (time: number) => {
     if (videoRef.current) {
-      videoRef.current.currentTime = time;
+      videoRef.current.currentTime = time
     }
-  };
+  }
 
   const handleVolumeChange = (value: number) => {
     if (videoRef.current) {
-      videoRef.current.volume = value;
-      setVolume(value);
+      videoRef.current.volume = value
+      setVolume(value)
       if (value === 0) {
-        setIsMuted(true);
+        setIsMuted(true)
       } else if (isMuted) {
-        setIsMuted(false);
+        setIsMuted(false)
       }
     }
-  };
+  }
 
   const toggleMute = () => {
     if (videoRef.current) {
-      videoRef.current.muted = !isMuted;
-      setIsMuted(!isMuted);
+      videoRef.current.muted = !isMuted
+      setIsMuted(!isMuted)
     }
-  };
+  }
 
   const changeQuality = (levelIndex: number) => {
     if (hlsRef.current) {
-      hlsRef.current.currentLevel = levelIndex;
-      setCurrentQuality(levelIndex);
-      setShowQualityMenu(false);
+      hlsRef.current.currentLevel = levelIndex
+      setCurrentQuality(levelIndex)
+      setShowQualityMenu(false)
       // Persist selection
       try {
-        const raw = localStorage.getItem('ott_playback_preferences');
-        const prefs = raw ? JSON.parse(raw) : {};
-        prefs.bitratePreset = 'custom';
-        const level = hlsRef.current.levels[levelIndex];
-        if (level) prefs.customBitrate = Math.round(level.bitrate / 1000);
-        localStorage.setItem('ott_playback_preferences', JSON.stringify(prefs));
+        const raw = localStorage.getItem('ott_playback_preferences')
+        const prefs = raw ? JSON.parse(raw) : {}
+        prefs.bitratePreset = 'custom'
+        const level = hlsRef.current.levels[levelIndex]
+        if (level) prefs.customBitrate = Math.round(level.bitrate / 1000)
+        localStorage.setItem('ott_playback_preferences', JSON.stringify(prefs))
       } catch {}
     }
-  };
+  }
 
   const enterXR = async () => {
-    if (!navigator.xr || !canvasRef.current) return;
+    if (!navigator.xr || !canvasRef.current) return
 
     try {
       const session = await navigator.xr.requestSession('immersive-vr', {
         requiredFeatures: ['local-floor'],
-        optionalFeatures: ['bounded-floor']
-      });
+        optionalFeatures: ['bounded-floor'],
+      })
 
-      setIsInXR(true);
-      
+      setIsInXR(true)
+
       session.addEventListener('end', () => {
-        setIsInXR(false);
-      });
+        setIsInXR(false)
+      })
 
       // The three.js renderer will handle the XR session
-      console.log('XR session started');
+      console.log('XR session started')
     } catch (error) {
-      console.error('Failed to enter XR:', error);
-      if (onError) onError('Failed to enter VR mode');
+      console.error('Failed to enter XR:', error)
+      if (onError) onError('Failed to enter VR mode')
     }
-  };
+  }
 
   const toggleCardboardMode = () => {
-    setIsCardboardMode(!isCardboardMode);
-    setShowVRMenu(false);
-  };
+    setIsCardboardMode(!isCardboardMode)
+    setShowVRMenu(false)
+  }
 
   const toggleFullscreen = () => {
-    if (!containerRef.current) return;
+    if (!containerRef.current) return
 
     if (!document.fullscreenElement) {
       containerRef.current.requestFullscreen().catch((err) => {
-        console.error('Error entering fullscreen:', err);
-      });
+        console.error('Error entering fullscreen:', err)
+      })
     } else {
-      document.exitFullscreen();
+      document.exitFullscreen()
     }
-  };
+  }
 
   const formatTime = (seconds: number): string => {
-    if (isNaN(seconds)) return '0:00';
-    const mins = Math.floor(seconds / 60);
-    const secs = Math.floor(seconds % 60);
-    return `${mins}:${secs.toString().padStart(2, '0')}`;
-  };
+    if (isNaN(seconds)) return '0:00'
+    const mins = Math.floor(seconds / 60)
+    const secs = Math.floor(seconds % 60)
+    return `${mins}:${secs.toString().padStart(2, '0')}`
+  }
 
   return (
     <div
@@ -484,8 +492,8 @@ export function VRPlayer({
             camera={{ position: [0, 0, 0.1], fov: 75 }}
             gl={{ antialias: true, alpha: false }}
           >
-            <Scene 
-              videoElement={videoRef.current} 
+            <Scene
+              videoElement={videoRef.current}
               isStereo={isStereo}
               isCardboardMode={isCardboardMode}
             />
@@ -558,7 +566,7 @@ export function VRPlayer({
                     <div className="px-3 py-2 border-b border-gray-700">
                       <span className="text-white text-xs font-semibold uppercase">VR Modes</span>
                     </div>
-                    
+
                     <button
                       onClick={toggleCardboardMode}
                       className={`block w-full text-left px-4 py-3 text-white hover:bg-purple-600 transition ${
@@ -626,7 +634,12 @@ export function VRPlayer({
                 title={isPlaying ? 'Pause' : 'Play'}
               >
                 {isPlaying ? (
-                  <svg className="w-8 h-8" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
+                  <svg
+                    className="w-8 h-8"
+                    fill="currentColor"
+                    viewBox="0 0 20 20"
+                    aria-hidden="true"
+                  >
                     <path
                       fillRule="evenodd"
                       d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zM7 8a1 1 0 012 0v4a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v4a1 1 0 102 0V8a1 1 0 00-1-1z"
@@ -634,7 +647,12 @@ export function VRPlayer({
                     />
                   </svg>
                 ) : (
-                  <svg className="w-8 h-8" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
+                  <svg
+                    className="w-8 h-8"
+                    fill="currentColor"
+                    viewBox="0 0 20 20"
+                    aria-hidden="true"
+                  >
                     <path
                       fillRule="evenodd"
                       d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z"
@@ -646,14 +664,19 @@ export function VRPlayer({
 
               {/* Volume */}
               <div className="flex items-center space-x-2">
-                <button 
-                  onClick={toggleMute} 
+                <button
+                  onClick={toggleMute}
                   className="text-white hover:text-red-500 transition"
                   aria-label={isMuted ? 'Unmute (M)' : 'Mute (M)'}
                   title={isMuted ? 'Unmute' : 'Mute'}
                 >
                   {isMuted || volume === 0 ? (
-                    <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
+                    <svg
+                      className="w-6 h-6"
+                      fill="currentColor"
+                      viewBox="0 0 20 20"
+                      aria-hidden="true"
+                    >
                       <path
                         fillRule="evenodd"
                         d="M9.383 3.076A1 1 0 0110 4v12a1 1 0 01-1.707.707L4.586 13H2a1 1 0 01-1-1V8a1 1 0 011-1h2.586l3.707-3.707a1 1 0 011.09-.217zM12.293 7.293a1 1 0 011.414 0L15 8.586l1.293-1.293a1 1 0 111.414 1.414L16.414 10l1.293 1.293a1 1 0 01-1.414 1.414L15 11.414l-1.293 1.293a1 1 0 01-1.414-1.414L13.586 10l-1.293-1.293a1 1 0 010-1.414z"
@@ -661,7 +684,12 @@ export function VRPlayer({
                       />
                     </svg>
                   ) : (
-                    <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
+                    <svg
+                      className="w-6 h-6"
+                      fill="currentColor"
+                      viewBox="0 0 20 20"
+                      aria-hidden="true"
+                    >
                       <path
                         fillRule="evenodd"
                         d="M9.383 3.076A1 1 0 0110 4v12a1 1 0 01-1.707.707L4.586 13H2a1 1 0 01-1-1V8a1 1 0 011-1h2.586l3.707-3.707a1 1 0 011.09-.217zM14.657 2.929a1 1 0 011.414 0A9.972 9.972 0 0119 10a9.972 9.972 0 01-2.929 7.071 1 1 0 01-1.414-1.414A7.971 7.971 0 0017 10c0-2.21-.894-4.208-2.343-5.657a1 1 0 010-1.414zm-2.829 2.828a1 1 0 011.415 0A5.983 5.983 0 0115 10a5.984 5.984 0 01-1.757 4.243 1 1 0 01-1.415-1.415A3.984 3.984 0 0013 10a3.983 3.983 0 00-1.172-2.828 1 1 0 010-1.415z"
@@ -706,7 +734,7 @@ export function VRPlayer({
                   </button>
 
                   {showQualityMenu && (
-                    <div 
+                    <div
                       className="absolute bottom-full right-0 mb-2 bg-black bg-opacity-90 rounded shadow-lg overflow-hidden"
                       role="menu"
                       aria-label="Quality options"
@@ -752,12 +780,17 @@ export function VRPlayer({
             aria-label="Play video"
             title="Play (Space or K)"
           >
-            <svg className="w-16 h-16 text-white" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
+            <svg
+              className="w-16 h-16 text-white"
+              fill="currentColor"
+              viewBox="0 0 20 20"
+              aria-hidden="true"
+            >
               <path d="M6.3 2.841A1.5 1.5 0 004 4.11V15.89a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z" />
             </svg>
           </button>
         </div>
       )}
     </div>
-  );
+  )
 }

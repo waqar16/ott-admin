@@ -1,31 +1,31 @@
-'use client';
+'use client'
 
-import { useState } from 'react';
-import Link from 'next/link';
+import { useState } from 'react'
+import Link from 'next/link'
 
 export interface PriceCardFeature {
-  text: string;
-  included: boolean;
-  highlight?: boolean;
+  text: string
+  included: boolean
+  highlight?: boolean
 }
 
 export interface PriceCardProps {
-  title: string;
-  description?: string;
-  price: number;
-  currency?: string;
-  period?: string; // e.g., "month", "one-time", "year"
-  features?: PriceCardFeature[];
-  badge?: string;
-  badgeColor?: 'purple' | 'blue' | 'green' | 'red' | 'yellow';
-  buttonText?: string;
-  buttonVariant?: 'primary' | 'secondary' | 'outline';
-  onPurchase?: () => void;
-  purchaseUrl?: string;
-  isLoading?: boolean;
-  isPopular?: boolean;
-  originalPrice?: number; // For showing discounts
-  className?: string;
+  title: string
+  description?: string
+  price: number
+  currency?: string
+  period?: string // e.g., "month", "one-time", "year"
+  features?: PriceCardFeature[]
+  badge?: string
+  badgeColor?: 'purple' | 'blue' | 'green' | 'red' | 'yellow'
+  buttonText?: string
+  buttonVariant?: 'primary' | 'secondary' | 'outline'
+  onPurchase?: () => void
+  purchaseUrl?: string
+  isLoading?: boolean
+  isPopular?: boolean
+  originalPrice?: number // For showing discounts
+  className?: string
 }
 
 export function PriceCard({
@@ -46,33 +46,33 @@ export function PriceCard({
   originalPrice,
   className = '',
 }: PriceCardProps) {
-  const [isPurchasing, setIsPurchasing] = useState(false);
+  const [isPurchasing, setIsPurchasing] = useState(false)
 
   const handlePurchaseClick = async () => {
-    if (isLoading || isPurchasing) return;
+    if (isLoading || isPurchasing) return
 
     if (purchaseUrl) {
-      window.location.href = purchaseUrl;
-      return;
+      window.location.href = purchaseUrl
+      return
     }
 
     if (onPurchase) {
-      setIsPurchasing(true);
+      setIsPurchasing(true)
       try {
-        await onPurchase();
+        await onPurchase()
       } finally {
-        setIsPurchasing(false);
+        setIsPurchasing(false)
       }
     }
-  };
+  }
 
   const formatPrice = (amount: number) => {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
       currency,
       minimumFractionDigits: amount % 1 === 0 ? 0 : 2,
-    }).format(amount);
-  };
+    }).format(amount)
+  }
 
   const getBadgeColors = () => {
     const colors = {
@@ -81,26 +81,28 @@ export function PriceCard({
       green: 'bg-green-100 text-green-700 border-green-200',
       red: 'bg-red-100 text-red-700 border-red-200',
       yellow: 'bg-yellow-100 text-yellow-700 border-yellow-200',
-    };
-    return colors[badgeColor];
-  };
+    }
+    return colors[badgeColor]
+  }
 
   const getButtonClasses = () => {
-    const baseClasses = 'w-full py-3 px-6 rounded-lg font-semibold transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed';
-    
+    const baseClasses =
+      'w-full py-3 px-6 rounded-lg font-semibold transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed'
+
     const variants = {
-      primary: 'bg-gradient-to-r from-purple-600 to-pink-600 text-white hover:from-purple-700 hover:to-pink-700 shadow-lg hover:shadow-xl',
+      primary:
+        'bg-gradient-to-r from-purple-600 to-pink-600 text-white hover:from-purple-700 hover:to-pink-700 shadow-lg hover:shadow-xl',
       secondary: 'bg-gray-900 text-white hover:bg-gray-800',
       outline: 'border-2 border-purple-600 text-purple-600 hover:bg-purple-50',
-    };
+    }
 
-    return `${baseClasses} ${variants[buttonVariant]}`;
-  };
+    return `${baseClasses} ${variants[buttonVariant]}`
+  }
 
-  const hasDiscount = originalPrice && originalPrice > price;
-  const discountPercent = hasDiscount 
+  const hasDiscount = originalPrice && originalPrice > price
+  const discountPercent = hasDiscount
     ? Math.round(((originalPrice - price) / originalPrice) * 100)
-    : 0;
+    : 0
 
   return (
     <div
@@ -130,9 +132,7 @@ export function PriceCard({
         {/* Header */}
         <div className="mb-6">
           <h3 className="text-2xl font-bold text-gray-900 mb-2">{title}</h3>
-          {description && (
-            <p className="text-gray-600 text-sm">{description}</p>
-          )}
+          {description && <p className="text-gray-600 text-sm">{description}</p>}
         </div>
 
         {/* Price */}
@@ -143,11 +143,9 @@ export function PriceCard({
                 {formatPrice(originalPrice)}
               </span>
             )}
-            <span className="text-5xl font-bold text-gray-900">
-              {formatPrice(price)}
-            </span>
+            <span className="text-5xl font-bold text-gray-900">{formatPrice(price)}</span>
           </div>
-          
+
           {period && (
             <p className="text-gray-600 mt-1">
               {period === 'one-time' ? 'One-time payment' : `per ${period}`}
@@ -169,24 +167,16 @@ export function PriceCard({
             {features.map((feature, index) => (
               <li
                 key={index}
-                className={`flex items-start gap-3 ${
-                  feature.highlight ? 'font-semibold' : ''
-                }`}
+                className={`flex items-start gap-3 ${feature.highlight ? 'font-semibold' : ''}`}
               >
                 <span
                   className={`flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center text-xs ${
-                    feature.included
-                      ? 'bg-green-100 text-green-600'
-                      : 'bg-gray-100 text-gray-400'
+                    feature.included ? 'bg-green-100 text-green-600' : 'bg-gray-100 text-gray-400'
                   }`}
                 >
                   {feature.included ? '✓' : '✕'}
                 </span>
-                <span
-                  className={
-                    feature.included ? 'text-gray-700' : 'text-gray-400 line-through'
-                  }
-                >
+                <span className={feature.included ? 'text-gray-700' : 'text-gray-400 line-through'}>
                   {feature.text}
                 </span>
               </li>
@@ -237,16 +227,16 @@ export function PriceCard({
         )}
       </div>
     </div>
-  );
+  )
 }
 
 /**
  * Price Comparison Component - Shows multiple price cards side by side
  */
 interface PriceComparisonProps {
-  cards: PriceCardProps[];
-  title?: string;
-  subtitle?: string;
+  cards: PriceCardProps[]
+  title?: string
+  subtitle?: string
 }
 
 export function PriceComparison({ cards, title, subtitle }: PriceComparisonProps) {
@@ -254,12 +244,8 @@ export function PriceComparison({ cards, title, subtitle }: PriceComparisonProps
     <div className="py-12">
       {(title || subtitle) && (
         <div className="text-center mb-12">
-          {title && (
-            <h2 className="text-4xl font-bold text-gray-900 mb-4">{title}</h2>
-          )}
-          {subtitle && (
-            <p className="text-xl text-gray-600 max-w-2xl mx-auto">{subtitle}</p>
-          )}
+          {title && <h2 className="text-4xl font-bold text-gray-900 mb-4">{title}</h2>}
+          {subtitle && <p className="text-xl text-gray-600 max-w-2xl mx-auto">{subtitle}</p>}
         </div>
       )}
 
@@ -269,5 +255,5 @@ export function PriceComparison({ cards, title, subtitle }: PriceComparisonProps
         ))}
       </div>
     </div>
-  );
+  )
 }

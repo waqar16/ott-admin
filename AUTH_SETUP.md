@@ -14,6 +14,7 @@ This guide explains how to configure and use the authentication and membership s
 ## Overview
 
 The OTT platform includes:
+
 - **NextAuth.js** for authentication (credentials, Google, GitHub)
 - **Three membership tiers**: Free, Kids, Full
 - **Stripe integration** for payment processing
@@ -65,13 +66,14 @@ STRIPE_PRICE_ID_FULL=price_...
 ```
 
 6. Set up webhook endpoint:
-  - URL: `https://yourdomain.com/api/stripe/webhook`
-   - Events to listen for:
-     - `customer.subscription.created`
-     - `customer.subscription.updated`
-     - `customer.subscription.deleted`
-     - `invoice.payment_succeeded`
-     - `invoice.payment_failed`
+
+- URL: `https://yourdomain.com/api/stripe/webhook`
+- Events to listen for:
+  - `customer.subscription.created`
+  - `customer.subscription.updated`
+  - `customer.subscription.deleted`
+  - `invoice.payment_succeeded`
+  - `invoice.payment_failed`
 
 7. Copy webhook secret to `.env.local`:
 
@@ -82,6 +84,7 @@ STRIPE_WEBHOOK_SECRET=whsec_...
 #### OAuth Providers (Optional):
 
 **Google OAuth:**
+
 1. Go to [Google Cloud Console](https://console.cloud.google.com)
 2. Create a new project
 3. Enable Google+ API
@@ -95,6 +98,7 @@ GOOGLE_CLIENT_SECRET=your_client_secret
 ```
 
 **GitHub OAuth:**
+
 1. Go to [GitHub Settings → Developer settings](https://github.com/settings/developers)
 2. Create a new OAuth App
 3. Set callback URL: `http://localhost:3000/api/auth/callback/github`
@@ -148,18 +152,21 @@ stripe trigger customer.subscription.created
 ## Membership Tiers
 
 ### Free Tier ($0)
+
 - 1 device
 - Access to kids content only
 - No adult content
 - No premium features
 
 ### Kids Plan ($9.99/month)
+
 - 2 devices
 - Kids content ringfenced
 - Parental controls
 - No adult content
 
 ### Full Access ($14.99/month)
+
 - 5 devices
 - Full content library
 - Kids + adult content
@@ -180,7 +187,7 @@ stripe trigger customer.subscription.created
 ### Creating a Checkout Session
 
 ```typescript
-import { createCheckoutSession } from '@/lib/stripe';
+import { createCheckoutSession } from '@/lib/stripe'
 
 const { url } = await createCheckoutSession(
   userId,
@@ -188,24 +195,21 @@ const { url } = await createCheckoutSession(
   userEmail,
   'http://localhost:3000/billing?success=true',
   'http://localhost:3000/billing?canceled=true'
-);
+)
 
 // Redirect user to Stripe checkout
-window.location.href = url;
+window.location.href = url
 ```
 
 ### Managing Subscription
 
 ```typescript
-import { createCustomerPortalSession } from '@/lib/stripe';
+import { createCustomerPortalSession } from '@/lib/stripe'
 
-const { url } = await createCustomerPortalSession(
-  stripeCustomerId,
-  'http://localhost:3000/billing'
-);
+const { url } = await createCustomerPortalSession(stripeCustomerId, 'http://localhost:3000/billing')
 
 // Redirect user to Stripe customer portal
-window.location.href = url;
+window.location.href = url
 ```
 
 ## Usage Examples
@@ -214,18 +218,18 @@ window.location.href = url;
 
 ```tsx
 // app/premium/page.tsx
-import { requireFullMembership } from '@/lib/guards/membership';
+import { requireFullMembership } from '@/lib/guards/membership'
 
 export default async function PremiumPage() {
   // This will redirect if user doesn't have FULL membership
-  const session = await requireFullMembership();
-  
+  const session = await requireFullMembership()
+
   return (
     <div>
       <h1>Welcome, {session.user.name}!</h1>
       <p>You have full access to premium content.</p>
     </div>
-  );
+  )
 }
 ```
 
@@ -233,21 +237,18 @@ export default async function PremiumPage() {
 
 ```tsx
 // app/api/premium-content/route.ts
-import { requireFullMembership } from '@/lib/guards/membership';
-import { NextResponse } from 'next/server';
+import { requireFullMembership } from '@/lib/guards/membership'
+import { NextResponse } from 'next/server'
 
 export async function GET() {
   try {
-    await requireFullMembership();
-    
+    await requireFullMembership()
+
     return NextResponse.json({
       data: 'Premium content here',
-    });
+    })
   } catch {
-    return NextResponse.json(
-      { error: 'Unauthorized' },
-      { status: 401 }
-    );
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 }
 ```
@@ -256,14 +257,12 @@ export async function GET() {
 
 ```tsx
 // app/content/[id]/page.tsx
-import { checkMembershipAccess } from '@/lib/guards/membership';
-import { MembershipType } from '@/lib/auth';
+import { checkMembershipAccess } from '@/lib/guards/membership'
+import { MembershipType } from '@/lib/auth'
 
 export default async function ContentPage() {
-  const { hasAccess, session } = await checkMembershipAccess([
-    MembershipType.FULL
-  ]);
-  
+  const { hasAccess, session } = await checkMembershipAccess([MembershipType.FULL])
+
   if (!hasAccess) {
     return (
       <div>
@@ -271,32 +270,30 @@ export default async function ContentPage() {
         <p>Upgrade to Full Access to view this content.</p>
         <a href="/billing">Upgrade Now</a>
       </div>
-    );
+    )
   }
-  
-  return <div>Premium content here</div>;
+
+  return <div>Premium content here</div>
 }
 ```
 
 ### Client Component with Session
 
 ```tsx
-'use client';
+'use client'
 
-import { useSession } from 'next-auth/react';
-import { membershipGuardUtils } from '@/lib/guards/membership';
+import { useSession } from 'next-auth/react'
+import { membershipGuardUtils } from '@/lib/guards/membership'
 
 export function UserProfile() {
-  const { data: session } = useSession();
-  
+  const { data: session } = useSession()
+
   if (!session) {
-    return <div>Please sign in</div>;
+    return <div>Please sign in</div>
   }
-  
-  const canAccessFull = membershipGuardUtils.canAccessFullContent(
-    session.user.membershipType
-  );
-  
+
+  const canAccessFull = membershipGuardUtils.canAccessFullContent(session.user.membershipType)
+
   return (
     <div>
       <h2>{session.user.name}</h2>
@@ -306,7 +303,7 @@ export function UserProfile() {
         <p>{membershipGuardUtils.getUpgradeMessage(session.user.membershipType)}</p>
       )}
     </div>
-  );
+  )
 }
 ```
 
@@ -375,16 +372,16 @@ pnpm prisma migrate dev --name init
 5. Replace mock functions in `lib/db/adapter.ts` with Prisma calls:
 
 ```typescript
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient } from '@prisma/client'
 
-const prisma = new PrismaClient();
+const prisma = new PrismaClient()
 
 export async function getUserByEmail(email: string) {
-  return prisma.user.findUnique({ where: { email } });
+  return prisma.user.findUnique({ where: { email } })
 }
 
 export async function getUserById(id: string) {
-  return prisma.user.findUnique({ where: { id } });
+  return prisma.user.findUnique({ where: { id } })
 }
 
 // ... rest of the functions
@@ -469,6 +466,7 @@ Run `pnpm type-check` to see all errors. The mock database will show type errors
 ## Support
 
 For issues or questions:
+
 - Check the README.md
 - Review code comments in source files
 - Open an issue on GitHub

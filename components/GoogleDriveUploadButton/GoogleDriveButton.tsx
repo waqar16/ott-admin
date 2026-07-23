@@ -1,88 +1,88 @@
-'use client';
+'use client'
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react'
 
 // ─── Global type stubs for Google APIs (loaded via CDN) ───────────────────────
 declare global {
   interface Window {
     gapi: {
-      load: (libraries: string, callback: () => void) => void;
+      load: (libraries: string, callback: () => void) => void
       client: {
-        init: (config: { apiKey: string; discoveryDocs: string[] }) => Promise<void>;
-      };
-    };
+        init: (config: { apiKey: string; discoveryDocs: string[] }) => Promise<void>
+      }
+    }
     google: {
       accounts: {
         oauth2: {
           initTokenClient: (config: {
-            client_id: string;
-            scope: string;
-            callback: ((response: any) => void) | string;
+            client_id: string
+            scope: string
+            callback: ((response: any) => void) | string
           }) => {
-            callback: (response: any) => void;
-            requestAccessToken: (options: { prompt: string }) => void;
-          };
-        };
-      };
+            callback: (response: any) => void
+            requestAccessToken: (options: { prompt: string }) => void
+          }
+        }
+      }
       picker: {
-        PickerBuilder: new () => any;
-        DocsView: new (viewId?: any) => any;
-        DocsUploadView: new () => any;
-        Action: { PICKED: string };
-        Feature: { MULTISELECT_ENABLED: string };
-        ViewId: { DOCS: string };
-      };
-    };
+        PickerBuilder: new () => any
+        DocsView: new (viewId?: any) => any
+        DocsUploadView: new () => any
+        Action: { PICKED: string }
+        Feature: { MULTISELECT_ENABLED: string }
+        ViewId: { DOCS: string }
+      }
+    }
   }
 }
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 export interface DriveFile {
-  id: string;
-  name: string;
-  mimeType: string;
-  url: string;
-  sizeBytes?: number;
-  accessToken?: string;
+  id: string
+  name: string
+  mimeType: string
+  url: string
+  sizeBytes?: number
+  accessToken?: string
 }
 
 export interface GoogleDriveButtonProps {
   /** Called when the user selects / uploads files in the picker */
-  onFilePicked?: (files: DriveFile[]) => void;
+  onFilePicked?: (files: DriveFile[]) => void
   /** Additional CSS classes for the button */
-  className?: string;
+  className?: string
   /** Button label — defaults to "Upload from Google Drive" */
-  children?: React.ReactNode;
+  children?: React.ReactNode
   /** Allow picking more than one file (default: false) */
-  allowMultiple?: boolean;
+  allowMultiple?: boolean
   /** Restrict the picker to specific MIME types, e.g. ["video/mp4"] */
-  mimeTypes?: string[];
-  disabled?: boolean;
+  mimeTypes?: string[]
+  disabled?: boolean
 }
 
 // ─── Env / config ─────────────────────────────────────────────────────────────
 
-const CLIENT_ID = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID ?? '';
-const API_KEY = process.env.NEXT_PUBLIC_GOOGLE_API_KEY ?? '';
-const SCOPES = 'https://www.googleapis.com/auth/drive.readonly';
+const CLIENT_ID = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID ?? ''
+const API_KEY = process.env.NEXT_PUBLIC_GOOGLE_API_KEY ?? ''
+const SCOPES = 'https://www.googleapis.com/auth/drive.readonly'
 
 // ─── Script loader helpers ────────────────────────────────────────────────────
 
 function loadScript(src: string): Promise<void> {
   return new Promise((resolve, reject) => {
     if (document.querySelector(`script[src="${src}"]`)) {
-      resolve();
-      return;
+      resolve()
+      return
     }
-    const script = document.createElement('script');
-    script.src = src;
-    script.async = true;
-    script.defer = true;
-    script.onload = () => resolve();
-    script.onerror = () => reject(new Error(`Failed to load script: ${src}`));
-    document.body.appendChild(script);
-  });
+    const script = document.createElement('script')
+    script.src = src
+    script.async = true
+    script.defer = true
+    script.onload = () => resolve()
+    script.onerror = () => reject(new Error(`Failed to load script: ${src}`))
+    document.body.appendChild(script)
+  })
 }
 
 // ─── Component ────────────────────────────────────────────────────────────────
@@ -95,92 +95,89 @@ export default function GoogleDriveButton({
   mimeTypes,
   disabled = false,
 }: GoogleDriveButtonProps) {
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const tokenClientRef = useRef<any>(null);
-  const accessTokenRef = useRef<string | null>(null);
-  const pickerLoadedRef = useRef(false);
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const tokenClientRef = useRef<any>(null)
+  const accessTokenRef = useRef<string | null>(null)
+  const pickerLoadedRef = useRef(false)
 
   // ── Load GAPI + GIS scripts once on mount ──────────────────────────────────
-useEffect(() => {
-  if (!CLIENT_ID || !API_KEY) return;
+  useEffect(() => {
+    if (!CLIENT_ID || !API_KEY) return
 
-  const initGoogle = async () => {
-    try {
-      await Promise.all([
-        loadScript("https://apis.google.com/js/api.js"),
-        loadScript("https://accounts.google.com/gsi/client"),
-      ]);
+    const initGoogle = async () => {
+      try {
+        await Promise.all([
+          loadScript('https://apis.google.com/js/api.js'),
+          loadScript('https://accounts.google.com/gsi/client'),
+        ])
 
-      // Wait until gapi is available
-      const waitForGapi = () =>
-        new Promise<void>((resolve) => {
-          const check = () => {
-            if (window.gapi) resolve();
-            else setTimeout(check, 50);
-          };
-          check();
-        });
+        // Wait until gapi is available
+        const waitForGapi = () =>
+          new Promise<void>((resolve) => {
+            const check = () => {
+              if (window.gapi) resolve()
+              else setTimeout(check, 50)
+            }
+            check()
+          })
 
-      await waitForGapi();
+        await waitForGapi()
 
-      await new Promise<void>((resolve) =>
-        window.gapi.load("client:picker", resolve)
-      );
+        await new Promise<void>((resolve) => window.gapi.load('client:picker', resolve))
 
-      await window.gapi.client.init({
-        apiKey: API_KEY,
-        discoveryDocs: [],
-      });
+        await window.gapi.client.init({
+          apiKey: API_KEY,
+          discoveryDocs: [],
+        })
 
-      pickerLoadedRef.current = true;
+        pickerLoadedRef.current = true
 
-      tokenClientRef.current =
-        window.google.accounts.oauth2.initTokenClient({
+        tokenClientRef.current = window.google.accounts.oauth2.initTokenClient({
           client_id: CLIENT_ID,
           scope: SCOPES,
-          callback: "",
-        });
-    } catch (err) {
-      console.error("[GoogleDriveButton] Init error:", err);
+          callback: '',
+        })
+      } catch (err) {
+        console.error('[GoogleDriveButton] Init error:', err)
+      }
     }
-  };
 
-  initGoogle();
-}, []);
+    initGoogle()
+  }, [])
 
   // ── Build & show the picker ────────────────────────────────────────────────
   const openPicker = useCallback(
     (token: string) => {
       if (!pickerLoadedRef.current) {
-        setError('Google Picker is not ready yet. Please try again.');
-        setLoading(false);
-        return;
+        setError('Google Picker is not ready yet. Please try again.')
+        setLoading(false)
+        return
       }
 
       const { PickerBuilder, Action, DocsView, DocsUploadView, Feature, ViewId } =
-        window.google.picker;
+        window.google.picker
 
       // Upload view — lets the user upload a file from their machine to Drive
-      const uploadView = new DocsUploadView();
+      const uploadView = new DocsUploadView()
 
       // Drive view — lets the user browse existing Drive files
-      const driveView = new DocsView(ViewId.DOCS);
-      driveView.setIncludeFolders(false);
+      const driveView = new DocsView(ViewId.DOCS)
+      driveView.setIncludeFolders(false)
       if (mimeTypes?.length) {
-        driveView.setMimeTypes(mimeTypes.join(','));
+        driveView.setMimeTypes(mimeTypes.join(','))
       }
 
       const builder = new PickerBuilder()
         .setOAuthToken(token)
         .setDeveloperKey(API_KEY)
         .setTitle('Select or Upload a File')
-       .addView(driveView)
+        .addView(driveView)
         .setCallback((data: any) => {
           // Google Picker returns the user action under `data.action`.
           // Keep a fallback check for compatibility with older payload shapes.
-          const action = data?.action;
-          console.log('[GoogleDriveButton] Picker callback:', data);
+          const action = data?.action
+          console.log('[GoogleDriveButton] Picker callback:', data)
 
           if (action === Action.PICKED || data?.[Action.PICKED]) {
             const files: DriveFile[] = (data.docs ?? []).map((doc: any) => ({
@@ -190,58 +187,58 @@ useEffect(() => {
               url: doc.url,
               sizeBytes: doc.sizeBytes,
               accessToken: accessTokenRef.current || undefined,
-            }));
-            onFilePicked?.(files);
+            }))
+            onFilePicked?.(files)
           }
-          setLoading(false);
-        });
+          setLoading(false)
+        })
 
       if (allowMultiple) {
-        builder.enableFeature(Feature.MULTISELECT_ENABLED);
+        builder.enableFeature(Feature.MULTISELECT_ENABLED)
       }
 
-      builder.build().setVisible(true);
+      builder.build().setVisible(true)
     },
-    [allowMultiple, mimeTypes, onFilePicked],
-  );
+    [allowMultiple, mimeTypes, onFilePicked]
+  )
 
   // ── Button click handler ───────────────────────────────────────────────────
   const handleClick = useCallback(() => {
     if (!CLIENT_ID || !API_KEY) {
       setError(
-        'Google API credentials are missing. Set NEXT_PUBLIC_GOOGLE_CLIENT_ID and NEXT_PUBLIC_GOOGLE_API_KEY.',
-      );
-      return;
+        'Google API credentials are missing. Set NEXT_PUBLIC_GOOGLE_CLIENT_ID and NEXT_PUBLIC_GOOGLE_API_KEY.'
+      )
+      return
     }
 
     if (!tokenClientRef.current) {
-      setError('Google Sign-In is not ready yet. Please wait a moment and try again.');
-      return;
+      setError('Google Sign-In is not ready yet. Please wait a moment and try again.')
+      return
     }
 
-    setError(null);
-    setLoading(true);
+    setError(null)
+    setLoading(true)
 
     // If we already have a valid token, open the picker immediately
     if (accessTokenRef.current) {
-      openPicker(accessTokenRef.current);
-      return;
+      openPicker(accessTokenRef.current)
+      return
     }
 
     // Ask the user to grant Google Drive access
     tokenClientRef.current.callback = (response: any) => {
       if (response.error) {
-        setError(`Google auth error: ${response.error}`);
-        setLoading(false);
-        return;
+        setError(`Google auth error: ${response.error}`)
+        setLoading(false)
+        return
       }
-      accessTokenRef.current = response.access_token;
-      openPicker(response.access_token);
-    };
+      accessTokenRef.current = response.access_token
+      openPicker(response.access_token)
+    }
 
     // Prompt for consent only if we don't have a token
-    tokenClientRef.current.requestAccessToken({ prompt: '' });
-  }, [openPicker]);
+    tokenClientRef.current.requestAccessToken({ prompt: '' })
+  }, [openPicker])
 
   // ── Render ────────────────────────────────────────────────────────────────
   return (
@@ -284,7 +281,10 @@ useEffect(() => {
             d="M43.65 25L57.4 1.2A13.25 13.25 0 0 0 53.55 0h-19.8c-1.4 0-2.8.35-4.05.9z"
             fill="#00832d"
           />
-          <path d="M59.8 53H27.5L13.75 76.8c1.35.8 2.9 1.2 4.5 1.2h49.8c1.6 0 3.15-.45 4.5-1.2z" fill="#2684fc" />
+          <path
+            d="M59.8 53H27.5L13.75 76.8c1.35.8 2.9 1.2 4.5 1.2h49.8c1.6 0 3.15-.45 4.5-1.2z"
+            fill="#2684fc"
+          />
           <path
             d="M73.4 26.5l-12.7-22c-.8-1.4-1.95-2.5-3.3-3.3L43.65 25 59.8 53h27.45c0-1.55-.4-3.1-1.2-4.5z"
             fill="#ffba00"
@@ -317,7 +317,7 @@ useEffect(() => {
             Opening Drive…
           </>
         ) : (
-          children ?? 'Upload from Google Drive'
+          (children ?? 'Upload from Google Drive')
         )}
       </button>
 
@@ -327,5 +327,5 @@ useEffect(() => {
         </p>
       )}
     </div>
-  );
+  )
 }

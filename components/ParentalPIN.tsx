@@ -1,15 +1,15 @@
-'use client';
+'use client'
 
-import { useState, useRef, useEffect } from 'react';
-import { Button } from './Button';
+import { useState, useRef, useEffect } from 'react'
+import { Button } from './Button'
 
 export interface ParentalPINProps {
-  isOpen: boolean;
-  onClose: () => void;
-  onSuccess: () => void;
-  correctPIN?: string;
-  title?: string;
-  description?: string;
+  isOpen: boolean
+  onClose: () => void
+  onSuccess: () => void
+  correctPIN?: string
+  title?: string
+  description?: string
 }
 
 export function ParentalPIN({
@@ -20,134 +20,134 @@ export function ParentalPIN({
   title = 'Exit Kids Zone',
   description = 'Enter the parental PIN to continue',
 }: ParentalPINProps) {
-  const [pin, setPin] = useState(['', '', '', '']);
-  const [error, setError] = useState('');
-  const [isVerifying, setIsVerifying] = useState(false);
+  const [pin, setPin] = useState(['', '', '', ''])
+  const [error, setError] = useState('')
+  const [isVerifying, setIsVerifying] = useState(false)
   const inputRefs = [
     useRef<HTMLInputElement>(null),
     useRef<HTMLInputElement>(null),
     useRef<HTMLInputElement>(null),
     useRef<HTMLInputElement>(null),
-  ];
+  ]
 
   useEffect(() => {
     if (isOpen) {
       // Reset state when modal opens
-      setPin(['', '', '', '']);
-      setError('');
+      setPin(['', '', '', ''])
+      setError('')
       // Focus first input
-      setTimeout(() => inputRefs[0].current?.focus(), 100);
+      setTimeout(() => inputRefs[0].current?.focus(), 100)
     }
-  }, [isOpen]);
+  }, [isOpen])
 
   const handleInputChange = (index: number, value: string) => {
     // Only allow numbers
     if (value && !/^\d$/.test(value)) {
-      return;
+      return
     }
 
-    const newPin = [...pin];
-    newPin[index] = value;
-    setPin(newPin);
-    setError('');
+    const newPin = [...pin]
+    newPin[index] = value
+    setPin(newPin)
+    setError('')
 
     // Auto-focus next input
     if (value && index < 3) {
-      inputRefs[index + 1].current?.focus();
+      inputRefs[index + 1].current?.focus()
     }
 
     // Auto-verify when all digits are entered
     if (newPin.every((digit) => digit !== '') && index === 3) {
-      verifyPIN(newPin.join(''));
+      verifyPIN(newPin.join(''))
     }
-  };
+  }
 
   const handleKeyDown = (index: number, e: React.KeyboardEvent<HTMLInputElement>) => {
     // Handle backspace
     if (e.key === 'Backspace' && !pin[index] && index > 0) {
-      inputRefs[index - 1].current?.focus();
+      inputRefs[index - 1].current?.focus()
     }
 
     // Handle left/right arrow keys
     if (e.key === 'ArrowLeft' && index > 0) {
-      inputRefs[index - 1].current?.focus();
+      inputRefs[index - 1].current?.focus()
     }
     if (e.key === 'ArrowRight' && index < 3) {
-      inputRefs[index + 1].current?.focus();
+      inputRefs[index + 1].current?.focus()
     }
 
     // Handle enter key
     if (e.key === 'Enter') {
-      e.preventDefault();
-      const enteredPIN = pin.join('');
+      e.preventDefault()
+      const enteredPIN = pin.join('')
       if (enteredPIN.length === 4) {
-        verifyPIN(enteredPIN);
+        verifyPIN(enteredPIN)
       }
     }
-  };
+  }
 
   const handlePaste = (e: React.ClipboardEvent) => {
-    e.preventDefault();
-    const pastedData = e.clipboardData.getData('text');
-    const digits = pastedData.replace(/\D/g, '').slice(0, 4).split('');
+    e.preventDefault()
+    const pastedData = e.clipboardData.getData('text')
+    const digits = pastedData.replace(/\D/g, '').slice(0, 4).split('')
 
     if (digits.length > 0) {
-      const newPin = [...pin];
+      const newPin = [...pin]
       digits.forEach((digit, index) => {
         if (index < 4) {
-          newPin[index] = digit;
+          newPin[index] = digit
         }
-      });
-      setPin(newPin);
-      setError('');
+      })
+      setPin(newPin)
+      setError('')
 
       // Focus the next empty input or last input
-      const nextEmptyIndex = newPin.findIndex((d) => d === '');
-      const focusIndex = nextEmptyIndex === -1 ? 3 : nextEmptyIndex;
-      inputRefs[focusIndex].current?.focus();
+      const nextEmptyIndex = newPin.findIndex((d) => d === '')
+      const focusIndex = nextEmptyIndex === -1 ? 3 : nextEmptyIndex
+      inputRefs[focusIndex].current?.focus()
 
       // Auto-verify if all digits filled
       if (newPin.every((digit) => digit !== '')) {
-        verifyPIN(newPin.join(''));
+        verifyPIN(newPin.join(''))
       }
     }
-  };
+  }
 
   const verifyPIN = async (enteredPIN: string) => {
-    setIsVerifying(true);
-    setError('');
+    setIsVerifying(true)
+    setError('')
 
     // Simulate async verification (would be API call in production)
-    await new Promise((resolve) => setTimeout(resolve, 500));
+    await new Promise((resolve) => setTimeout(resolve, 500))
 
     if (enteredPIN === correctPIN) {
-      onSuccess();
+      onSuccess()
       // Reset form
-      setPin(['', '', '', '']);
+      setPin(['', '', '', ''])
     } else {
-      setError('Incorrect PIN. Please try again.');
-      setPin(['', '', '', '']);
-      inputRefs[0].current?.focus();
+      setError('Incorrect PIN. Please try again.')
+      setPin(['', '', '', ''])
+      inputRefs[0].current?.focus()
     }
 
-    setIsVerifying(false);
-  };
+    setIsVerifying(false)
+  }
 
   const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    const enteredPIN = pin.join('');
+    e.preventDefault()
+    const enteredPIN = pin.join('')
     if (enteredPIN.length === 4) {
-      verifyPIN(enteredPIN);
+      verifyPIN(enteredPIN)
     }
-  };
+  }
 
   const handleCancel = () => {
-    setPin(['', '', '', '']);
-    setError('');
-    onClose();
-  };
+    setPin(['', '', '', ''])
+    setError('')
+    onClose()
+  }
 
-  if (!isOpen) return null;
+  if (!isOpen) return null
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-75 backdrop-blur-sm">
@@ -290,5 +290,5 @@ export function ParentalPIN({
         </div>
       </div>
     </div>
-  );
+  )
 }

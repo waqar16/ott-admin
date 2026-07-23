@@ -261,12 +261,12 @@ export default async function PremiumPage() {
 
 Three membership types with different features:
 
-| Feature | Free | Kids | Full |
-|---------|------|------|------|
-| Devices | 1 | 2 | 5 |
-| Kids Content | ✅ | ✅ | ✅ |
-| Adult Content | ❌ | ❌ | ✅ |
-| Price | $0 | $9.99/mo | $14.99/mo |
+| Feature       | Free | Kids     | Full      |
+| ------------- | ---- | -------- | --------- |
+| Devices       | 1    | 2        | 5         |
+| Kids Content  | ✅   | ✅       | ✅        |
+| Adult Content | ❌   | ❌       | ✅        |
+| Price         | $0   | $9.99/mo | $14.99/mo |
 
 ### Stripe Integration
 

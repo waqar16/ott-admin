@@ -32,9 +32,9 @@ copy .env.example .env.local
 
 ```env
 NEXT_PUBLIC_API_BASE=http://localhost:3000
-NEXT_PUBLIC_FRONTEND_BASE=http://localhost:3000  
-NEXT_PUBLIC_GOOGLE_CLIENT_ID 
-NEXT_PUBLIC_GOOGLE_API_KEY 
+NEXT_PUBLIC_FRONTEND_BASE=http://localhost:3000
+NEXT_PUBLIC_GOOGLE_CLIENT_ID
+NEXT_PUBLIC_GOOGLE_API_KEY
 ```
 
 > Use `NEXT_PUBLIC_USE_MOCK_DATA=true` for local development and testing without requiring real backend or Stripe services.
@@ -64,18 +64,18 @@ This builds the Next.js application and serves the optimized production version.
 
 ## Common Scripts
 
-| Command | Description |
-| --- | --- |
-| `pnpm dev` | Start the development server with hot reload |
-| `pnpm build` | Build the app for production |
-| `pnpm start` | Start the production server |
-| `pnpm lint` | Run ESLint on the project |
-| `pnpm lint:fix` | Run ESLint and automatically fix issues |
-| `pnpm format` | Format project files with Prettier |
-| `pnpm format:check` | Check formatting without modifying files |
-| `pnpm type-check` | Run TypeScript type checking |
-| `pnpm clean` | Remove build artifacts (`.next`, `out`) |
-| `pnpm zip` | Create a deployable ZIP archive |
+| Command             | Description                                  |
+| ------------------- | -------------------------------------------- |
+| `pnpm dev`          | Start the development server with hot reload |
+| `pnpm build`        | Build the app for production                 |
+| `pnpm start`        | Start the production server                  |
+| `pnpm lint`         | Run ESLint on the project                    |
+| `pnpm lint:fix`     | Run ESLint and automatically fix issues      |
+| `pnpm format`       | Format project files with Prettier           |
+| `pnpm format:check` | Check formatting without modifying files     |
+| `pnpm type-check`   | Run TypeScript type checking                 |
+| `pnpm clean`        | Remove build artifacts (`.next`, `out`)      |
+| `pnpm zip`          | Create a deployable ZIP archive              |
 
 ## Useful Commands
 

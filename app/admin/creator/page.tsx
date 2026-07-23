@@ -1,230 +1,293 @@
-"use client"
-import CreatorEditor from "@/components/Creator/EditCreator";
-import SkeletonLoader from "@/components/Loader/SkeletonLoader"
+'use client'
 
-import { deleteCreator, getCreators, Creator } from "@/lib/creatorApi";
-import { useEffect, useState } from "react";
-import { BiRefresh } from "react-icons/bi";
-import { toast } from "sonner";
-type EditUserProps = {
-  user: Creator;
-  setEditUser: React.Dispatch<React.SetStateAction<Creator | null>>;
-};
-export default async function AdminCreatorsPage() {
+import { useEffect, useState } from 'react'
+import { toast } from 'sonner'
+import SkeletonLoader from '@/components/Loader/SkeletonLoader'
+
+import { deleteCreator, getCreators, Creator } from '@/lib/creatorApi'
+import CreatorPageHeader from '@/components/Creator/CreatorPageHeader'
+import CreatorStatsCards from '@/components/Creator/CreatorStatsCards'
+import CreatorToolbar from '@/components/Creator/CreatorToolbar'
+import CreatorTable from '@/components/Creator/CreatorTable'
+import CreatorDrawer from '@/components/Creator/CreatorDrawer'
+import DeleteConfirmationDialog from '@/components/Creator/DeleteConfirmationDialog'
+import CreatorEditor from '@/components/Creator/EditCreator'
+
+export default function AdminCreatorsPage() {
   const [users, setUsers] = useState<Creator[]>([])
-  const [seriesToDelete, setSeriesToDelete] = useState<Creator | null>(null);
-  const [showCreateForm, setShowCreateForm] = useState<boolean>(false);
-  const [usersFetchLoading, setUsersFetchLoading] = useState<boolean>(true)
+  const [seriesToDelete, setSeriesToDelete] = useState<Creator | null>(null)
+
+  // Drawer visibility controls
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false)
+  const [showCreateForm, setShowCreateForm] = useState(false)
   const [editUser, setEditUser] = useState<Creator | null>(null)
 
-  async function fetch() {
-    setUsersFetchLoading(true)
-    const usersToFetch = await getCreators();
-    if (Array.isArray(usersToFetch)) {
-      setUsers(usersToFetch)
+  // Loading and search/filter states
+  const [usersFetchLoading, setUsersFetchLoading] = useState(true)
+  const [isRefreshing, setIsRefreshing] = useState(false)
+  const [searchQuery, setSearchQuery] = useState('')
+  const [filterRole, setFilterRole] = useState('all')
+
+  async function fetchUsers(quiet = false) {
+    if (!quiet) setUsersFetchLoading(true)
+    else setIsRefreshing(true)
+
+    try {
+      const fetched = await getCreators()
+      if (Array.isArray(fetched)) {
+        setUsers(fetched)
+      } else {
+        toast.error('Invalid response format received from server')
+      }
+    } catch (err) {
+      console.error(err)
+      toast.error('Failed to fetch creator accounts')
+    } finally {
+      setUsersFetchLoading(false)
+      setIsRefreshing(false)
     }
-    setUsersFetchLoading(false)
   }
+
   useEffect(() => {
-
-    fetch()
-
+    fetchUsers()
   }, [])
-  return (
-    <>
-      {(editUser || showCreateForm) ? (
-        <CreatorEditor
-          setEditUser={(value) => {
-            setEditUser(value);
-            setShowCreateForm(false);
-          }}
-          creator={editUser}
-          setUsers={setUsers}
-        />
-      )
-        :
-        <div className="p-2 md:p-6 text-white space-y-6 bg-black md:mt-0 mt-16">
-          <div className="flex justify-between items-center">
-            <div>
-              <h1 className="text-3xl font-bold">Creators Management</h1>
-              <p className="text-gray-400">Analytics & control of all creators</p>
-            </div>
 
-            <button className="px-4 py-2 bg-blue-600 rounded-lg hover:bg-blue-700"
-              onClick={() => setShowCreateForm(true)}
-            >
-              + Add Creator
-            </button>
+  // Sync drawer visibility whenever form targets change
+  useEffect(() => {
+    if (showCreateForm || editUser) {
+      setIsDrawerOpen(true)
+    }
+  }, [showCreateForm, editUser])
+
+  // Open Add Creator Form
+  const handleAddClick = () => {
+    setEditUser(null)
+    setShowCreateForm(true)
+    setIsDrawerOpen(true)
+  }
+
+  // Open Edit Creator Form
+  const handleEditClick = (creator: Creator) => {
+    setShowCreateForm(false)
+    setEditUser(creator)
+    setIsDrawerOpen(true)
+  }
+
+  // Close Drawer visually (Preserve unsaved changes state)
+  const handleCloseDrawerVisually = () => {
+    setIsDrawerOpen(false)
+  }
+
+  // Explicit Close (Cancel/Submit from inside Form) - Reset State
+  const handleCloseDrawerExplicitly = () => {
+    setIsDrawerOpen(false)
+    // Timeout gives animation room to complete before component is reset
+    setTimeout(() => {
+      setShowCreateForm(false)
+      setEditUser(null)
+    }, 300)
+  }
+
+  // Perform Destructive Deletion
+  const handleDeleteConfirm = async () => {
+    if (!seriesToDelete) return
+    try {
+      const status = await deleteCreator(seriesToDelete.id ?? '')
+      if (status === 204) {
+        setUsers((prev) => prev.filter((u) => u.id !== seriesToDelete.id))
+        toast.success(`${seriesToDelete.name} deleted successfully`)
+      } else {
+        toast.error(`Error deleting ${seriesToDelete.name}`)
+      }
+    } catch (err) {
+      console.error(err)
+      toast.error('Failed to delete creator account')
+    } finally {
+      setSeriesToDelete(null)
+    }
+  }
+
+  // Client-side search and role logic
+  const filteredUsers = users.filter((u) => {
+    const query = searchQuery.toLowerCase().trim()
+    const matchesSearch =
+      !query ||
+      u.name?.toLowerCase().includes(query) ||
+      u.email?.toLowerCase().includes(query) ||
+      u.phone?.toLowerCase().includes(query)
+
+    const uRole = (u as any).role || 'creator'
+    const matchesRole = filterRole === 'all' || uRole.toLowerCase() === filterRole.toLowerCase()
+
+    return matchesSearch && matchesRole
+  })
+
+  // Gorgeous Dashboard Loading State
+  if (usersFetchLoading) {
+    return (
+      <div className="space-y-8 animate-pulse select-none max-w-7xl mx-auto">
+        {/* Page Header Skeleton */}
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-200/80 dark:border-neutral-850 pb-6">
+          <div className="space-y-2.5">
+            <div className="flex items-center space-x-2.5">
+              <SkeletonLoader className="w-10 h-10 bg-slate-205 dark:bg-neutral-800 rounded-xl" />
+              <SkeletonLoader className="w-20 h-5.5 bg-slate-205 dark:bg-neutral-800 rounded-full" />
+            </div>
+            <SkeletonLoader className="w-64 h-9 bg-slate-205 dark:bg-neutral-800 rounded-xl mt-1" />
+            <SkeletonLoader className="w-96 h-4 bg-slate-100 dark:bg-neutral-900 rounded-md" />
           </div>
-
-          {/* Stats */}
-          {/* <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <StatBox title="Total Users" value="4,921" change="+8%" />
-        <StatBox title="Premium Users" value="1,232" change="+12%" />
-        <StatBox title="Active Today" value="892" change="+5%" />
-       </div> */}
-
-          {/* Creator Table */}
-          {usersFetchLoading ?
-            <div className="w-full flex flex-col items-start ">
-              <div className='flex flex-row items-center w-full justify-end p-2 '>
-                <SkeletonLoader className="h-[40px] w-[100px] bg-neutral-900" />
-              </div>
-              <div className="bg-black rounded-xl p-6 shadow-lg border border-neutral-800 w-full">
-
-                <h2 className="text-xl font-semibold mb-4">All Users</h2>
-
-                <div className="overflow-x-auto">
-                  <table className="w-full text-left">
-                    <thead>
-                      <tr className="border-b border-gray-700 text-gray-400">
-                        <th className="p-3">Name</th>
-                        <th className="p-3">Email</th>
-                        <th className="p-3">Phone</th>
-                        <th className="p-3">Bio</th>
-                        <th className="p-3 text-right">Actions</th>
-                      </tr>
-                    </thead>
-
-                    <tbody>
-                      {[1, 2, 3].map((index, u) => (
-                        <tr
-                          key={index}
-                          className="border-b border-neutral-800   transition"
-                        >
-                          <td className="p-3"><SkeletonLoader className="h-[40px] w-[100px] bg-neutral-900" /></td>
-                          <td className="p-3"><SkeletonLoader className="h-[40px] w-[100px] bg-neutral-900" /></td>
-                          <td className="p-3"><SkeletonLoader className="h-[40px] w-[100px] bg-neutral-900" /></td>
-                          <td className="p-3"><SkeletonLoader className="h-[40px] w-[100px] bg-neutral-900" /></td>
-
-
-
-                          <td className="p-3">
-                            <div className="flex justify-end gap-3">
-                              <SkeletonLoader className="h-[40px] w-[100px] bg-neutral-900" />
-
-                              <SkeletonLoader className="h-[40px] w-[100px] bg-neutral-900" />
-                            </div>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </div></div> :
-            <div className="w-full flex flex-col items-start ">
-              <div className='flex flex-row items-center w-full justify-end p-2'>
-                <button className='p-2 rounded-md bg-neutral-800 flex flex-row items-center' onClick={() => {
-                  fetch()
-                }}>Refresh <BiRefresh className='ml-1' /> </button>
-              </div>
-              <div className="bg-neutral-900 rounded-xl p-6 shadow-lg border border-neutral-800 w-full">
-                <h2 className="text-xl font-semibold mb-4">All Users</h2>
-
-                <div className="overflow-x-auto">
-
-                  <table className="w-full text-left">
-                    <thead>
-                      <tr className="border-b border-gray-700 text-gray-400">
-                        <th className="p-3">Name</th>
-                        <th className="p-3">Email</th>
-                        <th className="p-3">Phone</th>
-                        <th className="p-3">Bio</th>
-                        <th className="p-3 text-right">Actions</th>
-                      </tr>
-                    </thead>
-
-                    <tbody>
-                      {users.map((u: Creator) => (
-                        <tr
-                          key={u.id}
-                          className="border-b border-gray-700 hover:bg-gray-700/50 transition"
-                        >
-                          <td className="p-3">{u.name}</td>
-                          <td className="p-3 text-gray-300">{u.email ?? '-'}</td>
-                          <td className="p-3 text-gray-300">{u.phone ?? '-'}</td>
-                          <td className="p-3 text-gray-300">{u.bio ?? '-'}</td>
-
-
-                          <td className="p-3">
-                            <div className="flex justify-end gap-3">
-                              <button className="px-3 py-1 bg-blue-600 rounded-lg hover:bg-blue-700" onClick={() => setEditUser(u)}>
-                                Edit
-                              </button>
-
-                              {u.role != 'admin' &&
-                                <button className="px-3 py-1 bg-red-600 rounded-lg hover:bg-red-700" onClick={() => setSeriesToDelete(u)}>
-                                  Delete
-                                </button>}
-                            </div>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            </div>
-
-          }
-          {seriesToDelete && (
-            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70">
-              <div className="bg-gray-900 rounded-xl p-6 w-full max-w-sm">
-                <h3 className="text-lg font-semibold mb-2">
-                  Delete Creator?
-                </h3>
-                <p className="text-sm text-gray-400 mb-4">
-                  Are you sure you want to delete{" "}
-                  <span className="font-medium text-white">
-                    {seriesToDelete.name}
-                  </span>
-                  ? This action cannot be undone.
-                </p>
-
-                <div className="flex justify-end gap-3">
-                  <button
-                    onClick={() => setSeriesToDelete(null)}
-                    className="px-4 py-2 rounded bg-gray-800 hover:bg-gray-700"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    onClick={async () => {
-                      let contentDeletion = await deleteCreator(seriesToDelete.id ?? '');
-                      console.log(contentDeletion)
-                      if (contentDeletion == 204) {
-                        setUsers(
-                          prev => prev.filter((u) => u.id !== seriesToDelete.id)
-                        )
-                        toast.success(`${seriesToDelete.name} is deleted successfully`)
-                      }
-                      else {
-                        toast.success(`Error deleting ${seriesToDelete.name}`)
-
-                      }
-                      setSeriesToDelete(null);
-                    }}
-                    className="px-4 py-2 rounded bg-red-600 hover:bg-red-700"
-                  >
-                    Delete
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
+          <div className="flex items-center space-x-3">
+            <SkeletonLoader className="w-24 h-9.5 bg-slate-205 dark:bg-neutral-800 rounded-xl" />
+            <SkeletonLoader className="w-32 h-9.5 bg-slate-205 dark:bg-neutral-800 rounded-xl" />
+          </div>
         </div>
-      }</>
-  );
-}
 
-function StatBox({ title, value, change }: any) {
+        {/* Stats Cards Skeleton */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          {[1, 2, 3, 4].map((i) => (
+            <div
+              key={i}
+              className="p-6 rounded-2xl border border-slate-200/80 dark:border-neutral-850/80 bg-white dark:bg-neutral-900 space-y-3"
+            >
+              <div className="flex items-center justify-between">
+                <SkeletonLoader className="h-3 w-24 bg-slate-200 dark:bg-neutral-800 rounded" />
+                <SkeletonLoader className="h-9 w-9 bg-slate-200 dark:bg-neutral-800 rounded-xl" />
+              </div>
+              <SkeletonLoader className="h-8 w-16 bg-slate-200 dark:bg-neutral-800 rounded-lg mt-1" />
+              <SkeletonLoader className="h-3 w-32 bg-slate-100 dark:bg-neutral-900 rounded mt-2" />
+            </div>
+          ))}
+        </div>
+
+        {/* Toolbar Skeleton */}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-white dark:bg-neutral-900 p-4 rounded-2xl border border-slate-200/85 dark:border-neutral-850/85">
+          <SkeletonLoader className="h-8.5 w-full sm:max-w-md bg-slate-100 dark:bg-neutral-950 rounded-xl" />
+          <div className="flex items-center gap-2">
+            <SkeletonLoader className="h-8.5 w-24 bg-slate-105 dark:bg-neutral-950 rounded-xl" />
+            <SkeletonLoader className="h-8.5 w-8.5 bg-slate-105 dark:bg-neutral-950 rounded-xl" />
+            <SkeletonLoader className="h-8.5 w-16 bg-slate-200 dark:bg-neutral-800 rounded-xl" />
+          </div>
+        </div>
+
+        {/* Table Skeleton */}
+        <div className="bg-white dark:bg-neutral-900 rounded-2xl border border-slate-200/80 dark:border-neutral-850 shadow-xs overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full text-left">
+              <thead>
+                <tr className="bg-slate-50/80 dark:bg-neutral-900/80 border-b border-slate-200/80 dark:border-neutral-850/80">
+                  <th className="px-6 py-4">
+                    <SkeletonLoader className="h-3.5 w-16 bg-slate-200 dark:bg-neutral-850 rounded" />
+                  </th>
+                  <th className="px-6 py-4">
+                    <SkeletonLoader className="h-3.5 w-16 bg-slate-200 dark:bg-neutral-855 rounded" />
+                  </th>
+                  <th className="px-6 py-4">
+                    <SkeletonLoader className="h-3.5 w-16 bg-slate-200 dark:bg-neutral-855 rounded" />
+                  </th>
+                  <th className="px-6 py-4">
+                    <SkeletonLoader className="h-3.5 w-10 bg-slate-200 dark:bg-neutral-855 rounded" />
+                  </th>
+                  <th className="px-6 py-4 text-right">
+                    <SkeletonLoader className="h-3.5 w-16 bg-slate-200 dark:bg-neutral-855 rounded ml-auto" />
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100 dark:divide-neutral-850">
+                {[1, 2, 3, 4, 5].map((idx) => (
+                  <tr key={idx} className="bg-white dark:bg-neutral-900">
+                    <td className="px-6 py-4">
+                      <div className="flex items-center space-x-3">
+                        <SkeletonLoader className="w-9 h-9 bg-slate-200 dark:bg-neutral-800 rounded-full" />
+                        <div className="space-y-1.5">
+                          <SkeletonLoader className="h-4.5 w-24 bg-slate-200 dark:bg-neutral-800 rounded" />
+                          <SkeletonLoader className="h-3 w-32 bg-slate-150 dark:bg-neutral-850 rounded" />
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <SkeletonLoader className="h-3.5 w-24 bg-slate-150 dark:bg-neutral-850 rounded" />
+                    </td>
+                    <td className="px-6 py-4">
+                      <SkeletonLoader className="h-3.5 w-48 bg-slate-150 dark:bg-neutral-850 rounded" />
+                    </td>
+                    <td className="px-6 py-4">
+                      <SkeletonLoader className="h-5 w-16 bg-slate-200 dark:bg-neutral-800 rounded-full" />
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="flex justify-end gap-2">
+                        <SkeletonLoader className="h-8.5 w-8.5 bg-slate-200 dark:bg-neutral-800 rounded-xl" />
+                        <SkeletonLoader className="h-8.5 w-8.5 bg-slate-200 dark:bg-neutral-800 rounded-xl" />
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
   return (
-    <div className="bg-neutral-900 p-6 rounded-xl border border-neutral-800 shadow-lg">
-      <p className="text-gray-400 text-sm">{title}</p>
-      <h3 className="text-2xl font-bold mt-1">{value}</h3>
-      <p className="text-green-400 text-sm mt-2">{change} this month</p>
+    <div className="space-y-8 select-none max-w-7xl mx-auto animate-fade-in pb-12">
+      {/* 1. Page Header */}
+      <CreatorPageHeader
+        totalCount={users.length}
+        onAddClick={handleAddClick}
+        onRefreshClick={() => fetchUsers(true)}
+        isRefreshing={isRefreshing}
+      />
+
+      {/* 2. KPI Summary Cards */}
+      <CreatorStatsCards creators={users} />
+
+      {/* 3. Modern Toolbar */}
+      <CreatorToolbar
+        searchQuery={searchQuery}
+        onSearchChange={setSearchQuery}
+        onRefreshClick={() => fetchUsers(true)}
+        isRefreshing={isRefreshing}
+        onAddClick={handleAddClick}
+        filterRole={filterRole}
+        onFilterRoleChange={setFilterRole}
+      />
+
+      {/* 4. Creator Table / Workspace */}
+      <CreatorTable
+        creators={filteredUsers}
+        onEditClick={handleEditClick}
+        onDeleteClick={setSeriesToDelete}
+        onAddClick={handleAddClick}
+      />
+
+      {/* 5. Creator Form Drawer (Slide-Over Panel) */}
+      <CreatorDrawer
+        isOpen={isDrawerOpen}
+        onClose={handleCloseDrawerVisually}
+        title={editUser ? 'Edit Creator' : 'Add Creator'}
+        description={
+          editUser
+            ? 'Update creator information and account settings.'
+            : 'Create a new creator profile and configure partner settings.'
+        }
+      >
+        <CreatorEditor
+          key={editUser ? editUser.id : 'new'}
+          creator={editUser}
+          setEditUser={setEditUser}
+          setUsers={setUsers}
+          onClose={handleCloseDrawerExplicitly}
+        />
+      </CreatorDrawer>
+
+      {/* 6. Destructive Delete Confirmation Dialog */}
+      <DeleteConfirmationDialog
+        isOpen={!!seriesToDelete}
+        onClose={() => setSeriesToDelete(null)}
+        onConfirm={handleDeleteConfirm}
+        creatorName={seriesToDelete?.name || ''}
+      />
     </div>
-  );
+  )
 }
-
-

@@ -5,6 +5,7 @@
 This project is a modern OTT streaming platform built with **Next.js 14** using the **App Router** and **TypeScript**. It is designed for video streaming, membership-based access, and a robust admin/content management workflow.
 
 The project combines:
+
 - User authentication and membership tiers
 - Video playback support for HLS and VR
 - Content browsing and filtering
@@ -64,16 +65,19 @@ The project combines:
 ## Architecture and Core Directories
 
 ### `app/`
+
 - Holds all route-level server and client components.
 - Includes root layout and route files such as `layout.tsx`, `loading.tsx`, `not-found.tsx`, and `page.tsx`.
 - Subfolders like `admin/` and `api/` define nested routes.
 
 ### `components/`
+
 - Reusable UI building blocks used by pages throughout the site.
 - Includes layout components, forms, loaders, player wrappers, and admin UI.
 - Key component folders include `Loader/`, `auth/`, `Content/`, `admin/`, `payments/`, and `profiles/`.
 
 ### `lib/`
+
 - Contains business logic, helpers, API wrappers, authentication, and mock data.
 - Important files:
   - `lib/auth.ts` — NextAuth configuration and session handling

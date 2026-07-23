@@ -1,10 +1,10 @@
 /**
  * Profiles API Module
- * 
+ *
  * API client for user profile management operations.
  * Reference: API_DOCUMENTATION_PART2.pdf - Profiles endpoints
  * Base URL: Uses NEXT_PUBLIC_API_BASE from environment variables
- * 
+ *
  * Implements:
  * - List user profiles (paginated)
  * - Create new profile
@@ -12,72 +12,72 @@
  * - Update profile (partial)
  * - Delete profile
  * - Verify profile PIN
- * 
+ *
  * Security Notes:
  * - All endpoints require authentication (Authorization header with JWT)
  * - PINs are validated server-side
  * - Profile limits enforced by backend
- * 
+ *
  * TODO: security - Confirm httpOnly cookie implementation for production
  * TODO: Implement unified API error handler with token refresh logic
  */
 
-import { API_BASE, USE_MOCK_DATA, logMockDataUsage } from './config';
-import { getAccessToken } from './tokenStore';
+import { API_BASE, USE_MOCK_DATA, logMockDataUsage } from './config'
+import { getAccessToken } from './tokenStore'
 
 // ============================================================================
 // TYPES
 // ============================================================================
 
 export interface Profile {
-  id: string;
-  user_id: string;
-  display_name: string;
-  avatar_url?: string | null;
-  is_profile_locked: boolean;
-  is_kids_profile: boolean;
-  preferred_language?: string;
-  maturity_rating?: string;
-  created_at: string;
-  updated_at: string;
+  id: string
+  user_id: string
+  display_name: string
+  avatar_url?: string | null
+  is_profile_locked: boolean
+  is_kids_profile: boolean
+  preferred_language?: string
+  maturity_rating?: string
+  created_at: string
+  updated_at: string
 }
 
 export interface CreateProfilePayload {
-  display_name: string;
-  avatar_url?: string;
-  is_profile_locked?: boolean;
-  pin?: string;
-  is_kids_profile?: boolean;
-  preferred_language?: string;
-  maturity_rating?: string;
+  display_name: string
+  avatar_url?: string
+  is_profile_locked?: boolean
+  pin?: string
+  is_kids_profile?: boolean
+  preferred_language?: string
+  maturity_rating?: string
 }
 
 export interface UpdateProfilePayload {
-  display_name?: string;
-  avatar_url?: string;
-  is_profile_locked?: boolean;
-  pin?: string;
-  is_kids_profile?: boolean;
-  preferred_language?: string;
-  maturity_rating?: string;
+  display_name?: string
+  avatar_url?: string
+  is_profile_locked?: boolean
+  pin?: string
+  is_kids_profile?: boolean
+  preferred_language?: string
+  maturity_rating?: string
 }
 
 export interface ProfilesListResponse {
-  count: number;
-  next: string | null;
-  previous: string | null;
-  results: Profile[];
+  count: number
+  next: string | null
+  previous: string | null
+  results: Profile[]
 }
 
 export interface VerifyPinResponse {
-  msg: string;
+  msg: string
 }
 
 export interface ApiError {
-  status: number;
-  message: string;
-  body?: any;
-  needAuth?: boolean;
+  status: number
+  message: string
+  body?: any
+  needAuth?: boolean
 }
 
 // ============================================================================
@@ -109,9 +109,9 @@ const MOCK_PROFILES: Profile[] = [
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
   },
-];
+]
 
-let mockProfilesStore = [...MOCK_PROFILES];
+let mockProfilesStore = [...MOCK_PROFILES]
 
 // ============================================================================
 // API HELPERS
@@ -121,41 +121,41 @@ let mockProfilesStore = [...MOCK_PROFILES];
  * Build authorization headers for authenticated requests
  */
 function getAuthHeaders(): HeadersInit {
-  const token = getAccessToken();
+  const token = getAccessToken()
   const headers: HeadersInit = {
     'Content-Type': 'application/json',
-  };
-  
-  if (token) {
-    headers['Authorization'] = `Bearer ${token}`;
   }
-  
-  return headers;
+
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`
+  }
+
+  return headers
 }
 
 /**
  * Handle API errors and create structured error object
  */
 async function handleApiError(response: Response): Promise<ApiError> {
-  let body;
+  let body
   try {
-    body = await response.json();
+    body = await response.json()
   } catch {
-    body = null;
+    body = null
   }
-  
+
   const error: ApiError = {
     status: response.status,
     message: body?.message || body?.detail || response.statusText || 'An error occurred',
     body,
-  };
-  
+  }
+
   // Mark 401 errors for auth handling
   if (response.status === 401) {
-    error.needAuth = true;
+    error.needAuth = true
   }
-  
-  return error;
+
+  return error
 }
 
 // ============================================================================
@@ -170,55 +170,55 @@ export async function listProfiles({
   page = 1,
   pageSize = 20,
 }: {
-  page?: number;
-  pageSize?: number;
+  page?: number
+  pageSize?: number
 } = {}): Promise<ProfilesListResponse> {
   if (USE_MOCK_DATA) {
-    logMockDataUsage('listProfiles');
-    
+    logMockDataUsage('listProfiles')
+
     // Simulate pagination
-    const start = (page - 1) * pageSize;
-    const end = start + pageSize;
-    const paginatedProfiles = mockProfilesStore.slice(start, end);
-    
+    const start = (page - 1) * pageSize
+    const end = start + pageSize
+    const paginatedProfiles = mockProfilesStore.slice(start, end)
+
     return {
       count: mockProfilesStore.length,
       next: end < mockProfilesStore.length ? `page=${page + 1}` : null,
       previous: page > 1 ? `page=${page - 1}` : null,
       results: paginatedProfiles,
-    };
+    }
   }
-  
-  const token = getAccessToken();
+
+  const token = getAccessToken()
   if (!token) {
     throw {
       status: 401,
       message: 'Not authenticated — please login',
       needAuth: true,
-    } as ApiError;
+    } as ApiError
   }
-  
+
   try {
-    const url = `${API_BASE}api/v1/profiles?page=${page}&page_size=${pageSize}`;
+    const url = `${API_BASE}api/v1/profiles?page=${page}&page_size=${pageSize}`
     const response = await fetch(url, {
       method: 'GET',
       headers: getAuthHeaders(),
-    });
-    
+    })
+
     if (!response.ok) {
-      throw await handleApiError(response);
+      throw await handleApiError(response)
     }
-    
-    return await response.json();
+
+    return await response.json()
   } catch (error) {
     if ((error as ApiError).status) {
-      throw error;
+      throw error
     }
     throw {
       status: 0,
       message: 'Network error - please check your connection',
       body: error,
-    } as ApiError;
+    } as ApiError
   }
 }
 
@@ -228,16 +228,16 @@ export async function listProfiles({
  */
 export async function createProfile(payload: CreateProfilePayload): Promise<Profile> {
   if (USE_MOCK_DATA) {
-    logMockDataUsage('createProfile');
-    
+    logMockDataUsage('createProfile')
+
     // Check profile limit (mock: max 4 profiles)
     if (mockProfilesStore.length >= 4) {
       throw {
         status: 400,
         message: 'Profile limit reached. Maximum 4 profiles allowed.',
-      } as ApiError;
+      } as ApiError
     }
-    
+
     const newProfile: Profile = {
       id: `profile-${Date.now()}`,
       user_id: 'user-123',
@@ -249,43 +249,43 @@ export async function createProfile(payload: CreateProfilePayload): Promise<Prof
       maturity_rating: payload.maturity_rating || 'PG-13',
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
-    };
-    
-    mockProfilesStore.push(newProfile);
-    return newProfile;
+    }
+
+    mockProfilesStore.push(newProfile)
+    return newProfile
   }
-  
-  const token = getAccessToken();
+
+  const token = getAccessToken()
   if (!token) {
     throw {
       status: 401,
       message: 'Not authenticated — please login',
       needAuth: true,
-    } as ApiError;
+    } as ApiError
   }
-  
+
   try {
-    const url = `${API_BASE}api/v1/profiles`;
+    const url = `${API_BASE}api/v1/profiles`
     const response = await fetch(url, {
       method: 'POST',
       headers: getAuthHeaders(),
       body: JSON.stringify(payload),
-    });
-    
+    })
+
     if (!response.ok) {
-      throw await handleApiError(response);
+      throw await handleApiError(response)
     }
-    
-    return await response.json();
+
+    return await response.json()
   } catch (error) {
     if ((error as ApiError).status) {
-      throw error;
+      throw error
     }
     throw {
       status: 0,
       message: 'Network error - please check your connection',
       body: error,
-    } as ApiError;
+    } as ApiError
   }
 }
 
@@ -295,49 +295,49 @@ export async function createProfile(payload: CreateProfilePayload): Promise<Prof
  */
 export async function getProfile(profileId: string): Promise<Profile> {
   if (USE_MOCK_DATA) {
-    logMockDataUsage('getProfile');
-    
-    const profile = mockProfilesStore.find(p => p.id === profileId);
+    logMockDataUsage('getProfile')
+
+    const profile = mockProfilesStore.find((p) => p.id === profileId)
     if (!profile) {
       throw {
         status: 404,
         message: 'Profile not found',
-      } as ApiError;
+      } as ApiError
     }
-    
-    return profile;
+
+    return profile
   }
-  
-  const token = getAccessToken();
+
+  const token = getAccessToken()
   if (!token) {
     throw {
       status: 401,
       message: 'Not authenticated — please login',
       needAuth: true,
-    } as ApiError;
+    } as ApiError
   }
-  
+
   try {
-    const url = `${API_BASE}api/v1/profiles/${profileId}`;
+    const url = `${API_BASE}api/v1/profiles/${profileId}`
     const response = await fetch(url, {
       method: 'GET',
       headers: getAuthHeaders(),
-    });
-    
+    })
+
     if (!response.ok) {
-      throw await handleApiError(response);
+      throw await handleApiError(response)
     }
-    
-    return await response.json();
+
+    return await response.json()
   } catch (error) {
     if ((error as ApiError).status) {
-      throw error;
+      throw error
     }
     throw {
       status: 0,
       message: 'Network error - please check your connection',
       body: error,
-    } as ApiError;
+    } as ApiError
   }
 }
 
@@ -350,56 +350,56 @@ export async function updateProfile(
   payload: UpdateProfilePayload
 ): Promise<Profile> {
   if (USE_MOCK_DATA) {
-    logMockDataUsage('updateProfile');
-    
-    const index = mockProfilesStore.findIndex(p => p.id === profileId);
+    logMockDataUsage('updateProfile')
+
+    const index = mockProfilesStore.findIndex((p) => p.id === profileId)
     if (index === -1) {
       throw {
         status: 404,
         message: 'Profile not found',
-      } as ApiError;
+      } as ApiError
     }
-    
+
     mockProfilesStore[index] = {
       ...mockProfilesStore[index],
       ...payload,
       updated_at: new Date().toISOString(),
-    };
-    
-    return mockProfilesStore[index];
+    }
+
+    return mockProfilesStore[index]
   }
-  
-  const token = getAccessToken();
+
+  const token = getAccessToken()
   if (!token) {
     throw {
       status: 401,
       message: 'Not authenticated — please login',
       needAuth: true,
-    } as ApiError;
+    } as ApiError
   }
-  
+
   try {
-    const url = `${API_BASE}api/v1/profiles/${profileId}`;
+    const url = `${API_BASE}api/v1/profiles/${profileId}`
     const response = await fetch(url, {
       method: 'PATCH',
       headers: getAuthHeaders(),
       body: JSON.stringify(payload),
-    });
-    
+    })
+
     if (!response.ok) {
-      throw await handleApiError(response);
+      throw await handleApiError(response)
     }
-    
-    return await response.json();
+
+    return await response.json()
   } catch (error) {
     if ((error as ApiError).status) {
-      throw error;
+      throw error
     }
     throw {
       status: 0,
       message: 'Network error - please check your connection',
       body: error,
-    } as ApiError;
+    } as ApiError
   }
 }
 
@@ -409,50 +409,50 @@ export async function updateProfile(
  */
 export async function deleteProfile(profileId: string): Promise<boolean> {
   if (USE_MOCK_DATA) {
-    logMockDataUsage('deleteProfile');
-    
-    const index = mockProfilesStore.findIndex(p => p.id === profileId);
+    logMockDataUsage('deleteProfile')
+
+    const index = mockProfilesStore.findIndex((p) => p.id === profileId)
     if (index === -1) {
       throw {
         status: 404,
         message: 'Profile not found',
-      } as ApiError;
+      } as ApiError
     }
-    
-    mockProfilesStore.splice(index, 1);
-    return true;
+
+    mockProfilesStore.splice(index, 1)
+    return true
   }
-  
-  const token = getAccessToken();
+
+  const token = getAccessToken()
   if (!token) {
     throw {
       status: 401,
       message: 'Not authenticated — please login',
       needAuth: true,
-    } as ApiError;
+    } as ApiError
   }
-  
+
   try {
-    const url = `${API_BASE}api/v1/profiles/${profileId}`;
+    const url = `${API_BASE}api/v1/profiles/${profileId}`
     const response = await fetch(url, {
       method: 'DELETE',
       headers: getAuthHeaders(),
-    });
-    
+    })
+
     if (!response.ok) {
-      throw await handleApiError(response);
+      throw await handleApiError(response)
     }
-    
-    return true;
+
+    return true
   } catch (error) {
     if ((error as ApiError).status) {
-      throw error;
+      throw error
     }
     throw {
       status: 0,
       message: 'Network error - please check your connection',
       body: error,
-    } as ApiError;
+    } as ApiError
   }
 }
 
@@ -462,61 +462,61 @@ export async function deleteProfile(profileId: string): Promise<boolean> {
  */
 export async function verifyPin(profileId: string, pin: string): Promise<VerifyPinResponse> {
   if (USE_MOCK_DATA) {
-    logMockDataUsage('verifyPin');
-    
-    const profile = mockProfilesStore.find(p => p.id === profileId);
+    logMockDataUsage('verifyPin')
+
+    const profile = mockProfilesStore.find((p) => p.id === profileId)
     if (!profile) {
       throw {
         status: 404,
         message: 'Profile not found',
-      } as ApiError;
+      } as ApiError
     }
-    
+
     if (!profile.is_profile_locked) {
-      return { msg: 'Profile is not locked' };
+      return { msg: 'Profile is not locked' }
     }
-    
+
     // Mock: accept PIN "1234" for all locked profiles
     if (pin !== '1234') {
       throw {
         status: 403,
         message: 'Incorrect PIN',
-      } as ApiError;
+      } as ApiError
     }
-    
-    return { msg: 'PIN verified successfully' };
+
+    return { msg: 'PIN verified successfully' }
   }
-  
-  const token = getAccessToken();
+
+  const token = getAccessToken()
   if (!token) {
     throw {
       status: 401,
       message: 'Not authenticated — please login',
       needAuth: true,
-    } as ApiError;
+    } as ApiError
   }
-  
+
   try {
-    const url = `${API_BASE}api/v1/profiles/${profileId}/verify-pin`;
+    const url = `${API_BASE}api/v1/profiles/${profileId}/verify-pin`
     const response = await fetch(url, {
       method: 'POST',
       headers: getAuthHeaders(),
       body: JSON.stringify({ pin }),
-    });
-    
+    })
+
     if (!response.ok) {
-      throw await handleApiError(response);
+      throw await handleApiError(response)
     }
-    
-    return await response.json();
+
+    return await response.json()
   } catch (error) {
     if ((error as ApiError).status) {
-      throw error;
+      throw error
     }
     throw {
       status: 0,
       message: 'Network error - please check your connection',
       body: error,
-    } as ApiError;
+    } as ApiError
   }
 }
