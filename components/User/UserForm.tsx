@@ -4,26 +4,27 @@ import React, { useState } from 'react'
 import { updateUser, User } from '@/lib/userApi'
 import { toast } from 'sonner'
 
-type EditUserProps = {
-  user: User
-  setEditUser: React.Dispatch<React.SetStateAction<User | null>>
+type UserFormProps = {
+  user?: User | null
+  setEditUser: (user: User | null) => void
   setUsers: React.Dispatch<React.SetStateAction<User[]>>
 }
 
-export default function EditUser({ setEditUser, user, setUsers }: EditUserProps) {
-  const [form, setForm] = useState<User>({
-    name: user.name || '',
-    email: user.email || '',
-    role: user.role || 'user',
-    status: user.status || 'active',
-    is_active: user.is_active ?? true,
+export default function UserForm({ setEditUser, user, setUsers }: UserFormProps) {
+  const [form, setForm] = useState<Omit<User, 'id'>>({
+    name: user?.name || '',
+    email: user?.email || '',
+    role: user?.role || 'user',
+    status: user?.status || 'active',
+    is_active: user?.is_active ?? true,
+    created_at: user?.created_at || new Date(),
   })
-  const [errors, setErrors] = useState<any>({})
+  const [errors, setErrors] = useState<Record<string, string>>({})
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false)
 
   // Validation function
   const validate = () => {
-    let temp: any = {}
+    const temp: Record<string, string> = {}
 
     if (!form.name || !form.name.trim()) temp.name = 'Full name is required.'
     if (!form.email || !form.email.trim()) temp.email = 'Email is required.'
@@ -40,27 +41,34 @@ export default function EditUser({ setEditUser, user, setUsers }: EditUserProps)
 
     if (!validate()) return
 
+    if (!user?.id) {
+      toast.error('User ID is missing for update operation')
+      return
+    }
+
     try {
       setIsSubmitting(true)
-      let userCreation = await updateUser({ id: user.id, ...form })
-      console.log('userCreation', userCreation)
+      const response = await updateUser({ id: user.id, ...form })
+      console.log('updateUser response', response)
 
-      if (userCreation && (userCreation.msg === 'User updated successfully' || userCreation.status === 200 || userCreation.id)) {
+      if (
+        response &&
+        (response.msg === 'User updated successfully' ||
+          response.status === 200 ||
+          response.id ||
+          response.user)
+      ) {
         setEditUser(null)
-        toast.success(userCreation.msg || 'User saved successfully')
-        setUsers((prev) => {
-          const exists = prev.some((u) => u.id === user.id)
-          if (exists) {
-            return prev.map((u) => (u.id === user.id ? { ...u, ...form } : u))
-          }
-          return [{ id: userCreation.id || Date.now(), ...form, created_at: new Date() }, ...prev]
-        })
+        toast.success(response.msg || 'User updated successfully')
+        setUsers((prev) =>
+          prev.map((u) => (u.id === user.id ? { ...u, ...form, ...response.user } : u))
+        )
       } else {
-        toast.error(userCreation?.msg || 'Error occurred while updating user')
+        toast.error(response?.msg || 'Error occurred while updating user')
       }
     } catch (err: any) {
-      console.error('Error saving user:', err)
-      toast.error('Error occurred while updating user')
+      console.error('Error updating user:', err)
+      toast.error(err?.response?.data?.msg || 'Error occurred while updating user')
     } finally {
       setIsSubmitting(false)
     }
@@ -168,11 +176,7 @@ export default function EditUser({ setEditUser, user, setUsers }: EditUserProps)
             disabled={isSubmitting}
             className="px-5 py-2.5 text-sm font-semibold rounded-lg text-primary-foreground bg-primary hover:bg-primary/90 active:scale-[0.98] transition-all shadow-sm disabled:opacity-60 cursor-pointer"
           >
-            {isSubmitting
-              ? 'Saving...'
-              : user.id
-              ? 'Update User'
-              : 'Create User'}
+            {isSubmitting ? 'Saving...' : 'Update User'}
           </button>
         </div>
       </form>

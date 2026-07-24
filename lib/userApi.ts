@@ -1,6 +1,7 @@
 import axios from 'axios'
 import { API_BASE } from './config'
 import Cookies from 'js-cookie'
+
 export type User = {
   id?: number
   email: string
@@ -10,11 +11,6 @@ export type User = {
   is_active: boolean
   created_at: Date
 }
-export type createUserType = {
-  email: string
-  name: string
-  role: string
-}
 
 export async function getUsers(): Promise<User[]> {
   const res = await fetch(`${API_BASE}api/v1/users`, {
@@ -22,7 +18,6 @@ export async function getUsers(): Promise<User[]> {
     cache: 'no-store',
     headers: {
       'Content-Type': 'application/json',
-      // If auth is needed, uncomment:
       Authorization: `Bearer ${Cookies.get('access_token')}`,
     },
   })
@@ -45,7 +40,7 @@ export async function updateUser(userData: User) {
     },
   })
   if (res.status != 200) {
-    throw new Error('Failed to fetch users')
+    throw new Error('Failed to update user')
   }
   const data = await res.data
   console.log(data)
@@ -60,7 +55,7 @@ export async function deleteUser(userData: User) {
     },
   })
   if (res.status != 200) {
-    throw new Error('Failed to fetch users')
+    throw new Error('Failed to delete user')
   }
   const data = await res.data
   console.log(data)

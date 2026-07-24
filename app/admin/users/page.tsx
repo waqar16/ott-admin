@@ -5,7 +5,7 @@ import { motion } from 'framer-motion'
 import { toast } from 'sonner'
 
 import CreatorDrawer from '@/components/Creator/CreatorDrawer'
-import EditUser from '@/components/User/UpdateUser'
+import UserForm from '@/components/User/UserForm'
 import { deleteUser, getUsers, User } from '@/lib/userApi'
 
 import { UsersPageHeader } from './components/UsersPageHeader'
@@ -24,7 +24,6 @@ export default function AdminUsersPage() {
 
   // Drawer state
   const [drawerOpen, setDrawerOpen] = useState<boolean>(false)
-  const [drawerMode, setDrawerMode] = useState<'create' | 'edit'>('create')
   const [selectedUser, setSelectedUser] = useState<User | null>(null)
 
   const [searchQuery, setSearchQuery] = useState<string>('')
@@ -49,21 +48,7 @@ export default function AdminUsersPage() {
     fetch()
   }, [])
 
-  const handleAddUser = () => {
-    setDrawerMode('create')
-    setSelectedUser({
-      name: '',
-      email: '',
-      role: 'user',
-      status: 'active',
-      is_active: true,
-      created_at: new Date(),
-    })
-    setDrawerOpen(true)
-  }
-
   const handleEditUser = (user: User) => {
-    setDrawerMode('edit')
     setSelectedUser(user)
     setDrawerOpen(true)
   }
@@ -126,7 +111,6 @@ export default function AdminUsersPage() {
       {/* Header */}
       <UsersPageHeader
         onRefresh={fetch}
-        onAddUser={handleAddUser}
         loading={usersFetchLoading}
         totalUsersCount={users.length}
       />
@@ -176,21 +160,17 @@ export default function AdminUsersPage() {
         onConfirm={handleDeleteConfirm}
       />
 
-      {/* Right Slide Drawer for Create & Edit User */}
+      {/* Right Slide Drawer for Edit User */}
       <CreatorDrawer
         isOpen={drawerOpen}
         onClose={handleCloseDrawer}
-        title={drawerMode === 'create' ? 'Create User' : 'Edit User'}
-        description={
-          drawerMode === 'create'
-            ? 'Create a new user account and assign permissions.'
-            : 'Update account information, role and access permissions.'
-        }
+        title="Edit User"
+        description="Update account information, role, status and access permissions."
       >
         {selectedUser && (
-          <EditUser
+          <UserForm
             user={selectedUser}
-            setEditUser={() => handleCloseDrawer()}
+            setEditUser={handleCloseDrawer}
             setUsers={setUsers}
           />
         )}

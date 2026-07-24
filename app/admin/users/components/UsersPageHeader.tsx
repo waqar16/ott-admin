@@ -1,18 +1,16 @@
 'use client'
 
 import React, { useState } from 'react'
-import { FiPlus, FiRefreshCw, FiUserPlus, FiUsers } from 'react-icons/fi'
+import { FiRefreshCw, FiUsers } from 'react-icons/fi'
 
 interface UsersPageHeaderProps {
   onRefresh: () => void
-  onAddUser?: () => void
   loading: boolean
   totalUsersCount: number
 }
 
 export const UsersPageHeader: React.FC<UsersPageHeaderProps> = ({
   onRefresh,
-  onAddUser,
   loading,
   totalUsersCount,
 }) => {
@@ -58,16 +56,6 @@ export const UsersPageHeader: React.FC<UsersPageHeaderProps> = ({
           />
           <span>{loading ? 'Refreshing...' : 'Refresh'}</span>
         </button>
-
-        {onAddUser && (
-          <button
-            onClick={onAddUser}
-            className="inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium rounded-lg text-primary-foreground bg-primary hover:bg-primary/90 active:scale-[0.98] transition-all shadow-sm cursor-pointer"
-          >
-            <FiUserPlus className="w-4 h-4" />
-            <span>Add User</span>
-          </button>
-        )}
       </div>
     </div>
   )

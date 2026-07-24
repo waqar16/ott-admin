@@ -82,9 +82,8 @@ export default function AdminSidebar({ collapsed, setCollapsed }: AdminSidebarPr
 
   return (
     <aside
-      className={`h-screen bg-white dark:bg-neutral-950 border-r border-slate-200/80 dark:border-neutral-900/80 text-slate-700 dark:text-neutral-300 transition-all duration-300 z-40 fixed left-0 top-0 flex flex-col justify-between select-none ${
-        collapsed ? 'w-[76px]' : 'w-[260px]'
-      }`}
+      className={`h-screen bg-white dark:bg-neutral-950 border-r border-slate-200/80 dark:border-neutral-900/80 text-slate-700 dark:text-neutral-300 transition-all duration-300 z-40 fixed left-0 top-0 flex flex-col justify-between select-none ${collapsed ? 'w-[76px]' : 'w-[260px]'
+        }`}
     >
       <div className="flex flex-col flex-1 overflow-y-auto minimal-scrollbar">
         {/* Header/Logo */}
@@ -156,11 +155,10 @@ export default function AdminSidebar({ collapsed, setCollapsed }: AdminSidebarPr
             <SidebarTooltip content="Users" disabled={!collapsed}>
               <button
                 onClick={() => handleDropdownClick(openUsers, setOpenUsers)}
-                className={`${linkBase} ${
-                  isSubActive(['/admin/users']) && !collapsed
+                className={`${linkBase} ${isSubActive(['/admin/users']) && !collapsed
                     ? 'text-[var(--main-color)] dark:text-blue-400 font-semibold'
                     : inactiveClass
-                }`}
+                  }`}
               >
                 <div className="flex items-center gap-3">
                   <FiUsers className="w-[18px] h-[18px] flex-shrink-0" />
@@ -192,11 +190,10 @@ export default function AdminSidebar({ collapsed, setCollapsed }: AdminSidebarPr
             <SidebarTooltip content="FAQs" disabled={!collapsed}>
               <button
                 onClick={() => handleDropdownClick(openFaqs, setOpenFaqs)}
-                className={`${linkBase} ${
-                  isSubActive(['/admin/faqs']) && !collapsed
+                className={`${linkBase} ${isSubActive(['/admin/faqs']) && !collapsed
                     ? 'text-[var(--main-color)] dark:text-blue-400 font-semibold'
                     : inactiveClass
-                }`}
+                  }`}
               >
                 <div className="flex items-center gap-3">
                   <BsQuestionIcon className="w-[18px] h-[18px] flex-shrink-0" />
@@ -228,15 +225,14 @@ export default function AdminSidebar({ collapsed, setCollapsed }: AdminSidebarPr
             <SidebarTooltip content="Content" disabled={!collapsed}>
               <button
                 onClick={() => handleDropdownClick(openContent, setOpenContent)}
-                className={`${linkBase} ${
-                  isSubActive([
-                    '/admin/movie-management',
-                    '/admin/series-management',
-                    '/admin/trailer-management',
-                  ]) && !collapsed
+                className={`${linkBase} ${isSubActive([
+                  '/admin/movie-management',
+                  '/admin/series-management',
+                  '/admin/trailer-management',
+                ]) && !collapsed
                     ? 'text-[var(--main-color)] dark:text-blue-400 font-semibold'
                     : inactiveClass
-                }`}
+                  }`}
               >
                 <div className="flex items-center gap-3">
                   <FiFileText className="w-[18px] h-[18px] flex-shrink-0" />
@@ -282,11 +278,10 @@ export default function AdminSidebar({ collapsed, setCollapsed }: AdminSidebarPr
             <SidebarTooltip content="Payment" disabled={!collapsed}>
               <button
                 onClick={() => handleDropdownClick(openPayments, setOpenPayments)}
-                className={`${linkBase} ${
-                  isSubActive(['/admin/payment-plans', '/admin/subscriptions']) && !collapsed
+                className={`${linkBase} ${isSubActive(['/admin/payment-plans', '/admin/subscriptions']) && !collapsed
                     ? 'text-[var(--main-color)] dark:text-blue-400 font-semibold'
                     : inactiveClass
-                }`}
+                  }`}
               >
                 <div className="flex items-center gap-3">
                   <BsCashIcon className="w-[18px] h-[18px] flex-shrink-0" />
@@ -334,11 +329,7 @@ export default function AdminSidebar({ collapsed, setCollapsed }: AdminSidebarPr
       </div>
 
       {/* Version/Build Footer */}
-      {!collapsed && (
-        <div className="p-4 border-t border-slate-200/80 dark:border-neutral-900/80 text-center text-[10px] text-slate-400 dark:text-neutral-600">
-          <span>v1.0.0 &bull; URView Admin</span>
-        </div>
-      )}
+
     </aside>
   )
 }
