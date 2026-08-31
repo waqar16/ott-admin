@@ -22,6 +22,7 @@ import EmptyContentState from '@/components/Content/EmptyContentState'
 import ContentPagination from '@/components/Content/ContentPagination'
 import ContentEditor from '@/components/admin/content/ContentEditor.client'
 import ContentDetailsModal from '@/components/Content/ContentDetailsModal'
+import ContentHeaderComponent from '@/components/Content/ContentHeader'
 
 export interface TranscodingProgress {
   progress: number
@@ -280,30 +281,10 @@ export default function ContentManagementPage() {
       className="min-h-screen bg-background text-foreground"
     >
       {/* Inline Page Header - Non-sticky, full-width, clean border bottom */}
-      <div className="bg-card border-b border-border py-6">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div className="space-y-1">
-            <h1 className="text-3xl font-bold tracking-tight text-foreground">
-              {contentTypeTitle} Management
-            </h1>
-            <p className="text-sm text-muted-foreground">
-              {contentTypeSubtitle}
-            </p>
-          </div>
+      <ContentHeaderComponent handleCreateNew={handleCreateNew} />
 
-          <div className="flex items-center gap-3 shrink-0">
-            <button
-              onClick={handleCreateNew}
-              className="inline-flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-medium rounded-xl text-primary-foreground bg-primary hover:bg-primary/90 active:scale-[0.98] transition-all shadow-sm hover:shadow cursor-pointer"
-            >
 
-              <span>+ Add {contentTypeTitle}</span>
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8 py-6 space-y-6">
+      <div className="max-w-7xl mx-auto px-4 py-6 space-y-6">
         {/* Help Panel */}
         <AdminContentHelpPanel />
 

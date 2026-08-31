@@ -13,6 +13,7 @@ import {
   FiDollarSign,
   FiAlertTriangle,
   FiX,
+  FiLoader,
 } from 'react-icons/fi'
 import { toast } from 'sonner'
 import { TranscodingProgress } from '@/app/admin/movie-management/page'
@@ -40,6 +41,55 @@ const getTranscodingColor = (phase?: string, status?: string) => {
   if (normStatus === 'FAILED') return 'bg-rose-500'
   if (normStatus === 'COMPLETE' || normStatus === 'READY') return 'bg-emerald-500'
   return 'bg-primary'
+}
+
+// Ingest Status is distinct from the content publishing `status` field.
+// It reflects where the underlying video file is in the upload/transcode
+// pipeline (e.g. pending, processing, ready, failed) and is sourced
+// directly from item.ingest_status — never hardcoded.
+const getIngestStatusMeta = (ingestStatus?: string) => {
+  const normalized = ingestStatus?.toLowerCase()
+
+  switch (normalized) {
+    case 'ready':
+    case 'complete':
+    case 'completed':
+      return {
+        label: ingestStatus,
+        Icon: FiCheckCircle,
+        className: 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/30',
+        spin: false,
+      }
+    case 'failed':
+    case 'error':
+      return {
+        label: ingestStatus,
+        Icon: FiAlertTriangle,
+        className: 'bg-rose-500/15 text-rose-600 dark:text-rose-400 border-rose-500/30',
+        spin: false,
+      }
+    case 'processing':
+    case 'pending':
+    case 'queued':
+    case 'in_progress':
+    case 'uploading':
+    case 'transcoding':
+      return {
+        label: ingestStatus,
+        Icon: FiLoader,
+        className: 'bg-primary/15 text-primary border-primary/30',
+        spin: true,
+      }
+    default:
+      // Any other/unrecognized value returned by the API is still shown,
+      // just with a neutral style, so nothing is silently hidden.
+      return {
+        label: ingestStatus || 'Unknown',
+        Icon: FiFilm,
+        className: 'bg-slate-500/15 text-slate-600 dark:text-slate-400 border-slate-500/30',
+        spin: false,
+      }
+  }
 }
 
 export const ContentCard: React.FC<ContentCardProps> = ({
@@ -85,8 +135,12 @@ export const ContentCard: React.FC<ContentCardProps> = ({
         )}
 
         {/* Top-Right Badges Overlay */}
-        <div className="absolute top-3 right-3 z-10">
+        <div className="absolute top-3 right-3 z-10 flex flex-col items-end gap-1.5">
           <StatusBadge status={item.status} />
+
+          {/* Ingest Status — separate from the content `status` above; reflects
+              where the video file is in the upload/transcode pipeline. */}
+
         </div>
 
         {/* Bottom Actions Overlay */}
@@ -236,23 +290,37 @@ export const ContentCard: React.FC<ContentCardProps> = ({
               </span>
             )}
           </div>
-
+          {item.ingest_status &&
+            (() => {
+              const { label, Icon, className, spin } = getIngestStatusMeta(item.ingest_status)
+              return (
+                <span
+                  title="Ingest Status"
+                  className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold border backdrop-blur-md capitalize ${className}`}
+                >
+                  <Icon className={`w-3 h-3 ${spin ? 'animate-spin' : ''}`} />
+                  File Status: {label?.replace(/_/g, ' ')}
+                </span>
+              )
+            })()}
           {/* RETRY TRANSCODING ACTION */}
-          {item.ingest_status === 'failed' && (
+          {(
             <button
               onClick={async () => {
                 const retry = await retryTranscoding(item.id)
                 if (retry) {
                   toast.success('Transcoding Retry Initiated')
-                  fetchContent()
+                  setTimeout(() => {
+                    fetchContent()
+                  }, 2000)
                 } else {
                   toast.error('Transcoding Retry Failed')
                 }
               }}
-              className="w-full inline-flex items-center justify-center gap-2 rounded-lg border border-rose-500/30 bg-rose-500/10 py-2 text-xs font-semibold text-rose-600 dark:text-rose-400 hover:bg-rose-500/20 transition-all cursor-pointer"
+              className={`w-full inline-flex items-center justify-center gap-2 rounded-lg border  ${item.ingest_status === 'failed' ? 'bg-rose-500/10 border-rose-500/30 text-rose-600 dark:text-rose-400 hover:bg-rose-500/20' : 'bg-slate-500/10 border-slate-500/30 text-slate-600 dark:text-slate-400 hover:bg-slate-500/20'}  py-2 text-xs font-semibold   transition-all cursor-pointer`}
             >
               <FiRotateCw className="w-3.5 h-3.5" />
-              <span>Retry Transcoding</span>
+              <span>{item.ingest_status === 'failed' ? 'Retry Transcoding' : 'Retranscode'}</span>
             </button>
           )}
         </div>
