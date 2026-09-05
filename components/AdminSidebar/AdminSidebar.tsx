@@ -12,6 +12,7 @@ import {
   FiChevronUp,
   FiList,
   FiMessageSquare,
+  FiUserCheck,
 } from 'react-icons/fi'
 import { BiDollar, BiMovie, BiTv } from 'react-icons/bi'
 import { GrPlan } from 'react-icons/gr'
@@ -48,7 +49,7 @@ export default function AdminSidebar({ collapsed, setCollapsed }: AdminSidebarPr
 
   // Auto-expand appropriate dropdowns based on the active path on mount
   useEffect(() => {
-    if (pathname.startsWith('/admin/users')) setOpenUsers(true)
+    if (pathname.startsWith('/admin/users') || pathname.startsWith('/admin/pre-signup')) setOpenUsers(true)
     if (pathname.startsWith('/admin/faqs')) setOpenFaqs(true)
     if (
       pathname.startsWith('/admin/movie') ||
@@ -155,7 +156,7 @@ export default function AdminSidebar({ collapsed, setCollapsed }: AdminSidebarPr
             <SidebarTooltip content="Users" disabled={!collapsed}>
               <button
                 onClick={() => handleDropdownClick(openUsers, setOpenUsers)}
-                className={`${linkBase} ${isSubActive(['/admin/users']) && !collapsed
+                className={`${linkBase} ${isSubActive(['/admin/users', '/admin/pre-signup']) && !collapsed
                     ? 'text-[var(--main-color)] dark:text-blue-400 font-semibold'
                     : inactiveClass
                   }`}
@@ -180,6 +181,13 @@ export default function AdminSidebar({ collapsed, setCollapsed }: AdminSidebarPr
                 >
                   <FiList className="w-3.5 h-3.5" />
                   <span>Manage Users</span>
+                </Link>
+                <Link
+                  href="/admin/pre-signup"
+                  className={`${subLinkClass} ${isActive('/admin/pre-signup') ? 'text-[var(--main-color)] dark:text-blue-400 font-semibold' : 'text-slate-500 dark:text-neutral-500 hover:text-slate-800 dark:hover:text-slate-200'}`}
+                >
+                  <FiUserCheck className="w-3.5 h-3.5" />
+                  <span>Pre-Signup & Waitlist</span>
                 </Link>
               </div>
             )}

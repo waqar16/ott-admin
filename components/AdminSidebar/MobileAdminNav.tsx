@@ -13,6 +13,7 @@ import {
   FiChevronUp,
   FiList,
   FiMessageSquare,
+  FiUserCheck,
 } from 'react-icons/fi'
 import {
   BsSubscript as BsSubscriptIcon,
@@ -148,7 +149,7 @@ export default function MobileAdminNav({ openDrawer, setOpenDrawer }: MobileAdmi
                   setOpenFaqs(false)
                 }}
                 className={`${linkBase} ${
-                  pathname.startsWith('/admin/users')
+                  pathname.startsWith('/admin/users') || pathname.startsWith('/admin/pre-signup')
                     ? 'text-[var(--main-color)] dark:text-blue-400 font-semibold'
                     : inactiveClass
                 } justify-between w-full`}
@@ -168,6 +169,14 @@ export default function MobileAdminNav({ openDrawer, setOpenDrawer }: MobileAdmi
                   >
                     <FiList size={14} />
                     <span>Manage Users</span>
+                  </Link>
+                  <Link
+                    href="/admin/pre-signup"
+                    onClick={() => setOpenDrawer(false)}
+                    className={`${subLinkClass} ${isActive('/admin/pre-signup') ? 'text-[var(--main-color)] dark:text-blue-400 font-semibold' : 'text-slate-500 dark:text-neutral-500 hover:text-slate-800 dark:hover:text-slate-200'}`}
+                  >
+                    <FiUserCheck size={14} />
+                    <span>Pre-Signup & Waitlist</span>
                   </Link>
                 </div>
               )}
