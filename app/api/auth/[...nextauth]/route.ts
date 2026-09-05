@@ -1,12 +1,12 @@
 // TODO: Uncomment when NextAuth backend ready (Stripe / AWS / WP integration)
 // import NextAuth from 'next-auth';
-import { authOptions } from '@/lib/auth';
-import { USE_MOCK_DATA } from '@/lib/config';
-import { NextResponse } from 'next/server';
+import { authOptions } from '@/lib/auth'
+import { USE_MOCK_DATA } from '@/lib/config'
+import { NextResponse } from 'next/server'
 
 // Mock mode active — replace with real NextAuth later
 if (USE_MOCK_DATA) {
-  console.log('[NextAuth] Mock mode - auth endpoints disabled, using mock sessions');
+  console.log('[NextAuth] Mock mode - auth endpoints disabled, using mock sessions')
 }
 
 // TODO: Uncomment when NextAuth backend ready
@@ -19,9 +19,9 @@ export async function GET() {
     return NextResponse.json({
       message: 'NextAuth mock mode - authentication disabled for development',
       useMockAuth: true,
-    });
+    })
   }
-  return NextResponse.json({ error: 'NextAuth not configured' }, { status: 500 });
+  return NextResponse.json({ error: 'NextAuth not configured' }, { status: 500 })
 }
 
 export async function POST() {
@@ -29,7 +29,7 @@ export async function POST() {
     return NextResponse.json({
       message: 'NextAuth mock mode - authentication disabled for development',
       useMockAuth: true,
-    });
+    })
   }
-  return NextResponse.json({ error: 'NextAuth not configured' }, { status: 500 });
+  return NextResponse.json({ error: 'NextAuth not configured' }, { status: 500 })
 }

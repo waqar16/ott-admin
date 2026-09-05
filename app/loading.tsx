@@ -1,7 +1,5 @@
-import FullScreenRedirectLoader from "@/components/Loader/FullScreenRedirectLoader";
+import FullScreenRedirectLoader from '@/components/Loader/FullScreenRedirectLoader'
 
 export default function Loading() {
-  return (
-   <FullScreenRedirectLoader message="Just a moment"/>
-  )
+  return <FullScreenRedirectLoader message="Just a moment" />
 }

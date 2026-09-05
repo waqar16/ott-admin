@@ -1,14 +1,14 @@
 // Featured trailer data for landing hero carousel (mock only)
 // TODO: Replace with real API or CMS driven featured sets
 export interface FeaturedTrailer {
-  id: string;
-  title: string;
-  logline: string;
-  backgroundImage: string;
-  trailerHlsUrl?: string; // HLS playlist (mock)
-  poster?: string;
-  isImmersive: boolean;
-  badges: string[];
+  id: string
+  title: string
+  logline: string
+  backgroundImage: string
+  trailerHlsUrl?: string // HLS playlist (mock)
+  poster?: string
+  isImmersive: boolean
+  badges: string[]
 }
 
 export const featuredTrailers: FeaturedTrailer[] = [
@@ -39,4 +39,4 @@ export const featuredTrailers: FeaturedTrailer[] = [
     isImmersive: false,
     badges: ['4K HDR', 'Series'],
   },
-];
+]

@@ -1,21 +1,21 @@
-'use client';
+'use client'
 
-import { useState, useEffect } from 'react';
-import Link from 'next/link';
-import Image from 'next/image';
+import { useState, useEffect } from 'react'
+import Link from 'next/link'
+import Image from 'next/image'
 
 /**
  * LandingHero Component
- * 
+ *
  * A responsive hero section for landing pages featuring a headline, subheadline,
  * call-to-action button, email lead capture form, and an auto-rotating demo carousel.
- * 
+ *
  * @component
  * @example
  * ```tsx
  * <LandingHero />
  * ```
- * 
+ *
  * @example
  * ```tsx
  * // With custom demo images
@@ -27,7 +27,7 @@ import Image from 'next/image';
  *   ]}
  * />
  * ```
- * 
+ *
  * Features:
  * - Responsive layout (mobile-first design)
  * - Email lead capture with validation
@@ -41,28 +41,28 @@ import Image from 'next/image';
 
 export interface DemoImage {
   /** Image source URL or path */
-  src: string;
+  src: string
   /** Alt text for accessibility */
-  alt: string;
+  alt: string
   /** Optional title displayed below thumbnail */
-  title?: string;
+  title?: string
 }
 
 export interface LandingHeroProps {
   /** Custom headline text (default: "Stream Your Favorite Content Anywhere") */
-  headline?: string;
+  headline?: string
   /** Custom subheadline text */
-  subheadline?: string;
+  subheadline?: string
   /** CTA button text (default: "Start Watching") */
-  ctaText?: string;
+  ctaText?: string
   /** CTA button link (default: "/catalog") */
-  ctaLink?: string;
+  ctaLink?: string
   /** Email input placeholder (default: "Enter your email") */
-  emailPlaceholder?: string;
+  emailPlaceholder?: string
   /** Array of demo images for carousel */
-  demoImages?: DemoImage[];
+  demoImages?: DemoImage[]
   /** Carousel auto-rotate interval in milliseconds (default: 5000) */
-  carouselInterval?: number;
+  carouselInterval?: number
 }
 
 /**
@@ -84,7 +84,7 @@ const DEFAULT_DEMO_IMAGES: DemoImage[] = [
     alt: 'Demo thumbnail 3',
     title: 'Multi-Device',
   },
-];
+]
 
 export default function LandingHero({
   headline = 'Stream Your Favorite Content Anywhere',
@@ -96,79 +96,79 @@ export default function LandingHero({
   carouselInterval = 5000,
 }: LandingHeroProps) {
   // Carousel state
-  const [currentSlide, setCurrentSlide] = useState(0);
-  const [isCarouselPaused, setIsCarouselPaused] = useState(false);
+  const [currentSlide, setCurrentSlide] = useState(0)
+  const [isCarouselPaused, setIsCarouselPaused] = useState(false)
 
   // Email form state
-  const [email, setEmail] = useState('');
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle');
-  const [errorMessage, setErrorMessage] = useState('');
+  const [email, setEmail] = useState('')
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle')
+  const [errorMessage, setErrorMessage] = useState('')
 
   // Auto-rotate carousel
   useEffect(() => {
-    if (isCarouselPaused || demoImages.length <= 1) return;
+    if (isCarouselPaused || demoImages.length <= 1) return
 
     const interval = setInterval(() => {
-      setCurrentSlide((prev) => (prev + 1) % demoImages.length);
-    }, carouselInterval);
+      setCurrentSlide((prev) => (prev + 1) % demoImages.length)
+    }, carouselInterval)
 
-    return () => clearInterval(interval);
-  }, [isCarouselPaused, demoImages.length, carouselInterval]);
+    return () => clearInterval(interval)
+  }, [isCarouselPaused, demoImages.length, carouselInterval])
 
   /**
    * Navigate to specific slide
    */
   const goToSlide = (index: number) => {
-    setCurrentSlide(index);
-  };
+    setCurrentSlide(index)
+  }
 
   /**
    * Navigate to next slide
    */
   const nextSlide = () => {
-    setCurrentSlide((prev) => (prev + 1) % demoImages.length);
-  };
+    setCurrentSlide((prev) => (prev + 1) % demoImages.length)
+  }
 
   /**
    * Navigate to previous slide
    */
   const prevSlide = () => {
-    setCurrentSlide((prev) => (prev - 1 + demoImages.length) % demoImages.length);
-  };
+    setCurrentSlide((prev) => (prev - 1 + demoImages.length) % demoImages.length)
+  }
 
   /**
    * Validate email format
    */
   const isValidEmail = (email: string): boolean => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email);
-  };
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    return emailRegex.test(email)
+  }
 
   /**
    * Handle email form submission
    */
   const handleEmailSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
+    e.preventDefault()
+
     // Reset status
-    setSubmitStatus('idle');
-    setErrorMessage('');
+    setSubmitStatus('idle')
+    setErrorMessage('')
 
     // Validate email
     if (!email) {
-      setErrorMessage('Please enter your email');
-      setSubmitStatus('error');
-      return;
+      setErrorMessage('Please enter your email')
+      setSubmitStatus('error')
+      return
     }
 
     if (!isValidEmail(email)) {
-      setErrorMessage('Please enter a valid email address');
-      setSubmitStatus('error');
-      return;
+      setErrorMessage('Please enter a valid email address')
+      setSubmitStatus('error')
+      return
     }
 
-    setIsSubmitting(true);
+    setIsSubmitting(true)
 
     try {
       const response = await fetch('/api/leads', {
@@ -177,27 +177,27 @@ export default function LandingHero({
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({ email }),
-      });
+      })
 
       if (!response.ok) {
-        throw new Error('Failed to submit email');
+        throw new Error('Failed to submit email')
       }
 
-      setSubmitStatus('success');
-      setEmail('');
-      
+      setSubmitStatus('success')
+      setEmail('')
+
       // Reset success message after 5 seconds
       setTimeout(() => {
-        setSubmitStatus('idle');
-      }, 5000);
+        setSubmitStatus('idle')
+      }, 5000)
     } catch (error) {
-      console.error('Email submission error:', error);
-      setErrorMessage('Something went wrong. Please try again.');
-      setSubmitStatus('error');
+      console.error('Email submission error:', error)
+      setErrorMessage('Something went wrong. Please try again.')
+      setSubmitStatus('error')
     } finally {
-      setIsSubmitting(false);
+      setIsSubmitting(false)
     }
-  };
+  }
 
   return (
     <section className="relative min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-gray-900 overflow-hidden">
@@ -371,9 +371,7 @@ export default function LandingHero({
                     />
                     {image.title && (
                       <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-4">
-                        <h3 className="text-white font-semibold text-lg">
-                          {image.title}
-                        </h3>
+                        <h3 className="text-white font-semibold text-lg">{image.title}</h3>
                       </div>
                     )}
                   </div>
@@ -454,21 +452,15 @@ export default function LandingHero({
               <div className="grid grid-cols-3 gap-3 mt-6">
                 <div className="text-center p-3 bg-white/5 rounded-lg">
                   <div className="text-2xl mb-1">🎬</div>
-                  <div className="text-xs text-gray-300 font-medium">
-                    10K+ Titles
-                  </div>
+                  <div className="text-xs text-gray-300 font-medium">10K+ Titles</div>
                 </div>
                 <div className="text-center p-3 bg-white/5 rounded-lg">
                   <div className="text-2xl mb-1">📱</div>
-                  <div className="text-xs text-gray-300 font-medium">
-                    Any Device
-                  </div>
+                  <div className="text-xs text-gray-300 font-medium">Any Device</div>
                 </div>
                 <div className="text-center p-3 bg-white/5 rounded-lg">
                   <div className="text-2xl mb-1">🌐</div>
-                  <div className="text-xs text-gray-300 font-medium">
-                    Worldwide
-                  </div>
+                  <div className="text-xs text-gray-300 font-medium">Worldwide</div>
                 </div>
               </div>
             </div>
@@ -492,5 +484,5 @@ export default function LandingHero({
         </svg>
       </div>
     </section>
-  );
+  )
 }

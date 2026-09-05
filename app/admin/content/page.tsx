@@ -1,93 +1,95 @@
-'use client';
+'use client'
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react'
 // TODO: Uncomment when NextAuth backend ready
 // import { useSession } from 'next-auth/react';
-import { useRouter } from 'next/navigation';
-import Link from 'next/link';
-import type { CatalogTitle } from '../../api/catalog/route';
-import { USE_MOCK_DATA } from '@/lib/config';
-import { mockSession } from '@/lib/mockData';
+import { useRouter } from 'next/navigation'
+import Link from 'next/link'
+import type { CatalogTitle } from '../../api/catalog/route'
+import { USE_MOCK_DATA } from '@/lib/config'
+import { mockSession } from '@/lib/mockData'
 
 interface AdminContentResponse {
-  titles: CatalogTitle[];
-  total: number;
+  titles: CatalogTitle[]
+  total: number
   stats: {
-    totalTitles: number;
-    visibleWithoutSignup: number;
-    demoContent: number;
-    kidsTitles: number;
-    immersiveTitles: number;
-  };
+    totalTitles: number
+    visibleWithoutSignup: number
+    demoContent: number
+    kidsTitles: number
+    immersiveTitles: number
+  }
 }
 
 export default function AdminContentPage() {
   // Mock mode: Use mock session instead of NextAuth
   // TODO: Uncomment when NextAuth backend ready
   // const { data: session, status } = useSession();
-  const session = USE_MOCK_DATA ? mockSession : null;
-  const status = USE_MOCK_DATA ? 'authenticated' : 'loading';
-  
-  const router = useRouter();
-  const [titles, setTitles] = useState<CatalogTitle[]>([]);
-  const [stats, setStats] = useState<AdminContentResponse['stats'] | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
-  const [updating, setUpdating] = useState(false);
-  const [filter, setFilter] = useState<'all' | 'visible' | 'demo' | 'kids'>('all');
+  const session = USE_MOCK_DATA ? mockSession : null
+  const status = USE_MOCK_DATA ? 'authenticated' : 'loading'
+
+  const router = useRouter()
+  const [titles, setTitles] = useState<CatalogTitle[]>([])
+  const [stats, setStats] = useState<AdminContentResponse['stats'] | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
+  const [updating, setUpdating] = useState(false)
+  const [filter, setFilter] = useState<'all' | 'visible' | 'demo' | 'kids'>('all')
 
   useEffect(() => {
     if (status === 'unauthenticated') {
-      router.push('/auth/signin?callbackUrl=/admin/content');
+      router.push('/auth/signin?callbackUrl=/admin/content')
     } else if (status === 'authenticated') {
-      fetchTitles();
+      fetchTitles()
     }
-  }, [status, router]);
+  }, [status, router])
 
   const fetchTitles = async () => {
     try {
-      const response = await fetch('/api/admin/content');
+      const response = await fetch('/api/admin/content')
       if (response.ok) {
-        const data: AdminContentResponse = await response.json();
-        setTitles(data.titles);
-        setStats(data.stats);
+        const data: AdminContentResponse = await response.json()
+        setTitles(data.titles)
+        setStats(data.stats)
       } else if (response.status === 401) {
-        router.push('/auth/signin?callbackUrl=/admin/content');
+        router.push('/auth/signin?callbackUrl=/admin/content')
       }
     } catch (error) {
-      console.error('Failed to fetch titles:', error);
+      console.error('Failed to fetch titles:', error)
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
-  const updateTitle = async (id: string, field: 'visibleWithoutSignup' | 'isDemoContent', value: boolean) => {
+  const updateTitle = async (
+    id: string,
+    field: 'visibleWithoutSignup' | 'isDemoContent',
+    value: boolean
+  ) => {
     try {
       const response = await fetch('/api/admin/content', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id, [field]: value }),
-      });
+      })
 
       if (response.ok) {
         // Update local state
         setTitles((prev) =>
-          prev.map((title) =>
-            title.id === id ? { ...title, [field]: value } : title
-          )
-        );
+          prev.map((title) => (title.id === id ? { ...title, [field]: value } : title))
+        )
         // Recalculate stats
-        await fetchTitles();
+        await fetchTitles()
       }
     } catch (error) {
-      console.error('Failed to update title:', error);
+      console.error('Failed to update title:', error)
     }
-  };
+  }
 
   const bulkUpdate = async (field: 'visibleWithoutSignup' | 'isDemoContent', value: boolean) => {
-    if (selectedIds.size === 0) return;
+    if (selectedIds.size === 0) return
 
-    setUpdating(true);
+    setUpdating(true)
     try {
       const response = await fetch('/api/admin/content', {
         method: 'POST',
@@ -96,65 +98,65 @@ export default function AdminContentPage() {
           ids: Array.from(selectedIds),
           [field]: value,
         }),
-      });
+      })
 
       if (response.ok) {
-        await fetchTitles();
-        setSelectedIds(new Set());
+        await fetchTitles()
+        setSelectedIds(new Set())
       }
     } catch (error) {
-      console.error('Failed to bulk update:', error);
+      console.error('Failed to bulk update:', error)
     } finally {
-      setUpdating(false);
+      setUpdating(false)
     }
-  };
+  }
 
   const resetAll = async () => {
     if (!confirm('Are you sure you want to reset all flags to defaults? This cannot be undone.')) {
-      return;
+      return
     }
 
-    setUpdating(true);
+    setUpdating(true)
     try {
       const response = await fetch('/api/admin/content', {
         method: 'DELETE',
-      });
+      })
 
       if (response.ok) {
-        await fetchTitles();
-        setSelectedIds(new Set());
+        await fetchTitles()
+        setSelectedIds(new Set())
       }
     } catch (error) {
-      console.error('Failed to reset:', error);
+      console.error('Failed to reset:', error)
     } finally {
-      setUpdating(false);
+      setUpdating(false)
     }
-  };
+  }
 
   const toggleSelection = (id: string) => {
-    const newSelection = new Set(selectedIds);
+    const newSelection = new Set(selectedIds)
     if (newSelection.has(id)) {
-      newSelection.delete(id);
+      newSelection.delete(id)
     } else {
-      newSelection.add(id);
+      newSelection.add(id)
     }
-    setSelectedIds(newSelection);
-  };
+    setSelectedIds(newSelection)
+  }
 
   const selectAll = () => {
-    setSelectedIds(new Set(filteredTitles.map((t) => t.id)));
-  };
+    setSelectedIds(new Set(filteredTitles.map((t) => t.id)))
+  }
 
   const deselectAll = () => {
-    setSelectedIds(new Set());
-  };
+    setSelectedIds(new Set())
+  }
 
   const filteredTitles = titles.filter((title) => {
-    if (filter === 'visible') return title.visibleWithoutSignup;
-    if (filter === 'demo') return title.isDemoContent;
-    if (filter === 'kids') return title.contentType === 'kids';
-    return true;
-  });
+    if (filter === 'visible') return title.visibleWithoutSignup
+    if (filter === 'demo') return title.isDemoContent
+    if (filter === 'kids') return title.contentType === 'kids'
+    return true
+  })
 
   if (status === 'loading' || loading) {
     return (
@@ -164,7 +166,7 @@ export default function AdminContentPage() {
           <p className="text-gray-600">Loading admin panel...</p>
         </div>
       </div>
-    );
+    )
   }
 
   return (
@@ -203,23 +205,21 @@ export default function AdminContentPage() {
               />
             </svg>
             <div>
-              <h3 className="text-lg font-semibold text-blue-900 mb-2">
-                Landing Funnel Impact
-              </h3>
+              <h3 className="text-lg font-semibold text-blue-900 mb-2">Landing Funnel Impact</h3>
               <div className="text-blue-800 space-y-1 text-sm">
                 <p>
-                  <strong>Visible Without Signup:</strong> Content shows in previews and
-                  landing pages for non-authenticated users. Great for showcasing your best content
-                  to drive signups.
+                  <strong>Visible Without Signup:</strong> Content shows in previews and landing
+                  pages for non-authenticated users. Great for showcasing your best content to drive
+                  signups.
                 </p>
                 <p>
                   <strong>Demo Content:</strong> Marked as free sample content that users can watch
-                  without a subscription. Use this to give a taste of your platform and convert
-                  free users to paid tiers.
+                  without a subscription. Use this to give a taste of your platform and convert free
+                  users to paid tiers.
                 </p>
                 <p className="mt-2 text-blue-700">
-                  💡 <strong>Tip:</strong> Enable "Visible Without Signup" on 3-5 popular titles
-                  and mark 2-3 as "Demo Content" to maximize conversion rates.
+                  💡 <strong>Tip:</strong> Enable "Visible Without Signup" on 3-5 popular titles and
+                  mark 2-3 as "Demo Content" to maximize conversion rates.
                 </p>
               </div>
             </div>
@@ -266,7 +266,9 @@ export default function AdminContentPage() {
                 className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
               >
                 <option value="all">All Titles ({titles.length})</option>
-                <option value="visible">Visible Without Signup ({stats?.visibleWithoutSignup})</option>
+                <option value="visible">
+                  Visible Without Signup ({stats?.visibleWithoutSignup})
+                </option>
                 <option value="demo">Demo Content ({stats?.demoContent})</option>
                 <option value="kids">Kids Content ({stats?.kidsTitles})</option>
               </select>
@@ -286,9 +288,7 @@ export default function AdminContentPage() {
               >
                 Deselect All
               </button>
-              <span className="text-sm text-gray-500">
-                ({selectedIds.size} selected)
-              </span>
+              <span className="text-sm text-gray-500">({selectedIds.size} selected)</span>
             </div>
           </div>
 
@@ -344,8 +344,10 @@ export default function AdminContentPage() {
                   <th className="px-4 py-3 text-left">
                     <input
                       type="checkbox"
-                      checked={selectedIds.size === filteredTitles.length && filteredTitles.length > 0}
-                      onChange={(e) => e.target.checked ? selectAll() : deselectAll()}
+                      checked={
+                        selectedIds.size === filteredTitles.length && filteredTitles.length > 0
+                      }
+                      onChange={(e) => (e.target.checked ? selectAll() : deselectAll())}
                       className="w-4 h-4 text-purple-600 rounded"
                     />
                   </th>
@@ -376,9 +378,8 @@ export default function AdminContentPage() {
                 {filteredTitles.map((title) => (
                   <tr
                     key={title.id}
-                    className={`hover:bg-gray-50 transition ${
-                      selectedIds.has(title.id) ? 'bg-purple-50' : ''
-                    }`}
+                    className={`hover:bg-gray-50 transition ${selectedIds.has(title.id) ? 'bg-purple-50' : ''
+                      }`}
                   >
                     <td className="px-4 py-4">
                       <input
@@ -408,24 +409,22 @@ export default function AdminContentPage() {
                     </td>
                     <td className="px-4 py-4">
                       <span
-                        className={`px-2 py-1 rounded text-xs font-medium ${
-                          title.contentType === 'kids'
-                            ? 'bg-yellow-100 text-yellow-700'
-                            : 'bg-blue-100 text-blue-700'
-                        }`}
+                        className={`px-2 py-1 rounded text-xs font-medium ${title.contentType === 'kids'
+                          ? 'bg-yellow-100 text-yellow-700'
+                          : 'bg-blue-100 text-blue-700'
+                          }`}
                       >
                         {title.contentType === 'kids' ? 'Kids' : 'All Ages'}
                       </span>
                     </td>
                     <td className="px-4 py-4">
                       <span
-                        className={`px-2 py-1 rounded text-xs font-medium ${
-                          title.requiredMembership === 'FREE'
-                            ? 'bg-green-100 text-green-700'
-                            : title.requiredMembership === 'KIDS'
+                        className={`px-2 py-1 rounded text-xs font-medium ${title.requiredMembership === 'FREE'
+                          ? 'bg-green-100 text-green-700'
+                          : title.requiredMembership === 'KIDS'
                             ? 'bg-yellow-100 text-yellow-700'
                             : 'bg-purple-100 text-purple-700'
-                        }`}
+                          }`}
                       >
                         {title.requiredMembership}
                       </span>
@@ -448,9 +447,7 @@ export default function AdminContentPage() {
                         <input
                           type="checkbox"
                           checked={title.isDemoContent || false}
-                          onChange={(e) =>
-                            updateTitle(title.id, 'isDemoContent', e.target.checked)
-                          }
+                          onChange={(e) => updateTitle(title.id, 'isDemoContent', e.target.checked)}
                           className="sr-only peer"
                         />
                         <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-green-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-600"></div>
@@ -491,5 +488,5 @@ export default function AdminContentPage() {
         </div>
       </div>
     </div>
-  );
+  )
 }

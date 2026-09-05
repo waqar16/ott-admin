@@ -1,6 +1,6 @@
 /**
  * Shared Types and Enums
- * 
+ *
  * Core type definitions used across the application.
  * MembershipType is defined here to avoid circular dependencies
  * between auth.ts and db/adapter.ts.
@@ -18,7 +18,7 @@ export const DEVICE_LIMITS = {
   [MembershipType.FREE]: 1,
   [MembershipType.KIDS]: 2,
   [MembershipType.FULL]: 5,
-} as const;
+} as const
 
 export interface Video {
   id: string

@@ -9,7 +9,7 @@
 //     //               <SkeletonLoader className="w-full h-[30vh] bg-gray-700 rounded-xl" />
 //     //             ) : (
 //     //               <>
-                     
+
 //     //                 <h3 className="text-xl text-white font-semibold">
 //     //                   {content?.ingest_status === 'processing'
 //     //                     ? 'Content is uploading to cloud (this may take a while)'
@@ -23,7 +23,7 @@
 //     //                       <HlsVideoPlayer src={videoUrl} />
 //     //                     </div>
 //     //                   )}
- 
+
 //     //                   {uploadFile && (
 //     //                     <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-6 bg-black/60">
 
@@ -51,7 +51,7 @@
 
 //     //                   {!uploadFile && (
 //     //                     <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-6 bg-black/40 group-hover:bg-black/60 transition">
-                   
+
 //     //                       <svg
 //     //                         className="w-14 h-14 text-blue-400 mb-4"
 
@@ -95,7 +95,6 @@
 //     //                 )}
 
 //     //                  <div className="flex justify-between mt-6">
-                       
 
 //     //                   <button
 //     //                     onClick={handleFileUpload}
@@ -105,7 +104,7 @@
 //     //                     {uploading   ? (
 //     //                       <>
 //     //                         <RoundLoader />
-//     //                         <span> Uploading 
+//     //                         <span> Uploading
 //     //                         </span>
 //     //                       </>
 //     //                     ) : (
@@ -128,7 +127,7 @@ import { uploadDubbings } from '@/lib/contentApi'
 import ISO6391 from 'iso-639-1'
 import { BiTrash } from 'react-icons/bi'
 
-const languageOptions = ISO6391.getAllCodes().map(code => ({
+const languageOptions = ISO6391.getAllCodes().map((code) => ({
   code,
   name: ISO6391.getName(code),
 }))
@@ -155,31 +154,20 @@ export const DubbingUploader: React.FC<DubbingUploaderProps> = ({ assetId }) => 
   /* ------------------ Handlers ------------------ */
 
   const handleAdd = () => {
-    setDubbings(prev => [
-      ...prev,
-      { file: null, language: 'en', name: '', is_default: false },
-    ])
+    setDubbings((prev) => [...prev, { file: null, language: 'en', name: '', is_default: false }])
   }
 
   const handleRemove = (index: number) => {
-    setDubbings(prev => prev.filter((_, i) => i !== index))
+    setDubbings((prev) => prev.filter((_, i) => i !== index))
   }
 
-  const handleChange = (
-    index: number,
-    field: keyof DubbingItem,
-    value: any
-  ) => {
-    setDubbings(prev =>
-      prev.map((item, i) =>
-        i === index ? { ...item, [field]: value } : item
-      )
-    )
+  const handleChange = (index: number, field: keyof DubbingItem, value: any) => {
+    setDubbings((prev) => prev.map((item, i) => (i === index ? { ...item, [field]: value } : item)))
   }
 
   /** only ONE default allowed */
   const handleDefaultChange = (selectedIndex: number) => {
-    setDubbings(prev =>
+    setDubbings((prev) =>
       prev.map((item, i) => ({
         ...item,
         is_default: i === selectedIndex,
@@ -190,12 +178,12 @@ export const DubbingUploader: React.FC<DubbingUploaderProps> = ({ assetId }) => 
   /* ------------------ Upload ------------------ */
 
   const handleUploadAll = async () => {
-    const files = dubbings.map(d => d.file!).filter(Boolean)
-    const languages = dubbings.map(d => d.language)
-    const names = dubbings.map(d => d.name)
-    const isDefault = dubbings.map(d => d.is_default)
+    const files = dubbings.map((d) => d.file!).filter(Boolean)
+    const languages = dubbings.map((d) => d.language)
+    const names = dubbings.map((d) => d.name)
+    const isDefault = dubbings.map((d) => d.is_default)
 
-    if ( files.length == 0) {
+    if (files.length == 0) {
       alert('No audio files selected')
       return
     }
@@ -220,35 +208,23 @@ export const DubbingUploader: React.FC<DubbingUploaderProps> = ({ assetId }) => 
         <SkeletonLoader className="w-full h-[30vh] bg-gray-700 rounded-xl" />
       ) : (
         <>
-          <h3 className="text-xl text-white font-semibold">
-            Upload Dubbing Tracks
-          </h3>
+          <h3 className="text-xl text-white font-semibold">Upload Dubbing Tracks</h3>
 
-          <div className='w-full grid grid-cols-1 gap-2'>
+          <div className="w-full grid grid-cols-1 gap-2">
             {dubbings.map((item, index) => (
-            <div
-              key={index}
-              className="col-span-1 flex flex-col md:flex-row gap-4 items-start md:items-end bg-neutral-900 p-4 rounded-lg border border-gray-700"
-            >
+              <div
+                key={index}
+                className="col-span-1 flex flex-col md:flex-row gap-4 items-start md:items-end bg-neutral-900 p-4 rounded-lg border border-gray-700"
+              >
                 {/* Audio file */}
                 <div className="flex-1">
                   <input
                     type="file"
                     accept="audio/*"
-                    onChange={e =>
-                      handleChange(
-                        index,
-                        'file',
-                        e.target.files?.[0] || null
-                      )
-                    }
+                    onChange={(e) => handleChange(index, 'file', e.target.files?.[0] || null)}
                     className="w-full p-2 bg-neutral-800 rounded text-white"
                   />
-                  {item.file && (
-                    <p className="text-xs text-gray-400 mt-1">
-                      {item.file.name}
-                    </p>
-                  )}
+                  {item.file && <p className="text-xs text-gray-400 mt-1">{item.file.name}</p>}
                 </div>
 
                 {/* Language */}
@@ -256,15 +232,13 @@ export const DubbingUploader: React.FC<DubbingUploaderProps> = ({ assetId }) => 
                   <label className="text-sm text-gray-300">Language</label>
                   <select
                     value={item.language}
-                    onChange={e =>
-                      handleChange(index, 'language', e.target.value)
-                    }
+                    onChange={(e) => handleChange(index, 'language', e.target.value)}
                     className="w-full p-2 bg-neutral-800 rounded text-white mt-1"
                   >
                     <option value="" disabled>
                       Select language
                     </option>
-                    {languageOptions.map(lang => (
+                    {languageOptions.map((lang) => (
                       <option key={lang.code} value={lang.code}>
                         {lang.name} ({lang.code})
                       </option>
@@ -278,9 +252,7 @@ export const DubbingUploader: React.FC<DubbingUploaderProps> = ({ assetId }) => 
                   <input
                     type="text"
                     value={item.name}
-                    onChange={e =>
-                      handleChange(index, 'name', e.target.value)
-                    }
+                    onChange={(e) => handleChange(index, 'name', e.target.value)}
                     placeholder="English Dub"
                     className="w-full p-2 bg-neutral-800 rounded text-white mt-1"
                   />
@@ -311,10 +283,7 @@ export const DubbingUploader: React.FC<DubbingUploaderProps> = ({ assetId }) => 
           </div>
 
           {/* Add */}
-          <button
-            onClick={handleAdd}
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg"
-          >
+          <button onClick={handleAdd} className="px-4 py-2 bg-blue-600 text-white rounded-lg">
             + Add Dubbing
           </button>
 

@@ -1,24 +1,24 @@
-'use client';
+'use client'
 
-import { useState, useCallback, useMemo } from 'react';
-import { useSession } from 'next-auth/react';
-import { uploadFileWithProgress } from '@/lib/uploader';
+import { useState, useCallback, useMemo } from 'react'
+import { useSession } from 'next-auth/react'
+import { uploadFileWithProgress } from '@/lib/uploader'
 
 interface UploadFile {
-  id: string;
-  file: File;
-  progress: number;
-  status: 'pending' | 'uploading' | 'processing' | 'completed' | 'error';
-  error?: string;
-  uploadUrl?: string;
-  fileKey?: string;
+  id: string
+  file: File
+  progress: number
+  status: 'pending' | 'uploading' | 'processing' | 'completed' | 'error'
+  error?: string
+  uploadUrl?: string
+  fileKey?: string
 }
 
 interface UploadFlowProps {
-  contentType: 'video' | 'image' | 'subtitle' | 'thumbnail';
-  onUploadComplete?: (fileKey: string, fileId: string) => void;
-  maxFiles?: number;
-  acceptedFileTypes?: string;
+  contentType: 'video' | 'image' | 'subtitle' | 'thumbnail'
+  onUploadComplete?: (fileKey: string, fileId: string) => void
+  maxFiles?: number
+  acceptedFileTypes?: string
 }
 
 export function UploadFlow({
@@ -27,78 +27,78 @@ export function UploadFlow({
   maxFiles = 5,
   acceptedFileTypes,
 }: UploadFlowProps) {
-  const { data: session } = useSession();
-  const [files, setFiles] = useState<UploadFile[]>([]);
-  const [isDragging, setIsDragging] = useState(false);
-  const [globalError, setGlobalError] = useState<string | null>(null);
+  const { data: session } = useSession()
+  const [files, setFiles] = useState<UploadFile[]>([])
+  const [isDragging, setIsDragging] = useState(false)
+  const [globalError, setGlobalError] = useState<string | null>(null)
 
   const isUploading = useMemo(
     () => files.some((f) => f.status === 'uploading' || f.status === 'processing'),
     [files]
-  );
+  )
 
-  const LARGE_FILE_WARNING_BYTES = 1024 * 1024 * 1024; // 1 GB warning threshold (soft warning only)
+  const LARGE_FILE_WARNING_BYTES = 1024 * 1024 * 1024 // 1 GB warning threshold (soft warning only)
 
   const getAcceptedTypes = () => {
-    if (acceptedFileTypes) return acceptedFileTypes;
-    
+    if (acceptedFileTypes) return acceptedFileTypes
+
     switch (contentType) {
       case 'video':
-        return 'video/mp4,video/quicktime,video/x-msvideo,video/x-matroska,video/webm';
+        return 'video/mp4,video/quicktime,video/x-msvideo,video/x-matroska,video/webm'
       case 'image':
-        return 'image/jpeg,image/png,image/webp,image/gif';
+        return 'image/jpeg,image/png,image/webp,image/gif'
       case 'subtitle':
-        return '.vtt,.srt';
+        return '.vtt,.srt'
       case 'thumbnail':
-        return 'image/jpeg,image/png';
+        return 'image/jpeg,image/png'
       default:
-        return '*';
+        return '*'
     }
-  };
+  }
 
   const handleDragEnter = useCallback((e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setIsDragging(true);
-  }, []);
+    e.preventDefault()
+    e.stopPropagation()
+    setIsDragging(true)
+  }, [])
 
   const handleDragLeave = useCallback((e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setIsDragging(false);
-  }, []);
+    e.preventDefault()
+    e.stopPropagation()
+    setIsDragging(false)
+  }, [])
 
   const handleDragOver = useCallback((e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-  }, []);
+    e.preventDefault()
+    e.stopPropagation()
+  }, [])
 
   const handleDrop = useCallback(
     (e: React.DragEvent) => {
-      e.preventDefault();
-      e.stopPropagation();
-      setIsDragging(false);
+      e.preventDefault()
+      e.stopPropagation()
+      setIsDragging(false)
 
-      const droppedFiles = Array.from(e.dataTransfer.files);
-      handleFiles(droppedFiles);
+      const droppedFiles = Array.from(e.dataTransfer.files)
+      handleFiles(droppedFiles)
     },
     [files]
-  );
+  )
 
   const handleFileInput = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
       if (e.target.files) {
-        const selectedFiles = Array.from(e.target.files);
-        handleFiles(selectedFiles);
+        const selectedFiles = Array.from(e.target.files)
+        handleFiles(selectedFiles)
       }
     },
     [files]
-  );
+  )
 
   const handleFiles = (newFiles: File[]) => {
     if (files.length + newFiles.length > maxFiles) {
-      alert(`Maximum ${maxFiles} files allowed`);
-      return;
+      alert(`Maximum ${maxFiles} files allowed`)
+      return
     }
 
     const uploadFiles: UploadFile[] = newFiles.map((file) => ({
@@ -106,25 +106,25 @@ export function UploadFlow({
       file,
       progress: 0,
       status: 'pending',
-    }));
+    }))
 
-    setFiles((prev) => [...prev, ...uploadFiles]);
+    setFiles((prev) => [...prev, ...uploadFiles])
 
-    setGlobalError(null);
+    setGlobalError(null)
 
     // Start uploading each file
     uploadFiles.forEach((uploadFile) => {
-      startUpload(uploadFile);
-    });
-  };
+      startUpload(uploadFile)
+    })
+  }
 
   const startUpload = async (uploadFile: UploadFile) => {
     try {
       // Update status to uploading
-      updateFileStatus(uploadFile.id, { status: 'uploading', progress: 0 });
+      updateFileStatus(uploadFile.id, { status: 'uploading', progress: 0 })
 
       // Step 1: Get signed URL from our API
-      let signedUrlResponse: Response;
+      let signedUrlResponse: Response
       try {
         signedUrlResponse = await fetch('/api/upload', {
           method: 'POST',
@@ -135,21 +135,21 @@ export function UploadFlow({
             fileSize: uploadFile.file.size,
             contentType,
           }),
-        });
+        })
       } catch (err) {
-        throw new Error('Network error while requesting upload URL');
+        throw new Error('Network error while requesting upload URL')
       }
 
       if (!signedUrlResponse.ok) {
-        let errorMessage = 'Failed to get upload URL';
+        let errorMessage = 'Failed to get upload URL'
         try {
-          const error = await signedUrlResponse.json();
-          errorMessage = error.error || error.message || errorMessage;
+          const error = await signedUrlResponse.json()
+          errorMessage = error.error || error.message || errorMessage
         } catch {}
-        throw new Error(errorMessage);
+        throw new Error(errorMessage)
       }
 
-      const { uploadUrl, fileId, fileKey } = await signedUrlResponse.json();
+      const { uploadUrl, fileId, fileKey } = await signedUrlResponse.json()
 
       // Step 2: Upload file directly using streaming-friendly XHR
       await uploadFileWithProgress({
@@ -160,129 +160,120 @@ export function UploadFlow({
           'Content-Type': uploadFile.file.type,
         },
         onProgress: ({ percent }) => {
-          updateFileStatus(uploadFile.id, { progress: percent, status: 'uploading' });
+          updateFileStatus(uploadFile.id, { progress: percent, status: 'uploading' })
         },
-      });
+      })
 
       updateFileStatus(uploadFile.id, {
         status: 'processing',
         progress: 100,
         uploadUrl,
         fileKey,
-      });
+      })
 
       // Poll for processing status
-      pollProcessingStatus(uploadFile.id, fileId, fileKey);
+      pollProcessingStatus(uploadFile.id, fileId, fileKey)
     } catch (error) {
-      console.error('Upload error:', error);
+      console.error('Upload error:', error)
       updateFileStatus(uploadFile.id, {
         status: 'error',
         error: error instanceof Error ? error.message : 'Upload failed',
-      });
-      setGlobalError(error instanceof Error ? error.message : 'Upload failed');
+      })
+      setGlobalError(error instanceof Error ? error.message : 'Upload failed')
     }
-  };
+  }
 
-  const pollProcessingStatus = async (
-    uploadFileId: string,
-    fileId: string,
-    fileKey: string
-  ) => {
-    const maxAttempts = 60; // 5 minutes with 5-second intervals
-    let attempts = 0;
+  const pollProcessingStatus = async (uploadFileId: string, fileId: string, fileKey: string) => {
+    const maxAttempts = 60 // 5 minutes with 5-second intervals
+    let attempts = 0
 
     const poll = async () => {
       try {
-        const response = await fetch(`/api/upload?fileId=${fileId}`);
-        if (!response.ok) throw new Error('Failed to check status');
+        const response = await fetch(`/api/upload?fileId=${fileId}`)
+        if (!response.ok) throw new Error('Failed to check status')
 
-        const data = await response.json();
+        const data = await response.json()
 
         if (data.status === 'completed') {
-          updateFileStatus(uploadFileId, { status: 'completed' });
-          onUploadComplete?.(fileKey, fileId);
+          updateFileStatus(uploadFileId, { status: 'completed' })
+          onUploadComplete?.(fileKey, fileId)
         } else if (data.status === 'failed') {
           updateFileStatus(uploadFileId, {
             status: 'error',
             error: 'Processing failed',
-          });
+          })
         } else if (attempts < maxAttempts) {
-          attempts++;
-          setTimeout(poll, 5000); // Poll every 5 seconds
+          attempts++
+          setTimeout(poll, 5000) // Poll every 5 seconds
         } else {
           updateFileStatus(uploadFileId, {
             status: 'error',
             error: 'Processing timeout',
-          });
+          })
         }
       } catch (error) {
-        console.error('Status check error:', error);
+        console.error('Status check error:', error)
       }
-    };
+    }
 
-    poll();
-  };
+    poll()
+  }
 
-  const updateFileStatus = (
-    id: string,
-    updates: Partial<Omit<UploadFile, 'id' | 'file'>>
-  ) => {
-    setFiles((prev) =>
-      prev.map((f) => (f.id === id ? { ...f, ...updates } : f))
-    );
-  };
+  const updateFileStatus = (id: string, updates: Partial<Omit<UploadFile, 'id' | 'file'>>) => {
+    setFiles((prev) => prev.map((f) => (f.id === id ? { ...f, ...updates } : f)))
+  }
 
   const removeFile = (id: string) => {
-    setFiles((prev) => prev.filter((f) => f.id !== id));
-  };
+    setFiles((prev) => prev.filter((f) => f.id !== id))
+  }
 
   const formatFileSize = (bytes: number) => {
-    if (bytes < 1024) return `${bytes} B`;
-    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
-    if (bytes < 1024 * 1024 * 1024) return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
-    return `${(bytes / (1024 * 1024 * 1024)).toFixed(2)} GB`;
-  };
+    if (bytes < 1024) return `${bytes} B`
+    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`
+    if (bytes < 1024 * 1024 * 1024) return `${(bytes / (1024 * 1024)).toFixed(1)} MB`
+    return `${(bytes / (1024 * 1024 * 1024)).toFixed(2)} GB`
+  }
 
   const getStatusColor = (status: UploadFile['status']) => {
     switch (status) {
       case 'pending':
-        return 'text-gray-600 bg-gray-100';
+        return 'text-gray-600 bg-gray-100'
       case 'uploading':
-        return 'text-blue-600 bg-blue-100';
+        return 'text-blue-600 bg-blue-100'
       case 'processing':
-        return 'text-yellow-600 bg-yellow-100';
+        return 'text-yellow-600 bg-yellow-100'
       case 'completed':
-        return 'text-green-600 bg-green-100';
+        return 'text-green-600 bg-green-100'
       case 'error':
-        return 'text-red-600 bg-red-100';
+        return 'text-red-600 bg-red-100'
       default:
-        return 'text-gray-600 bg-gray-100';
+        return 'text-gray-600 bg-gray-100'
     }
-  };
+  }
 
   const getStatusIcon = (status: UploadFile['status']) => {
     switch (status) {
       case 'pending':
-        return '⏳';
+        return '⏳'
       case 'uploading':
-        return '⬆️';
+        return '⬆️'
       case 'processing':
-        return '⚙️';
+        return '⚙️'
       case 'completed':
-        return '✅';
+        return '✅'
       case 'error':
-        return '❌';
+        return '❌'
       default:
-        return '📄';
+        return '📄'
     }
-  };
+  }
 
   if (!session) {
     return (
       <div className="text-center p-8 bg-gray-50 rounded-lg border-2 border-dashed border-gray-300">
         <p className="text-gray-600">Please sign in to upload files</p>
       </div>
-    );
+    )
   }
 
   return (
@@ -353,16 +344,10 @@ export function UploadFlow({
             >
               <div className="flex items-start justify-between mb-2">
                 <div className="flex items-start gap-3 flex-1 min-w-0">
-                  <div className="text-2xl flex-shrink-0">
-                    {getStatusIcon(uploadFile.status)}
-                  </div>
+                  <div className="text-2xl flex-shrink-0">{getStatusIcon(uploadFile.status)}</div>
                   <div className="flex-1 min-w-0">
-                    <p className="font-medium text-gray-900 truncate">
-                      {uploadFile.file.name}
-                    </p>
-                    <p className="text-sm text-gray-600">
-                      {formatFileSize(uploadFile.file.size)}
-                    </p>
+                    <p className="font-medium text-gray-900 truncate">{uploadFile.file.name}</p>
+                    <p className="text-sm text-gray-600">{formatFileSize(uploadFile.file.size)}</p>
                     {uploadFile.file.size >= LARGE_FILE_WARNING_BYTES && (
                       <p className="text-xs text-amber-600 mt-1">
                         Large file detected. Upload may take time; keep this tab open.
@@ -378,8 +363,7 @@ export function UploadFlow({
                   >
                     {uploadFile.status}
                   </span>
-                  {(uploadFile.status === 'pending' ||
-                    uploadFile.status === 'error') && (
+                  {(uploadFile.status === 'pending' || uploadFile.status === 'error') && (
                     <button
                       onClick={() => removeFile(uploadFile.id)}
                       className="text-gray-400 hover:text-red-600 transition"
@@ -391,23 +375,18 @@ export function UploadFlow({
               </div>
 
               {/* Progress Bar */}
-              {(uploadFile.status === 'uploading' ||
-                uploadFile.status === 'processing') && (
+              {(uploadFile.status === 'uploading' || uploadFile.status === 'processing') && (
                 <div className="mt-3">
                   <div className="flex justify-between text-xs text-gray-600 mb-1">
                     <span>
-                      {uploadFile.status === 'uploading'
-                        ? 'Uploading…'
-                        : 'Processing...'}
+                      {uploadFile.status === 'uploading' ? 'Uploading…' : 'Processing...'}
                     </span>
                     <span>{uploadFile.progress}%</span>
                   </div>
                   <div className="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
                     <div
                       className={`h-full transition-all duration-300 ${
-                        uploadFile.status === 'uploading'
-                          ? 'bg-blue-600'
-                          : 'bg-yellow-600'
+                        uploadFile.status === 'uploading' ? 'bg-blue-600' : 'bg-yellow-600'
                       }`}
                       style={{ width: `${uploadFile.progress}%` }}
                     />
@@ -433,5 +412,5 @@ export function UploadFlow({
         </div>
       )}
     </div>
-  );
+  )
 }

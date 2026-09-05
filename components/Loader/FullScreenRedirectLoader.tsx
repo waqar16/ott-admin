@@ -59,46 +59,52 @@
 //   );
 // }
 
+'use client'
 
-'use client';
-
-import { createPortal } from "react-dom";
-import { motion } from 'framer-motion';
-import { useEffect, useState } from 'react';
-import styles from './styles.module.css';
-import SkeletonLoader from "./SkeletonLoader";
-import { FiChevronDown, FiFileText, FiHome, FiList, FiMessageSquare, FiSettings, FiUsers } from "react-icons/fi";
-import { BsCash, BsFileBarGraph, BsQuestionDiamondFill, BsSubscript } from "react-icons/bs";
-import { BiDollar, BiMovie, BiTv } from "react-icons/bi";
-import { GrPlan } from "react-icons/gr";
+import { createPortal } from 'react-dom'
+import { motion } from 'framer-motion'
+import { useEffect, useState } from 'react'
+import styles from './styles.module.css'
+import SkeletonLoader from './SkeletonLoader'
+import {
+  FiChevronDown,
+  FiFileText,
+  FiHome,
+  FiList,
+  FiMessageSquare,
+  FiSettings,
+  FiUsers,
+} from 'react-icons/fi'
+import { BsCash, BsFileBarGraph, BsQuestionDiamondFill, BsSubscript } from 'react-icons/bs'
+import { BiDollar, BiMovie, BiTv } from 'react-icons/bi'
+import { GrPlan } from 'react-icons/gr'
 
 export default function FullScreenRedirectLoader({
-  message = "Redirecting",
-  showSidebar
+  message = 'Redirecting',
+  showSidebar,
 }: {
-  message?: string;
-  showSidebar?:boolean;
-
+  message?: string
+  showSidebar?: boolean
 }) {
-  const [mounted, setMounted] = useState(false);
-  const [dots, setDots] = useState(".");
+  const [mounted, setMounted] = useState(false)
+  const [dots, setDots] = useState('.')
 
   useEffect(() => {
-    setMounted(true);
+    setMounted(true)
 
     const interval = setInterval(() => {
-      setDots((prev) => (prev.length < 3 ? prev + "." : "."));
-    }, 400);
+      setDots((prev) => (prev.length < 3 ? prev + '.' : '.'))
+    }, 400)
 
-    return () => clearInterval(interval);
-  }, []);
+    return () => clearInterval(interval)
+  }, [])
 
   // 🚫 Prevent SSR / prerender crash
-  if (!mounted) return null;
+  if (!mounted) return null
 
   return createPortal(
     <div className=" flex flex-row items-center justify-end   fixed inset-0 z-50 ">
-             {/* <div className={`w-[260px] bg-black h-screen text-gray-200 fixed left-0 top-0 shadow-xl overflow-y-auto pointer-events-none`}>
+      {/* <div className={`w-[260px] bg-black h-screen text-gray-200 fixed left-0 top-0 shadow-xl overflow-y-auto pointer-events-none`}>
   
   <div className="py-5 text-center border-b border-gray-700">
     <div className="flex flex-row items-center gap-2 w-full justify-center">
@@ -215,39 +221,41 @@ export default function FullScreenRedirectLoader({
     </div>
   </div>
 </div> */}
-      <div className={`backdrop-blur-lg h-full bg-black/80 flex flex-col items-center justify-center ${showSidebar?'w-[calc(100%-260px)]':'w-full'}  pointer-events-auto`}>
+      <div
+        className={`backdrop-blur-lg h-full bg-black/80 flex flex-col items-center justify-center ${showSidebar ? 'w-[calc(100%-260px)]' : 'w-full'}  pointer-events-auto`}
+      >
         <motion.div className="relative m-2 h-10 w-auto overflow-hidden z-[9999999999999]">
           <img src="/mainLogo.webp" className="h-10 w-auto" />
 
           <motion.div
             className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent"
-            initial={{ x: "-120%", y: "-120%" }}
-            animate={{ x: "120%", y: "120%" }}
+            initial={{ x: '-120%', y: '-120%' }}
+            animate={{ x: '120%', y: '120%' }}
             transition={{
               duration: 1.2,
               repeat: Infinity,
               repeatDelay: 1.5,
-              ease: "easeInOut",
+              ease: 'easeInOut',
             }}
             style={{
-              transform: "skew(-20deg)",
-              mixBlendMode: "screen",
+              transform: 'skew(-20deg)',
+              mixBlendMode: 'screen',
             }}
           />
         </motion.div>
 
         <div className="flex flex-row items-center w-full justify-center z-[9999]">
           <p className="text-neutral-300 text-sm tracking-wide mr-2">
-            {message}{dots}
+            {message}
+            {dots}
           </p>
           {/* <div className={styles.loader}></div> */}
         </div>
       </div>
     </div>,
     document.body
-  );
+  )
 }
-
 
 //  return createPortal(
 //   <div className="flex flex-row items-center justify-end fixed inset-0 z-50">

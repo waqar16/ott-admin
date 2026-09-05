@@ -3,8 +3,8 @@
 @tailwind utilities;
 
 :root {
-  --main-color: var(--dynamic-main-color, #1C4D8D);
-  --main-font: var(--dynamic-main-font, 'Jost', sans-serif;);
+  --main-color: var(--dynamic-main-color, #1c4d8d);
+  --main-font: var(--dynamic-main-font, 'Jost', sans-serif; );
   /* --main-color-dark: var(--dynamic-main-color-dark, #c4080f); */
   --main-color-transparent-10: var(--dynamic-main-color-transparent-10, rgba(229, 9, 20, 0.1));
   --main-color-transparent-15: var(--dynamic-main-color-transparent-15, rgba(112, 112, 112, 0.1));
@@ -20,14 +20,11 @@
   --main-color-shadow-60: var(--dynamic-main-color-shadow-60, rgba(229, 9, 20, 0.1));
 }
 
-
 @layer utilities {
   .text-balance {
     text-wrap: balance;
   }
 }
-
-
 
 @layer base {
   :root {
@@ -37,7 +34,7 @@
     --card-foreground: 0 0% 3.9%;
     --popover: 0 0% 100%;
     --popover-foreground: 0 0% 3.9%;
-    --primary: 0 0% 9%;
+    --primary: 0 0% 2%;
     --primary-foreground: 0 0% 98%;
     --secondary: 0 0% 96.1%;
     --secondary-foreground: 0 0% 9%;
@@ -57,6 +54,7 @@
     --chart-5: 27 87% 67%;
     --radius: 0.5rem;
   }
+
   .dark {
     --background: 0 0% 3.9%;
     --foreground: 0 0% 98%;
@@ -85,16 +83,16 @@
   }
 }
 
-
-
 @layer base {
   * {
     @apply border-border;
   }
+
   body {
     @apply bg-background text-foreground;
   }
 }
+
 .minimal-scrollbar::-webkit-scrollbar {
   width: 6px;
 }
@@ -111,4 +109,164 @@
 .minimal-scrollbar {
   scrollbar-width: thin;
   scrollbar-color: rgba(255, 255, 255, 0.25) transparent;
+}
+
+/* Premium Light Theme Overrides for Admin Dashboard when html does not have .dark */
+html:not(.dark) {
+  --background: 0 0% 98%;
+  /* bg-slate-50 equivalent */
+  --foreground: 222.2 84% 4.9%;
+  /* text-slate-950 equivalent */
+  --card: 0 0% 100%;
+  --card-foreground: 222.2 84% 4.9%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 222.2 84% 4.9%;
+  --border: 214.3 31.8% 91.4%;
+  /* border-slate-200 */
+  --input: 214.3 31.8% 91.4%;
+  --ring: 222.2 84% 4.9%;
+}
+
+html:not(.dark) body {
+  background-color: #f8fafc !important;
+  color: #0f172a !important;
+}
+
+html:not(.dark) .bg-black {
+  background-color: #f8fafc !important;
+  /* slate-50 */
+}
+
+html:not(.dark) .bg-neutral-950 {
+  background-color: #f8fafc !important;
+  /* slate-50 */
+}
+
+html:not(.dark) .bg-neutral-900 {
+  background-color: #ffffff !important;
+  /* white */
+}
+
+html:not(.dark) .bg-neutral-800 {
+  background-color: #f1f5f9 !important;
+  /* slate-100 */
+}
+
+html:not(.dark) .bg-neutral-700 {
+  background-color: #e2e8f0 !important;
+  /* slate-200 */
+}
+
+html:not(.dark) .bg-neutral-600 {
+  background-color: #cbd5e1 !important;
+  /* slate-300 */
+}
+
+/* Border Overrides */
+html:not(.dark) .border-neutral-950 {
+  border-color: #f1f5f9 !important;
+}
+
+html:not(.dark) .border-neutral-900 {
+  border-color: #e2e8f0 !important;
+}
+
+html:not(.dark) .border-neutral-800 {
+  border-color: #e2e8f0 !important;
+}
+
+html:not(.dark) .border-neutral-700 {
+  border-color: #e2e8f0 !important;
+}
+
+html:not(.dark) .border-gray-800 {
+  border-color: #cbd5e1 !important;
+}
+
+html:not(.dark) .border-gray-700 {
+  border-color: #e2e8f0 !important;
+}
+
+/* Text Color Overrides */
+/* html:not(.dark) .text-white {
+  color: #0f172a !important;  /
+} */
+html:not(.dark) .text-gray-100,
+html:not(.dark) .text-neutral-100 {
+  color: #1e293b !important;
+  /* slate-800 */
+}
+
+html:not(.dark) .text-gray-200,
+html:not(.dark) .text-neutral-200 {
+  color: #334155 !important;
+  /* slate-700 */
+}
+
+html:not(.dark) .text-gray-300,
+html:not(.dark) .text-neutral-300 {
+  color: #475569 !important;
+  /* slate-600 */
+}
+
+html:not(.dark) .text-gray-400,
+html:not(.dark) .text-neutral-400 {
+  color: #64748b !important;
+  /* slate-500 */
+}
+
+html:not(.dark) .text-gray-500,
+html:not(.dark) .text-neutral-500 {
+  color: #94a3b8 !important;
+  /* slate-400 */
+}
+
+/* Inputs & Table Cells custom light styles */
+html:not(.dark) input,
+html:not(.dark) select,
+html:not(.dark) textarea {
+  background-color: #ffffff !important;
+  color: #0f172a !important;
+  border-color: #e2e8f0 !important;
+}
+
+html:not(.dark) input:focus,
+html:not(.dark) select:focus,
+html:not(.dark) textarea:focus {
+  border-color: var(--main-color, #1c4d8d) !important;
+}
+
+html:not(.dark) table {
+  background-color: #ffffff !important;
+}
+
+html:not(.dark) th {
+  background-color: #f8fafc !important;
+  color: #475569 !important;
+  border-color: #e2e8f0 !important;
+}
+
+html:not(.dark) td {
+  border-color: #f1f5f9 !important;
+  color: #334155 !important;
+}
+
+/* Scrollbar styling */
+html:not(.dark) .minimal-scrollbar::-webkit-scrollbar-thumb {
+  background-color: rgba(0, 0, 0, 0.15) !important;
+}
+
+/* Animation keyframes for route transition loader */
+@keyframes shimmer-progress {
+  0% {
+    transform: translateX(-100%);
+  }
+
+  100% {
+    transform: translateX(300%);
+  }
+}
+
+.animate-shimmer-progress {
+  animation: shimmer-progress 1.5s infinite linear;
 }

@@ -1,342 +1,365 @@
-'use client';
+'use client'
 
-import { useState, useEffect, useCallback, useRef } from 'react';
-import { usePathname, useRouter } from 'next/navigation';
-import { Content, ContentFilters, ApiError, Rendition } from '@/lib/types/content';
-import { listContent, getContent, getRenditions, getStreamingUrl, publishContent } from '@/lib/contentApi';
-import ContentEditor from '@/components/admin/content/ContentEditor.client';
-import RoundLoader from '@/components/Loader/RoundLoader';
-import SkeletonLoader from '@/components/Loader/SkeletonLoader';
-import ContentHeaderComponent from '@/components/Content/ContentHeader';
-import ContentLoading from '@/components/Content/ContentLoading';
-import ContentFilter from '@/components/Content/ContentFilter';
-import { toast } from 'sonner';
-import { getQualityBadgeColor } from '@/lib/utils';
-import { BiEdit, BiRefresh } from 'react-icons/bi';
-import ContentDetailsModal from '@/components/Content/ContentDetailsModal';
-import { GrDocument } from 'react-icons/gr';
-import { FiTablet } from 'react-icons/fi';
-import ContentCard from '@/components/Content/ContentCard';
-import AdminContentHelpPanel from '@/components/admin/content/AdminContentHelpPanel';
-import { varela_round } from '@/app/layout';
+import { useState, useEffect, useCallback, useRef } from 'react'
+import { usePathname, useRouter } from 'next/navigation'
+import { motion } from 'framer-motion'
+import { toast } from 'sonner'
+import { FiRefreshCw, FiAlertCircle, FiPlus } from 'react-icons/fi'
+
+import { Content, ContentFilters, ApiError } from '@/lib/types/content'
+import {
+  listContent,
+  getContent,
+  publishContent,
+} from '@/lib/contentApi'
+
+import ContentStats from '@/components/Content/ContentStats'
+import AdminContentHelpPanel from '@/components/admin/content/AdminContentHelpPanel'
+import ContentFilter from '@/components/Content/ContentFilter'
+import ContentCard from '@/components/Content/ContentCard'
+import ContentLoading from '@/components/Content/ContentLoading'
+import EmptyContentState from '@/components/Content/EmptyContentState'
+import ContentPagination from '@/components/Content/ContentPagination'
+import ContentEditor from '@/components/admin/content/ContentEditor.client'
+import ContentDetailsModal from '@/components/Content/ContentDetailsModal'
+import ContentHeaderComponent from '@/components/Content/ContentHeader'
+
 export interface TranscodingProgress {
-  progress: number;
-  phase: string;
-  status: string;
-  error?: boolean;
+  progress: number
+  phase: string
+  status: string
+  error?: boolean
 }
-function formatBitrate(bitrate: number): string {
-  if (bitrate >= 1000000) {
-    return `${(bitrate / 1000000).toFixed(1)} Mbps`;
-  } else if (bitrate >= 1000) {
-    return `${(bitrate / 1000).toFixed(0)} Kbps`;
-  }
-  return `${bitrate} bps`;
-}
+
 export default function ContentManagementPage() {
-  const [transcodingMap, setTranscodingMap] = useState<
-  Record<string, TranscodingProgress>
->({});
-  // TODO: Add proper authentication check when NextAuth is ready
-  // For now, allow access to admin pages
+  const [transcodingMap, setTranscodingMap] = useState<Record<string, TranscodingProgress>>({})
   const pathname = usePathname()
-  console.log("pathname", pathname)
-  const router = useRouter();
-  const [content, setContent] = useState<Content[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [showEditor, setShowEditor] = useState(false);
-  const [selectedContent, setSelectedContent] = useState<Content | null>(null);
-  const [detailContent, setDetailContent] = useState<Content | null>(null);
-  const [showDetails, setShowDetails] = useState(false);
-  const [renditions, setRenditions] = useState<Rendition[]>([]); 
-  const [loadingRenditions, setLoadingRenditions] = useState(false);
+  const router = useRouter()
+
+  const [content, setContent] = useState<Content[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [showEditor, setShowEditor] = useState(false)
+  const [selectedContent, setSelectedContent] = useState<Content | null>(null)
+  const [detailContent, setDetailContent] = useState<Content | null>(null)
+  const [showDetails, setShowDetails] = useState(false)
 
   // Filter state
   const [filters, setFilters] = useState<ContentFilters>({
     status: undefined,
     search: undefined,
-    content_type: pathname.includes('movie') ? 'movie' :
-      pathname.includes('document') ? 'documentary' :
-        pathname.includes('trailer') ? 'trailer' :
-          pathname.includes('series') ? 'series' :
-            pathname.includes('episode') ? 'episode' : "movie"
-    ,
+    content_type: pathname.includes('movie')
+      ? 'movie'
+      : pathname.includes('document')
+        ? 'documentary'
+        : pathname.includes('trailer')
+          ? 'trailer'
+          : pathname.includes('series')
+            ? 'series'
+            : pathname.includes('episode')
+              ? 'episode'
+              : 'movie',
     is_kid_safe: undefined,
     is_ppv: undefined,
-    media_type: pathname.includes("movie-management") ? "movies"
-      : pathname.includes("trailer-management") ? "trailers"
-        : pathname.includes("documentary-management") ? "documentaries"
-          : pathname.includes("demo-content-management") ? "democontents"
-            : ""
-  });
-const [page, setPage] = useState(1); 
-const [totalCount, setTotalCount] = useState(0);
-const [hasNext, setHasNext] = useState(false);
-const [hasPrev, setHasPrev] = useState(false);
-const sseConnections = useRef<Record<string, EventSource>>({});
-const startTranscodingListener = (contentId: string) => {
-  // Prevent duplicate listeners
-  if (sseConnections.current[contentId]) {
-    return;
-  }
+    media_type: pathname.includes('movie-management')
+      ? 'movies'
+      : pathname.includes('trailer-management')
+        ? 'trailers'
+        : pathname.includes('documentary-management')
+          ? 'documentaries'
+          : pathname.includes('demo-content-management')
+            ? 'democontents'
+            : '',
+  })
 
-  const es = new EventSource(
-    `http://3.236.253.230/api/v1/content/transcoding-progress/${contentId}`
-  );
+  const [page, setPage] = useState(1)
+  const [totalCount, setTotalCount] = useState(0)
+  const [hasNext, setHasNext] = useState(false)
+  const [hasPrev, setHasPrev] = useState(false)
 
-  sseConnections.current[contentId] = es;
+  const sseConnections = useRef<Record<string, EventSource>>({})
 
-  es.onopen = () => {
-    console.log("SSE Connected:", contentId);
-  };
-
-  es.onmessage = (event) => {
-    if (event.data === "ping") return;
-
-    try {
-      console.log("SSE MESSAGE:", event.data);
-
-      const data = JSON.parse(event.data);
-
-      setTranscodingMap((prev) => ({
-        ...prev,
-        [contentId]: {
-          progress: data.progress ?? 0,
-          phase: data.phase,
-          status: data.status,
-        },
-      }));
-
-      if (
-        data.status === "COMPLETE" ||
-        data.status === "FAILED"
-      ) {
-         if (data.status === "COMPLETE") {
-    setContent((prev) =>
-      prev.map((item) =>
-        item.id === contentId
-          ? {
-              ...item,
-              status: "ready",
-              ingest_status: "ready",
-            }
-          : item
-      )
-    );
-
-    toast.success("Transcoding completed");
-  }
-        es.close();
-
-        delete sseConnections.current[contentId];
-
-        setTimeout(() => {
-          setTranscodingMap((prev) => {
-            const updated = { ...prev };
-            delete updated[contentId];
-            return updated;
-          });
-        }, 3000);
-      }
-    } catch (err) {
-      console.error("SSE Parse Error", err);
+  const startTranscodingListener = (contentId: string) => {
+    if (sseConnections.current[contentId]) {
+      return
     }
-  };
 
-  es.onerror = (err) => {
-    console.error("SSE Error", err);
+    const es = new EventSource(
+      `https://api.urview.com/api/v1/content/transcoding-progress/${contentId}`
+    )
 
-    setTranscodingMap((prev) => ({
-      ...prev,
-      [contentId]: {
-        ...prev[contentId],
-        error: true,
-        status: "FAILED",
-        phase: "FAILED",
-      },
-    }));
+    sseConnections.current[contentId] = es
 
-    es.close();
+    es.onopen = () => {
+      console.log('SSE Connected:', contentId)
+    }
 
-    delete sseConnections.current[contentId];
-  };
-};
+    es.onmessage = (event) => {
+      if (event.data === 'ping') return
+
+      try {
+        const data = JSON.parse(event.data)
+
+        setTranscodingMap((prev) => ({
+          ...prev,
+          [contentId]: {
+            progress: data.progress ?? 0,
+            phase: data.phase,
+            status: data.status,
+          },
+        }))
+
+        if (data.status === 'COMPLETE' || data.status === 'FAILED') {
+          if (data.status === 'COMPLETE') {
+            setContent((prev) =>
+              prev.map((item) =>
+                item.id === contentId
+                  ? {
+                    ...item,
+                    status: 'ready',
+                    ingest_status: 'ready',
+                  }
+                  : item
+              )
+            )
+
+            toast.success('Transcoding completed')
+          } else if (data.status === 'FAILED') {
+            setContent((prev) =>
+              prev.map((item) =>
+                item.id === contentId
+                  ? {
+                    ...item,
+                    ingest_status: 'failed',
+                  }
+                  : item
+              )
+            )
+
+            toast.error('Transcoding failed')
+          }
+          es.close()
+          delete sseConnections.current[contentId]
+
+          setTimeout(() => {
+            setTranscodingMap((prev) => {
+              const updated = { ...prev }
+              delete updated[contentId]
+              return updated
+            })
+          }, 3000)
+        }
+      } catch (err) {
+        console.error('SSE Parse Error', err)
+      }
+    }
+
+    es.onerror = (err) => {
+      console.warn('SSE Connection issue (auto-reconnecting):', err)
+    }
+  }
+
   const fetchContent = useCallback(async () => {
     try {
-      setLoading(true);
-      setError(null);
-      const result: any = await listContent({...filters,page});
-      const items = Array.isArray(result)
-        ? result
-        : (result?.results ?? result?.content ?? []);
-      setContent(items as Content[]);
-      
-    setTotalCount(result?.count ?? 0);
-    setHasNext(Boolean(result?.next));
-    setHasPrev(Boolean(result?.previous));
+      setLoading(true)
+      setError(null)
+      const result: any = await listContent({ ...filters, page })
+      const items = Array.isArray(result) ? result : (result?.results ?? result?.content ?? [])
+      setContent(items as Content[])
+
+      setTotalCount(result?.count ?? 0)
+      setHasNext(Boolean(result?.next))
+      setHasPrev(Boolean(result?.previous))
     } catch (err) {
-      const apiError = err as ApiError;
-      setError(apiError.message || 'Failed to load content');
-      console.error('Error fetching content:', err);
+      const apiError = err as ApiError
+      setError(apiError.message || 'Failed to load content')
+      console.error('Error fetching content:', err)
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  }, [filters,page]);
+  }, [filters, page])
 
   useEffect(() => {
-    // Always fetch content on mount and filter changes
-    fetchContent();
-  }, [fetchContent]);
+    fetchContent()
+  }, [fetchContent])
+
+  useEffect(() => {
+    content.forEach((item) => {
+      const ingestStatus = item.ingest_status?.toLowerCase()
+      const status = item.status?.toLowerCase()
+      const isTranscoding =
+        ingestStatus === 'processing' ||
+        ingestStatus === 'uploading' ||
+        status === 'processing' ||
+        status === 'uploading'
+
+      if (isTranscoding && !sseConnections.current[item.id]) {
+        startTranscodingListener(item.id)
+      }
+    })
+  }, [content])
 
   function handleCreateNew() {
-    setSelectedContent(null);
-    setShowEditor(true);
+    setSelectedContent(null)
+    setShowEditor(true)
   }
 
   function handleEdit(item: Content) {
-    setSelectedContent(item);
-    setShowEditor(true);
+    setSelectedContent(item)
+    setShowEditor(true)
   }
+
   async function handleViewDetails(item: Content) {
     try {
-        
-      const details = await getContent(item.id); 
-      setDetailContent(details);
-      setShowDetails(true);  
-      
+      const details = await getContent(item.id)
+      setDetailContent(details)
+      setShowDetails(true)
     } catch (err) {
-      const apiError = err as ApiError;
-      setError(apiError.message || 'Failed to load content details');
-    } finally { 
+      const apiError = err as ApiError
+      setError(apiError.message || 'Failed to load content details')
     }
   }
 
   function handleEditorClose() {
-    setShowEditor(false);
-    setSelectedContent(null);
-    fetchContent();
-  }
-
-  function handleEditorSuccess(updatedContent: Content) {
-    // Refresh list
-    fetchContent();
-    // Close editor after a short delay to show success message
-    setTimeout(() => {
-      handleEditorClose();
-    }, 2000);
-  }
-
-  function handleDetailsClose() {
-    setShowDetails(false);
-    setDetailContent(null);
+    setShowEditor(false)
+    setSelectedContent(null)
     fetchContent()
   }
 
- 
+  function handleEditorSuccess(updatedContent: Content) {
+    fetchContent()
+    setTimeout(() => {
+      handleEditorClose()
+    }, 2000)
+  }
 
+  useEffect(() => {
+    return () => {
+      Object.values(sseConnections.current).forEach((es) => {
+        es.close()
+      })
+    }
+  }, [])
 
+  const isFiltered = Boolean(
+    filters.search ||
+    filters.status ||
+    filters.media_type ||
+    filters.is_kid_safe !== undefined ||
+    filters.is_ppv !== undefined
+  )
 
-useEffect(() => {
-  return () => {
-    Object.values(sseConnections.current).forEach((es) => {
-      es.close();
-    });
-  };
-}, []);
+  const contentTypeTitle = pathname.includes('movie')
+    ? 'Movie'
+    : pathname.includes('document')
+      ? 'Documentary'
+      : pathname.includes('trailer')
+        ? 'Trailer'
+        : pathname.includes('series')
+          ? 'Series'
+          : pathname.includes('episode')
+            ? 'Episode'
+            : 'Content'
+
+  const contentTypeSubtitle = pathname.includes('movie')
+    ? 'Manage your movie catalog, publishing status, metadata and transcoding.'
+    : pathname.includes('document')
+      ? 'Manage documentary films, genres, and metadata.'
+      : pathname.includes('trailer')
+        ? 'Manage trailer assets, visibility and publishing.'
+        : pathname.includes('series')
+          ? 'Manage series, episodes and streaming availability.'
+          : pathname.includes('episode')
+            ? 'Manage episode video assets and publishing statuses.'
+            : 'Manage video assets, metadata, publishing, and transcoding.'
+
   return (
-    <div className={`min-h-screen   text-white `}>
-      {/* Header */}
+    <motion.div
+      initial={{ opacity: 0, y: 6 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3 }}
+      className="min-h-screen bg-background text-foreground"
+    >
+      {/* Inline Page Header - Non-sticky, full-width, clean border bottom */}
       <ContentHeaderComponent handleCreateNew={handleCreateNew} />
 
 
-      <div className="max-w-7xl mx-auto px-4 py-8">
+      <div className="max-w-7xl mx-auto px-4 py-6 space-y-6">
+        {/* Help Panel */}
         <AdminContentHelpPanel />
 
-        {/* Loading Spinner */}
+        {/* Dynamic KPI Stats Cards */}
+        <ContentStats items={content} totalCount={totalCount || content.length} />
 
-
-        {/* Error Message */}
+        {/* Error Alert Card */}
         {error && (
-          <div className="mb-6 bg-red-900/50 border border-red-600 text-red-200 px-4 py-3 rounded-lg">
-            {error}
+          <div className="flex items-center gap-3 p-4 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-600 dark:text-rose-400">
+            <FiAlertCircle className="w-5 h-5 shrink-0" />
+            <p className="text-sm font-medium">{error}</p>
           </div>
         )}
-        {loading ?
-          <>
 
+        {/* Filter Toolbar & Refresh Button */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="flex-1">
             <ContentFilter filters={filters} setFilters={setFilters} />
-            <div className='flex flex-row items-center w-full justify-end p-2'>
-              <button className='p-2 rounded-md bg-neutral-800 flex flex-row items-center' onClick={() => {
-                fetchContent()
-              }}>Refresh <BiRefresh className='ml-1' /> </button>
+          </div>
+
+          <button
+            onClick={fetchContent}
+            disabled={loading}
+            className="inline-flex items-center justify-center gap-2 px-3.5 py-2 text-sm font-medium rounded-xl text-foreground bg-card hover:bg-accent border border-border/80 shadow-sm transition-all disabled:opacity-50 cursor-pointer shrink-0 self-end sm:self-auto"
+            title="Refresh Content"
+          >
+            <FiRefreshCw className={`w-4 h-4 text-muted-foreground ${loading ? 'animate-spin text-primary' : ''}`} />
+            <span>{loading ? 'Refreshing...' : 'Refresh'}</span>
+          </button>
+        </div>
+
+        {/* Content List / Skeleton / Empty State */}
+        {loading && content.length === 0 ? (
+          <ContentLoading />
+        ) : content.length === 0 ? (
+          <EmptyContentState
+            onCreateNew={handleCreateNew}
+            hasFilters={isFiltered}
+            onClearFilters={() => {
+              setFilters((prev) => ({
+                ...prev,
+                search: undefined,
+                status: undefined,
+                media_type: undefined,
+                is_kid_safe: undefined,
+                is_ppv: undefined,
+              }))
+            }}
+          />
+        ) : (
+          <>
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+              {content.map((item) => (
+                <ContentCard
+                  key={item.id}
+                  item={item}
+                  transcodingProgress={transcodingMap[item.id]}
+                  handleViewDetails={handleViewDetails}
+                  handleEdit={handleEdit}
+                  publishContent={publishContent}
+                  fetchContent={fetchContent}
+                />
+              ))}
             </div>
-            <ContentLoading />
+
+            {/* Pagination Controls */}
+            <ContentPagination
+              page={page}
+              hasPrev={hasPrev}
+              hasNext={hasNext}
+              totalCount={totalCount}
+              setPage={setPage}
+            />
           </>
-          :
-          <>
-            <ContentFilter filters={filters} setFilters={setFilters} />
-            <div className='flex flex-row items-center w-full justify-end p-2'>
-              <button className='p-2 rounded-md bg-neutral-800 flex flex-row items-center' onClick={() => {
-                fetchContent()
-              }}>Refresh <BiRefresh className='ml-1' /> </button>
-            </div>
-
-            {/* Content List */}
-            {!loading && (!content || content.length === 0) ? (
-              <div className="bg-neutral-900 rounded-lg p-12 text-center">
-                <p className="text-gray-400 text-lg mb-4">No content found</p>
-                <button
-                  onClick={handleCreateNew}
-                  className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-                >
-                  Create Your First Content
-                </button>
-              </div>
-            ) : (
-             <> <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-
-                {content && content.map((item) => (
-                 <ContentCard
-  key={item.id}
-  item={item}
-  transcodingProgress={transcodingMap[item.id]}
-  handleViewDetails={handleViewDetails}
-  handleEdit={handleEdit}
-  publishContent={publishContent}
-  fetchContent={fetchContent}
-/>
-                ))}
-
-
-              </div>
-<div className="flex items-center justify-between mt-6">
-  <p className="text-sm text-gray-400">
-    Page {page} 
-  </p>
-
-  <div className="flex gap-2">
-    <button
-      disabled={!hasPrev}
-      onClick={() => setPage((p) => Math.max(1, p - 1))}
-      className="px-4 py-2 rounded bg-gray-800 text-white disabled:opacity-40"
-    >
-      Previous
-    </button>
-
-    <button
-      disabled={!hasNext}
-      onClick={() => setPage((p) => p + 1)}
-      className="px-4 py-2 rounded bg-gray-800 text-white disabled:opacity-40"
-    >
-      Next
-    </button>
-  </div>
-</div>
-
-</>
-            )}</>
-        }
+        )}
       </div>
 
       {/* Content Editor Modal */}
@@ -347,31 +370,35 @@ useEffect(() => {
           onClose={handleEditorClose}
           onSuccess={handleEditorSuccess}
           startTranscodingListener={startTranscodingListener}
-          contentType={pathname.includes('movie') ? 'movie' :
-            pathname.includes('document') ? 'documentary' :
-              pathname.includes('trailer') ? 'trailer' :
-                pathname.includes('series') ? 'series' :
-                  pathname.includes('episode') ? 'episode' : "movie"
+          contentType={
+            pathname.includes('movie')
+              ? 'movie'
+              : pathname.includes('document')
+                ? 'documentary'
+                : pathname.includes('trailer')
+                  ? 'trailer'
+                  : pathname.includes('series')
+                    ? 'series'
+                    : pathname.includes('episode')
+                      ? 'episode'
+                      : 'movie'
           }
         />
       )}
 
+      {/* Content Details Modal */}
       {showDetails && detailContent && (
         <ContentDetailsModal
           open={showDetails}
           detailContent={detailContent}
           onClose={() => {
-            setShowDetails(false);
-            setDetailContent(null);
+            setShowDetails(false)
+            setDetailContent(null)
             fetchContent()
           }}
-          
-            
-          publishContent={publishContent}  
+          publishContent={publishContent}
         />
       )}
-    </div>
-  );
+    </motion.div>
+  )
 }
-
-

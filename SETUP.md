@@ -56,6 +56,7 @@ Open http://localhost:3000 in your browser. You're ready to go! 🎉
 To create a ZIP file of this project scaffold:
 
 ### Windows:
+
 ```bash
 # Double-click create-zip.bat
 # OR run in command prompt:
@@ -63,6 +64,7 @@ create-zip.bat
 ```
 
 ### macOS/Linux:
+
 ```bash
 pnpm zip
 ```
@@ -71,18 +73,18 @@ This will create `web-scaffold.zip` in the project root.
 
 ## 🛠️ Available Scripts
 
-| Command | Description |
-|---------|-------------|
-| `pnpm dev` | Start development server on http://localhost:3000 |
-| `pnpm build` | Create production build |
-| `pnpm start` | Start production server |
-| `pnpm lint` | Run ESLint to check code quality |
-| `pnpm lint:fix` | Auto-fix linting issues |
-| `pnpm format` | Format all code with Prettier |
-| `pnpm format:check` | Check if code is formatted |
-| `pnpm type-check` | Run TypeScript type checking |
-| `pnpm clean` | Remove build artifacts |
-| `pnpm zip` | Create deployment ZIP file |
+| Command             | Description                                       |
+| ------------------- | ------------------------------------------------- |
+| `pnpm dev`          | Start development server on http://localhost:3000 |
+| `pnpm build`        | Create production build                           |
+| `pnpm start`        | Start production server                           |
+| `pnpm lint`         | Run ESLint to check code quality                  |
+| `pnpm lint:fix`     | Auto-fix linting issues                           |
+| `pnpm format`       | Format all code with Prettier                     |
+| `pnpm format:check` | Check if code is formatted                        |
+| `pnpm type-check`   | Run TypeScript type checking                      |
+| `pnpm clean`        | Remove build artifacts                            |
+| `pnpm zip`          | Create deployment ZIP file                        |
 
 ## 📂 Project Structure Overview
 
@@ -127,24 +129,25 @@ web/
 ✅ **API Utilities** for backend integration  
 ✅ **Error Boundaries** and loading states  
 ✅ **SEO Ready** with metadata API  
-✅ **pnpm Workspace** configuration  
+✅ **pnpm Workspace** configuration
 
 ## 🔧 Configuration Files Explained
 
-| File | Purpose |
-|------|---------|
-| `package.json` | Dependencies and scripts |
-| `tsconfig.json` | TypeScript configuration with path aliases |
-| `tailwind.config.ts` | Tailwind CSS customization |
-| `next.config.js` | Next.js configuration |
-| `.eslintrc.json` | ESLint rules |
-| `.prettierrc` | Code formatting rules |
-| `pnpm-workspace.yaml` | pnpm workspace setup |
-| `.npmrc` | pnpm configuration |
+| File                  | Purpose                                    |
+| --------------------- | ------------------------------------------ |
+| `package.json`        | Dependencies and scripts                   |
+| `tsconfig.json`       | TypeScript configuration with path aliases |
+| `tailwind.config.ts`  | Tailwind CSS customization                 |
+| `next.config.js`      | Next.js configuration                      |
+| `.eslintrc.json`      | ESLint rules                               |
+| `.prettierrc`         | Code formatting rules                      |
+| `pnpm-workspace.yaml` | pnpm workspace setup                       |
+| `.npmrc`              | pnpm configuration                         |
 
 ## 🌐 Deployment Options
 
 ### Vercel (Recommended)
+
 1. Push code to GitHub
 2. Import to Vercel
 3. Configure environment variables
@@ -157,12 +160,14 @@ vercel
 ```
 
 ### Docker
+
 ```bash
 docker build -t ott-web .
 docker run -p 3000:3000 ott-web
 ```
 
 ### Manual Server
+
 1. Build: `pnpm build`
 2. Copy files to server
 3. Install deps: `pnpm install --prod`
@@ -171,7 +176,9 @@ docker run -p 3000:3000 ott-web
 ## 💡 Common Tasks
 
 ### Add a New Page
+
 Create a new folder in `app/`:
+
 ```typescript
 // app/about/page.tsx
 export default function AboutPage() {
@@ -180,7 +187,9 @@ export default function AboutPage() {
 ```
 
 ### Add a Component
+
 Create in `components/`:
+
 ```typescript
 // components/MyComponent.tsx
 export const MyComponent = () => {
@@ -189,17 +198,19 @@ export const MyComponent = () => {
 ```
 
 ### Use Video Player
+
 ```typescript
 import { VideoPlayer } from '@/players'
 
-<VideoPlayer 
-  src="/videos/demo.mp4" 
+<VideoPlayer
+  src="/videos/demo.mp4"
   poster="/posters/demo.jpg"
-  controls 
+  controls
 />
 ```
 
 ### Call API
+
 ```typescript
 import { get, post } from '@/lib'
 
@@ -210,12 +221,14 @@ const result = await post('/api/videos', { title: 'New Video' })
 ## 🐛 Troubleshooting
 
 ### Port 3000 already in use
+
 ```bash
 # Use different port
 pnpm dev --port 3001
 ```
 
 ### Install fails
+
 ```bash
 # Clear cache and reinstall
 rm -rf node_modules pnpm-lock.yaml
@@ -223,6 +236,7 @@ pnpm install
 ```
 
 ### TypeScript errors
+
 ```bash
 # Rebuild types
 pnpm type-check
@@ -238,6 +252,7 @@ pnpm type-check
 ## 🤝 Support
 
 For issues or questions:
+
 1. Check the README.md for detailed documentation
 2. Review Next.js and TypeScript docs
 3. Open an issue on GitHub

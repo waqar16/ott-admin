@@ -1,44 +1,44 @@
 import React from 'react'
 import RoundLoader from '../Loader/RoundLoader'
-import { publishContent } from '@/lib/contentApi';
-import { toast } from 'sonner';
-import { Content, Rendition } from '@/lib/types/content';
+import { publishContent } from '@/lib/contentApi'
+import { toast } from 'sonner'
+import { Content, Rendition } from '@/lib/types/content'
 export interface DetailedContentProps {
-  setDetailContent: (value: Content | null) => void;
-  setContent: React.Dispatch<React.SetStateAction<Content[]>>;
-  handleDetailsClose: () => void;
-  detailContent: Content | null;
-  videoUrlLoading: boolean;
-  videoUrl: string | null;
-  loadingRenditions: boolean;
-  renditions: Rendition[];
+  setDetailContent: (value: Content | null) => void
+  setContent: React.Dispatch<React.SetStateAction<Content[]>>
+  handleDetailsClose: () => void
+  detailContent: Content | null
+  videoUrlLoading: boolean
+  videoUrl: string | null
+  loadingRenditions: boolean
+  renditions: Rendition[]
 }
 function getQualityBadgeColor(quality: string): string {
   switch (quality.toLowerCase()) {
     case '4k':
     case 'uhd':
-      return 'bg-purple-600';
+      return 'bg-purple-600'
     case '1080p':
     case 'fhd':
-      return 'bg-blue-600';
+      return 'bg-blue-600'
     case '720p':
     case 'hd':
-      return 'bg-green-600';
+      return 'bg-green-600'
     case '480p':
     case 'sd':
-      return 'bg-yellow-600';
+      return 'bg-yellow-600'
     default:
-      return 'bg-gray-600';
+      return 'bg-gray-600'
   }
 }
 
 function formatBitrate(bitrate: number): string {
   if (bitrate >= 1000000) {
-    return `${(bitrate / 1000000).toFixed(1)} Mbps`;
+    return `${(bitrate / 1000000).toFixed(1)} Mbps`
   } else if (bitrate >= 1000) {
-    return `${(bitrate / 1000).toFixed(0)} Kbps`;
+    return `${(bitrate / 1000).toFixed(0)} Kbps`
   }
-  return `${bitrate} bps`;
+  return `${bitrate} bps`
 }
 const DetailedContent: React.FC<DetailedContentProps> = ({
   setDetailContent,
@@ -61,7 +61,12 @@ const DetailedContent: React.FC<DetailedContentProps> = ({
             className="text-gray-400 hover:text-white transition-colors"
           >
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M6 18L18 6M6 6l12 12"
+              />
             </svg>
           </button>
         </div>
@@ -80,34 +85,22 @@ const DetailedContent: React.FC<DetailedContentProps> = ({
               {detailContent?.poster_url && (
                 <div>
                   <h4 className="text-sm font-semibold text-gray-400 mb-2">Poster</h4>
-                  <img
-                    src={detailContent?.poster_url}
-                    alt="Poster"
-                    className="w-full rounded-lg"
-                  />
+                  <img src={detailContent?.poster_url} alt="Poster" className="w-full rounded-lg" />
                 </div>
               )}
               {detailContent?.banner_url && (
                 <div>
                   <h4 className="text-sm font-semibold text-gray-400 mb-2">Banner</h4>
-                  <img
-                    src={detailContent?.banner_url}
-                    alt="Banner"
-                    className="w-full rounded-lg"
-                  />
+                  <img src={detailContent?.banner_url} alt="Banner" className="w-full rounded-lg" />
                 </div>
               )}
             </div>
           )}
-          {videoUrlLoading && <RoundLoader className='' />}
+          {videoUrlLoading && <RoundLoader className="" />}
           {videoUrl && (
             <div>
               <h4 className="text-sm font-semibold text-gray-400 mb-2">Video</h4>
-              <video
-                src={videoUrl}
-                controls
-                className="w-full rounded-lg"
-              >
+              <video src={videoUrl} controls className="w-full rounded-lg">
                 Your browser does not support the video tag.
               </video>
             </div>
@@ -145,12 +138,13 @@ const DetailedContent: React.FC<DetailedContentProps> = ({
                         </span>
 
                         <span
-                          className={`px-2 py-1 rounded text-xs font-medium ${rendition.status === 'ready'
-                            ? 'bg-green-900/50 text-green-300'
-                            : rendition.status === 'processing'
-                              ? 'bg-yellow-900/50 text-yellow-300'
-                              : 'bg-gray-700 text-gray-300'
-                            }`}
+                          className={`px-2 py-1 rounded text-xs font-medium ${
+                            rendition.status === 'ready'
+                              ? 'bg-green-900/50 text-green-300'
+                              : rendition.status === 'processing'
+                                ? 'bg-yellow-900/50 text-yellow-300'
+                                : 'bg-gray-700 text-gray-300'
+                          }`}
                         >
                           {rendition.status}
                         </span>
@@ -164,7 +158,7 @@ const DetailedContent: React.FC<DetailedContentProps> = ({
                     </div>
 
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-                      {(rendition.width && rendition.height) && (
+                      {rendition.width && rendition.height && (
                         <div>
                           <span className="text-gray-500">Resolution:</span>
                           <span className="text-white ml-2">
@@ -185,26 +179,20 @@ const DetailedContent: React.FC<DetailedContentProps> = ({
                       {rendition.format && (
                         <div>
                           <span className="text-gray-500">Format:</span>
-                          <span className="text-white ml-2 uppercase">
-                            {rendition.format}
-                          </span>
+                          <span className="text-white ml-2 uppercase">{rendition.format}</span>
                         </div>
                       )}
                       {rendition.label && (
                         <div>
                           <span className="text-gray-500">Label:</span>
-                          <span className="text-white ml-2 uppercase">
-                            {rendition.label}
-                          </span>
+                          <span className="text-white ml-2 uppercase">{rendition.label}</span>
                         </div>
                       )}
 
                       {rendition.codec && (
                         <div>
                           <span className="text-gray-500">Codec:</span>
-                          <span className="text-white ml-2 uppercase">
-                            {rendition.codec}
-                          </span>
+                          <span className="text-white ml-2 uppercase">{rendition.codec}</span>
                         </div>
                       )}
                     </div>
@@ -244,25 +232,30 @@ const DetailedContent: React.FC<DetailedContentProps> = ({
             )}
           </div>
 
-          {detailContent?.ingest_status == 'ready' &&
+          {detailContent?.ingest_status == 'ready' && (
             <button
               onClick={async () => {
                 let publish = await publishContent(detailContent?.id)
                 if (publish.status) {
                   setDetailContent(null)
-                  setContent(prev => prev.map(item =>
-                    item.id === detailContent?.id
-                      ? { ...item, status: publish.status } // update fields here
-                      : item
+                  setContent((prev) =>
+                    prev.map((item) =>
+                      item.id === detailContent?.id
+                        ? { ...item, status: publish.status } // update fields here
+                        : item
+                    )
                   )
-                  );
 
                   toast.success(`Your Movie is officially published on URView`)
                 }
-                console.log(publish, "detailContent")
+                console.log(publish, 'detailContent')
               }}
-
-              type='button' className='p-2 bg-yellow-600 text-white rounded-md'>Publish content</button>}
+              type="button"
+              className="p-2 bg-yellow-600 text-white rounded-md"
+            >
+              Publish content
+            </button>
+          )}
         </div>
       </div>
     </div>

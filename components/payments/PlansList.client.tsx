@@ -1,54 +1,56 @@
-'use client';
+'use client'
 
-import { useState, useEffect } from 'react';
-import { Plan, ApiError, listPlans, createSubscriptionCheckout } from '@/lib/paymentsApi';
+import { useState, useEffect } from 'react'
+import { Plan, ApiError, listPlans, createSubscriptionCheckout } from '@/lib/paymentsApi'
 
 export default function PlansList() {
-  const [plans, setPlans] = useState<Plan[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [checkoutLoading, setCheckoutLoading] = useState<string | null>(null);
+  const [plans, setPlans] = useState<Plan[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [checkoutLoading, setCheckoutLoading] = useState<string | null>(null)
 
   useEffect(() => {
-    loadPlans();
-  }, []);
+    loadPlans()
+  }, [])
 
   async function loadPlans() {
     try {
-      setLoading(true);
-      setError(null);
-      const response = await listPlans({ page: 1, pageSize: 20 });
-      setPlans(response.results.filter(plan => plan.is_active));
+      setLoading(true)
+      setError(null)
+      const response = await listPlans({ page: 1, pageSize: 20 })
+      setPlans(response.results.filter((plan) => plan.is_active))
     } catch (err) {
-      const apiError = err as ApiError;
-      setError(apiError.message || 'Failed to load plans');
-      console.error('Error loading plans:', err);
+      const apiError = err as ApiError
+      setError(apiError.message || 'Failed to load plans')
+      console.error('Error loading plans:', err)
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
   }
 
   async function handleSubscribe(planId: string) {
     try {
-      setCheckoutLoading(planId);
-      setError(null);
-      const checkoutUrl = await createSubscriptionCheckout(planId);
-      
+      setCheckoutLoading(planId)
+      setError(null)
+      const checkoutUrl = await createSubscriptionCheckout(planId)
+
       // Redirect to Stripe checkout
-      window.location.href = checkoutUrl;
+      window.location.href = checkoutUrl
     } catch (err) {
-      const apiError = err as ApiError;
-      
+      const apiError = err as ApiError
+
       if (apiError.needAuth) {
-        setError('Please login to subscribe');
+        setError('Please login to subscribe')
       } else if (apiError.status === 400 && apiError.message.includes('already have')) {
-        setError('You already have an active subscription. Cancel it first or change your plan from account settings.');
+        setError(
+          'You already have an active subscription. Cancel it first or change your plan from account settings.'
+        )
       } else {
-        setError(apiError.message || 'Failed to create checkout session');
+        setError(apiError.message || 'Failed to create checkout session')
       }
-      
-      console.error('Error creating checkout:', err);
-      setCheckoutLoading(null);
+
+      console.error('Error creating checkout:', err)
+      setCheckoutLoading(null)
     }
   }
 
@@ -57,7 +59,7 @@ export default function PlansList() {
       <div className="flex items-center justify-center py-12">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white"></div>
       </div>
-    );
+    )
   }
 
   return (
@@ -65,9 +67,7 @@ export default function PlansList() {
       {/* Header */}
       <div className="text-center">
         <h2 className="text-3xl font-bold text-white mb-2">Choose Your Plan</h2>
-        <p className="text-gray-400">
-          Select the perfect plan for your viewing experience
-        </p>
+        <p className="text-gray-400">Select the perfect plan for your viewing experience</p>
       </div>
 
       {/* Error Message */}
@@ -85,8 +85,8 @@ export default function PlansList() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
           {plans.map((plan) => {
-            const isPopular = plan.name.toLowerCase() === 'standard';
-            
+            const isPopular = plan.name.toLowerCase() === 'standard'
+
             return (
               <div
                 key={plan.id}
@@ -114,12 +114,8 @@ export default function PlansList() {
                 {/* Price */}
                 <div className="mb-6">
                   <div className="flex items-baseline">
-                    <span className="text-4xl font-bold text-white">
-                      ${plan.price.toFixed(2)}
-                    </span>
-                    <span className="text-gray-400 ml-2">
-                      / {plan.duration_days} days
-                    </span>
+                    <span className="text-4xl font-bold text-white">${plan.price.toFixed(2)}</span>
+                    <span className="text-gray-400 ml-2">/ {plan.duration_days} days</span>
                   </div>
                   <p className="text-gray-500 text-sm mt-1">{plan.currency}</p>
                 </div>
@@ -211,9 +207,24 @@ export default function PlansList() {
                 >
                   {checkoutLoading === plan.id ? (
                     <span className="flex items-center justify-center">
-                      <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      <svg
+                        className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                      >
+                        <circle
+                          className="opacity-25"
+                          cx="12"
+                          cy="12"
+                          r="10"
+                          stroke="currentColor"
+                          strokeWidth="4"
+                        ></circle>
+                        <path
+                          className="opacity-75"
+                          fill="currentColor"
+                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                        ></path>
                       </svg>
                       Loading...
                     </span>
@@ -222,20 +233,16 @@ export default function PlansList() {
                   )}
                 </button>
               </div>
-            );
+            )
           })}
         </div>
       )}
 
       {/* Info Section */}
       <div className="max-w-2xl mx-auto text-center text-gray-400 text-sm space-y-2">
-        <p>
-          All plans include access to our full content library and can be canceled at any time.
-        </p>
-        <p>
-          You can change or cancel your subscription from your account settings.
-        </p>
+        <p>All plans include access to our full content library and can be canceled at any time.</p>
+        <p>You can change or cancel your subscription from your account settings.</p>
       </div>
     </div>
-  );
+  )
 }

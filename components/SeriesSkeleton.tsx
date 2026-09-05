@@ -5,5 +5,5 @@ export default function SeriesSkeleton() {
         <div key={i} className="bg-neutral-800 h-16 rounded-lg"></div>
       ))}
     </div>
-  );
+  )
 }

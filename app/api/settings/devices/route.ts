@@ -1,14 +1,14 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server'
 // TODO: Uncomment when NextAuth backend ready
 // import { getServerSession } from 'next-auth';
-import { authOptions, MembershipType } from '@/lib/auth';
-import type { Device } from '@/lib/types';
-import { USE_MOCK_DATA, logMockDataUsage } from '@/lib/config';
-import { mockSession, mockDevices as mockUserDevices } from '@/lib/mockData';
+import { authOptions, MembershipType } from '@/lib/auth'
+import type { Device } from '@/lib/types'
+import { USE_MOCK_DATA, logMockDataUsage } from '@/lib/config'
+import { mockSession, mockDevices as mockUserDevices } from '@/lib/mockData'
 
 // Mock mode active — replace with real API later
 if (USE_MOCK_DATA) {
-  logMockDataUsage('Devices API - Using mock session and devices');
+  logMockDataUsage('Devices API - Using mock session and devices')
 }
 
 // Mock active devices data
@@ -39,21 +39,21 @@ const mockDevices: Record<string, Device[]> = {
       createdAt: new Date('2025-10-20T19:00:00'),
     },
   ],
-};
+}
 
 export interface DeviceResponse {
-  devices: Device[];
-  total: number;
-  currentDevice?: string;
+  devices: Device[]
+  total: number
+  currentDevice?: string
   limits: {
-    max: number;
-    current: number;
-    remaining: number;
-  };
+    max: number
+    current: number
+    remaining: number
+  }
 }
 
 export interface UpdateDeviceTierRequest {
-  membershipType: MembershipType;
+  membershipType: MembershipType
 }
 
 // GET /api/settings/devices - Get user's active devices
@@ -62,28 +62,28 @@ export async function GET(request: NextRequest) {
     // Check authentication
     // TODO: Uncomment when NextAuth backend ready
     // const session = await getServerSession(authOptions);
-    const session = USE_MOCK_DATA ? mockSession : null; // Mock mode active
+    const session = USE_MOCK_DATA ? mockSession : null // Mock mode active
     if (!session || !session.user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const userId = session.user.email || 'mock-user-1'; // Use email as userId for demo
-    const membershipType = (session.user as any).membershipType || MembershipType.FREE;
+    const userId = session.user.email || 'mock-user-1' // Use email as userId for demo
+    const membershipType = (session.user as any).membershipType || MembershipType.FREE
 
     // Get device limits based on membership
     const deviceLimits = {
       [MembershipType.FREE]: 1,
       [MembershipType.KIDS]: 2,
       [MembershipType.FULL]: 5,
-    };
+    }
 
-    const maxDevices = deviceLimits[membershipType];
+    const maxDevices = deviceLimits[membershipType]
 
     // Get user's devices (mock data)
-    const userDevices = USE_MOCK_DATA ? mockUserDevices : (mockDevices[userId] || []);
+    const userDevices = USE_MOCK_DATA ? mockUserDevices : mockDevices[userId] || []
 
     // Get current device ID from request headers
-    const currentDevice = request.headers.get('x-device-id') || undefined;
+    const currentDevice = request.headers.get('x-device-id') || undefined
 
     const response: DeviceResponse = {
       devices: userDevices,
@@ -94,15 +94,12 @@ export async function GET(request: NextRequest) {
         current: userDevices.length,
         remaining: Math.max(0, maxDevices - userDevices.length),
       },
-    };
+    }
 
-    return NextResponse.json(response);
+    return NextResponse.json(response)
   } catch (error) {
-    console.error('Failed to fetch devices:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
+    console.error('Failed to fetch devices:', error)
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
 
@@ -112,38 +109,32 @@ export async function DELETE(request: NextRequest) {
     // Check authentication
     // TODO: Uncomment when NextAuth backend ready
     // const session = await getServerSession(authOptions);
-    const session = USE_MOCK_DATA ? mockSession : null; // Mock mode active
+    const session = USE_MOCK_DATA ? mockSession : null // Mock mode active
     if (!session || !session.user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const { searchParams } = new URL(request.url);
-    const deviceId = searchParams.get('id');
+    const { searchParams } = new URL(request.url)
+    const deviceId = searchParams.get('id')
 
     if (!deviceId) {
-      return NextResponse.json(
-        { error: 'Device ID is required' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'Device ID is required' }, { status: 400 })
     }
 
-    const userId = session.user.email || 'user-1';
+    const userId = session.user.email || 'user-1'
 
     // Remove device from mock data
     if (mockDevices[userId]) {
-      mockDevices[userId] = mockDevices[userId].filter((d) => d.id !== deviceId);
+      mockDevices[userId] = mockDevices[userId].filter((d) => d.id !== deviceId)
     }
 
     return NextResponse.json({
       success: true,
       message: 'Device removed successfully',
-    });
+    })
   } catch (error) {
-    console.error('Failed to remove device:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
+    console.error('Failed to remove device:', error)
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
 
@@ -153,22 +144,20 @@ export async function POST(request: NextRequest) {
     // Check authentication
     // TODO: Uncomment when NextAuth backend ready
     // const session = await getServerSession(authOptions);
-    const session = USE_MOCK_DATA ? mockSession : null; // Mock mode active
+    const session = USE_MOCK_DATA ? mockSession : null // Mock mode active
     if (!session || !session.user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const userId = session.user.email || 'user-1';
-    const currentDeviceId = request.headers.get('x-device-id');
+    const userId = session.user.email || 'user-1'
+    const currentDeviceId = request.headers.get('x-device-id')
 
     // Remove all devices except current
     if (mockDevices[userId]) {
       if (currentDeviceId) {
-        mockDevices[userId] = mockDevices[userId].filter(
-          (d) => d.id === currentDeviceId
-        );
+        mockDevices[userId] = mockDevices[userId].filter((d) => d.id === currentDeviceId)
       } else {
-        mockDevices[userId] = [];
+        mockDevices[userId] = []
       }
     }
 
@@ -176,12 +165,9 @@ export async function POST(request: NextRequest) {
       success: true,
       message: 'All other devices removed successfully',
       remaining: mockDevices[userId]?.length || 0,
-    });
+    })
   } catch (error) {
-    console.error('Failed to remove devices:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
+    console.error('Failed to remove devices:', error)
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }

@@ -1,74 +1,74 @@
-'use client';
+'use client'
 
-import { useState, useEffect } from 'react';
-import { Profile, ApiError, listProfiles, deleteProfile } from '@/lib/profilesApi';
-import ProfileEditor from './ProfileEditor.client';
+import { useState, useEffect } from 'react'
+import { Profile, ApiError, listProfiles, deleteProfile } from '@/lib/profilesApi'
+import ProfileEditor from './ProfileEditor.client'
 
 export default function ProfilesList() {
-  const [profiles, setProfiles] = useState<Profile[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [showEditor, setShowEditor] = useState(false);
-  const [editingProfile, setEditingProfile] = useState<Profile | null>(null);
-  const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [profiles, setProfiles] = useState<Profile[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [showEditor, setShowEditor] = useState(false)
+  const [editingProfile, setEditingProfile] = useState<Profile | null>(null)
+  const [deletingId, setDeletingId] = useState<string | null>(null)
 
   useEffect(() => {
-    loadProfiles();
-  }, []);
+    loadProfiles()
+  }, [])
 
   async function loadProfiles() {
     try {
-      setLoading(true);
-      setError(null);
-      const response = await listProfiles({ page: 1, pageSize: 20 });
-      setProfiles(response.results);
+      setLoading(true)
+      setError(null)
+      const response = await listProfiles({ page: 1, pageSize: 20 })
+      setProfiles(response.results)
     } catch (err) {
-      const apiError = err as ApiError;
-      setError(apiError.message || 'Failed to load profiles');
-      console.error('Error loading profiles:', err);
+      const apiError = err as ApiError
+      setError(apiError.message || 'Failed to load profiles')
+      console.error('Error loading profiles:', err)
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
   }
 
   async function handleDelete(profileId: string) {
     if (!confirm('Are you sure you want to delete this profile? This action cannot be undone.')) {
-      return;
+      return
     }
 
     try {
-      setDeletingId(profileId);
-      setError(null);
-      await deleteProfile(profileId);
-      await loadProfiles(); // Refresh list
+      setDeletingId(profileId)
+      setError(null)
+      await deleteProfile(profileId)
+      await loadProfiles() // Refresh list
     } catch (err) {
-      const apiError = err as ApiError;
-      setError(apiError.message || 'Failed to delete profile');
-      console.error('Error deleting profile:', err);
+      const apiError = err as ApiError
+      setError(apiError.message || 'Failed to delete profile')
+      console.error('Error deleting profile:', err)
     } finally {
-      setDeletingId(null);
+      setDeletingId(null)
     }
   }
 
   function handleCreate() {
-    setEditingProfile(null);
-    setShowEditor(true);
+    setEditingProfile(null)
+    setShowEditor(true)
   }
 
   function handleEdit(profile: Profile) {
-    setEditingProfile(profile);
-    setShowEditor(true);
+    setEditingProfile(profile)
+    setShowEditor(true)
   }
 
   function handleEditorClose() {
-    setShowEditor(false);
-    setEditingProfile(null);
+    setShowEditor(false)
+    setEditingProfile(null)
   }
 
   async function handleEditorSuccess() {
-    setShowEditor(false);
-    setEditingProfile(null);
-    await loadProfiles(); // Refresh list
+    setShowEditor(false)
+    setEditingProfile(null)
+    await loadProfiles() // Refresh list
   }
 
   if (loading) {
@@ -76,7 +76,7 @@ export default function ProfilesList() {
       <div className="flex items-center justify-center py-12">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white"></div>
       </div>
-    );
+    )
   }
 
   return (
@@ -85,9 +85,7 @@ export default function ProfilesList() {
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-bold text-white">Profiles</h2>
-          <p className="text-gray-400 mt-1">
-            Manage who's watching. Create up to 4 profiles.
-          </p>
+          <p className="text-gray-400 mt-1">Manage who's watching. Create up to 4 profiles.</p>
         </div>
         <button
           onClick={handleCreate}
@@ -154,9 +152,7 @@ export default function ProfilesList() {
                 {profile.preferred_language && (
                   <p>Language: {profile.preferred_language.toUpperCase()}</p>
                 )}
-                {profile.maturity_rating && (
-                  <p>Maturity: {profile.maturity_rating}</p>
-                )}
+                {profile.maturity_rating && <p>Maturity: {profile.maturity_rating}</p>}
               </div>
 
               {/* Actions */}
@@ -196,5 +192,5 @@ export default function ProfilesList() {
         />
       )}
     </div>
-  );
+  )
 }

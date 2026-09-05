@@ -1,16 +1,16 @@
 /**
  * Mock Data for Development
- * 
+ *
  * This file contains dummy data to run the app without backend dependencies.
  * Used when USE_MOCK_DATA is set to true in lib/config.ts
  */
 
-import { MembershipType } from './types';
-import type { User, Video, Device, Subscription, PremiereTitle, Purchase } from './types';
-import catalogData from './data/catalog.json';
+import { MembershipType } from './types'
+import type { User, Video, Device, Subscription, PremiereTitle, Purchase } from './types'
+import catalogData from './data/catalog.json'
 
 // Mock mode active — replace with real API later
-console.log('[MOCK DATA] Loading dummy data for development');
+console.log('[MOCK DATA] Loading dummy data for development')
 
 // ===========================
 // MOCK USERS
@@ -47,10 +47,10 @@ export const mockUsers: any[] = [
     createdAt: new Date('2024-01-01'),
     updatedAt: new Date('2024-01-01'),
   },
-];
+]
 
 // Default mock user for sessions
-export const mockCurrentUser: any = mockUsers[0];
+export const mockCurrentUser: any = mockUsers[0]
 
 // ===========================
 // MOCK CATALOG / VIDEOS
@@ -84,7 +84,7 @@ export const mockCatalog: any[] = catalogData.titles.map((title: any) => ({
   likes: Math.floor(Math.random() * 50000),
   createdAt: new Date(`${title.year}-01-01`),
   updatedAt: new Date(`${title.year}-01-01`),
-}));
+}))
 
 // ===========================
 // MOCK DEVICES
@@ -107,7 +107,7 @@ export const mockDevices: Device[] = [
     lastActive: new Date(Date.now() - 86400000), // 1 day ago
     createdAt: new Date('2024-01-10'),
   },
-];
+]
 
 // ===========================
 // MOCK SUBSCRIPTIONS
@@ -142,7 +142,7 @@ export const mockSubscriptions: any[] = [
     createdAt: new Date('2024-02-01'),
     updatedAt: new Date(),
   },
-];
+]
 
 // ===========================
 // MOCK PREMIERE TITLES
@@ -151,7 +151,8 @@ export const mockSubscriptions: any[] = [
 export const mockPremiereTitle: any = {
   id: 'premiere-1',
   title: 'Galactic Empires: The Final Chapter',
-  description: 'The epic conclusion to the beloved sci-fi saga arrives exclusively on our platform. Watch the highly anticipated finale before anyone else.',
+  description:
+    'The epic conclusion to the beloved sci-fi saga arrives exclusively on our platform. Watch the highly anticipated finale before anyone else.',
   thumbnail: 'https://picsum.photos/seed/premiere/400/600',
   banner: 'https://picsum.photos/seed/premiere-banner/1920/1080',
   trailer: 'https://example.com/trailers/galactic-empires-finale.mp4',
@@ -178,7 +179,7 @@ export const mockPremiereTitle: any = {
   ],
   createdAt: new Date('2024-10-01'),
   updatedAt: new Date(),
-};
+}
 
 // ===========================
 // MOCK PURCHASES
@@ -201,7 +202,7 @@ export const mockPurchases: any[] = [
     createdAt: new Date(Date.now() - 2 * 86400000),
     updatedAt: new Date(Date.now() - 2 * 86400000),
   },
-];
+]
 
 // ===========================
 // MOCK BLOG POSTS
@@ -212,8 +213,14 @@ export const mockBlogPosts = [
     id: 1,
     slug: 'welcome-to-immersive-streaming',
     title: { rendered: 'Welcome to the Future of Immersive Streaming' },
-    excerpt: { rendered: '<p>Discover how VR and 360° video are transforming the way we experience entertainment...</p>' },
-    content: { rendered: '<p>Welcome to our cutting-edge OTT platform! We are excited to bring you the latest in immersive streaming technology...</p>' },
+    excerpt: {
+      rendered:
+        '<p>Discover how VR and 360° video are transforming the way we experience entertainment...</p>',
+    },
+    content: {
+      rendered:
+        '<p>Welcome to our cutting-edge OTT platform! We are excited to bring you the latest in immersive streaming technology...</p>',
+    },
     date: '2024-01-15T10:00:00',
     modified: '2024-01-15T10:00:00',
     author: 1,
@@ -224,20 +231,30 @@ export const mockBlogPosts = [
     videoTeaserUrl: 'https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8', // TODO: Load from WordPress custom field
     vrTeaserUrl: undefined,
     _embedded: {
-      author: [{
-        id: 1,
-        name: 'Editorial Team',
-        avatar_urls: { '96': 'https://i.pravatar.cc/96?img=1' },
-      }],
-      'wp:featuredmedia': [{
-        id: 101,
-        source_url: 'https://picsum.photos/seed/blog1/1200/630',
-        alt_text: 'VR Streaming',
-        media_details: { width: 1200, height: 630 },
-      }],
+      author: [
+        {
+          id: 1,
+          name: 'Editorial Team',
+          avatar_urls: { '96': 'https://i.pravatar.cc/96?img=1' },
+        },
+      ],
+      'wp:featuredmedia': [
+        {
+          id: 101,
+          source_url: 'https://picsum.photos/seed/blog1/1200/630',
+          alt_text: 'VR Streaming',
+          media_details: { width: 1200, height: 630 },
+        },
+      ],
       'wp:term': [
-        [{ id: 1, name: 'Technology' }, { id: 5, name: 'VR' }],
-        [{ id: 10, name: 'streaming' }, { id: 15, name: 'innovation' }],
+        [
+          { id: 1, name: 'Technology' },
+          { id: 5, name: 'VR' },
+        ],
+        [
+          { id: 10, name: 'streaming' },
+          { id: 15, name: 'innovation' },
+        ],
       ],
     },
   },
@@ -245,8 +262,13 @@ export const mockBlogPosts = [
     id: 2,
     slug: 'top-10-vr-experiences',
     title: { rendered: 'Top 10 Must-Watch VR Experiences This Month' },
-    excerpt: { rendered: '<p>Check out our curated list of the best immersive content available now...</p>' },
-    content: { rendered: '<p>Virtual reality has opened up new dimensions in storytelling. Here are the top 10 VR experiences you should not miss...</p>' },
+    excerpt: {
+      rendered: '<p>Check out our curated list of the best immersive content available now...</p>',
+    },
+    content: {
+      rendered:
+        '<p>Virtual reality has opened up new dimensions in storytelling. Here are the top 10 VR experiences you should not miss...</p>',
+    },
     date: '2024-01-20T14:30:00',
     modified: '2024-01-20T14:30:00',
     author: 2,
@@ -256,20 +278,30 @@ export const mockBlogPosts = [
     videoTeaserUrl: undefined,
     vrTeaserUrl: 'https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8', // TODO: Load stereoscopic teaser
     _embedded: {
-      author: [{
-        id: 2,
-        name: 'Sarah Mitchell',
-        avatar_urls: { '96': 'https://i.pravatar.cc/96?img=5' },
-      }],
-      'wp:featuredmedia': [{
-        id: 102,
-        source_url: 'https://picsum.photos/seed/blog2/1200/630',
-        alt_text: 'VR Headset',
-        media_details: { width: 1200, height: 630 },
-      }],
+      author: [
+        {
+          id: 2,
+          name: 'Sarah Mitchell',
+          avatar_urls: { '96': 'https://i.pravatar.cc/96?img=5' },
+        },
+      ],
+      'wp:featuredmedia': [
+        {
+          id: 102,
+          source_url: 'https://picsum.photos/seed/blog2/1200/630',
+          alt_text: 'VR Headset',
+          media_details: { width: 1200, height: 630 },
+        },
+      ],
       'wp:term': [
-        [{ id: 2, name: 'Reviews' }, { id: 5, name: 'VR' }],
-        [{ id: 10, name: 'streaming' }, { id: 25, name: 'top 10' }],
+        [
+          { id: 2, name: 'Reviews' },
+          { id: 5, name: 'VR' },
+        ],
+        [
+          { id: 10, name: 'streaming' },
+          { id: 25, name: 'top 10' },
+        ],
       ],
     },
   },
@@ -277,8 +309,13 @@ export const mockBlogPosts = [
     id: 3,
     slug: 'kids-zone-safe-streaming',
     title: { rendered: 'Kids Zone: Safe and Educational Content for Your Family' },
-    excerpt: { rendered: '<p>Learn how our Kids Zone ensures a safe viewing environment for children...</p>' },
-    content: { rendered: '<p>Parents can rest easy knowing that our Kids Zone offers carefully curated, age-appropriate content with parental controls...</p>' },
+    excerpt: {
+      rendered: '<p>Learn how our Kids Zone ensures a safe viewing environment for children...</p>',
+    },
+    content: {
+      rendered:
+        '<p>Parents can rest easy knowing that our Kids Zone offers carefully curated, age-appropriate content with parental controls...</p>',
+    },
     date: '2024-01-25T09:00:00',
     modified: '2024-01-25T09:00:00',
     author: 3,
@@ -286,24 +323,34 @@ export const mockBlogPosts = [
     categories: [3, 6],
     tags: [35, 40],
     _embedded: {
-      author: [{
-        id: 3,
-        name: 'Lisa Anderson',
-        avatar_urls: { '96': 'https://i.pravatar.cc/96?img=9' },
-      }],
-      'wp:featuredmedia': [{
-        id: 103,
-        source_url: 'https://picsum.photos/seed/blog3/1200/630',
-        alt_text: 'Kids Watching',
-        media_details: { width: 1200, height: 630 },
-      }],
+      author: [
+        {
+          id: 3,
+          name: 'Lisa Anderson',
+          avatar_urls: { '96': 'https://i.pravatar.cc/96?img=9' },
+        },
+      ],
+      'wp:featuredmedia': [
+        {
+          id: 103,
+          source_url: 'https://picsum.photos/seed/blog3/1200/630',
+          alt_text: 'Kids Watching',
+          media_details: { width: 1200, height: 630 },
+        },
+      ],
       'wp:term': [
-        [{ id: 3, name: 'Family' }, { id: 6, name: 'Kids' }],
-        [{ id: 35, name: 'parental controls' }, { id: 40, name: 'education' }],
+        [
+          { id: 3, name: 'Family' },
+          { id: 6, name: 'Kids' },
+        ],
+        [
+          { id: 35, name: 'parental controls' },
+          { id: 40, name: 'education' },
+        ],
       ],
     },
   },
-];
+]
 
 // ===========================
 // MOCK UPLOAD DATA
@@ -314,7 +361,7 @@ export const mockUploadResponse = {
   fileId: 'mock-file-' + Date.now(),
   bucket: 'mock-upload-bucket',
   key: `uploads/mock-file-${Date.now()}.mp4`,
-};
+}
 
 export const mockUploadStatus = {
   fileId: 'mock-file-123',
@@ -322,14 +369,14 @@ export const mockUploadStatus = {
   progress: 65,
   message: 'Transcoding video to HLS format...',
   estimatedCompletion: new Date(Date.now() + 5 * 60000), // 5 minutes from now
-};
+}
 
 // ===========================
 // MOCK ADMIN CONTENT
 // ===========================
 
 export const mockAdminContent = {
-  videos: mockCatalog.slice(0, 5).map(video => ({
+  videos: mockCatalog.slice(0, 5).map((video) => ({
     ...video,
     uploadDate: video.createdAt,
     status: 'published' as const,
@@ -343,7 +390,7 @@ export const mockAdminContent = {
   totalVideos: mockCatalog.length,
   totalViews: mockCatalog.reduce((sum, v) => sum + (v.views || 0), 0),
   totalUsers: mockUsers.length,
-};
+}
 
 // ===========================
 // MOCK AUTH SESSION
@@ -358,11 +405,16 @@ export const mockSession = {
     stripeCustomerId: mockCurrentUser.stripeCustomerId,
     stripeSubscriptionId: mockCurrentUser.stripeSubscriptionId,
     subscriptionStatus: mockCurrentUser.subscriptionStatus,
-    deviceLimit: mockCurrentUser.membershipType === MembershipType.FREE ? 1 : mockCurrentUser.membershipType === MembershipType.KIDS ? 2 : 5,
+    deviceLimit:
+      mockCurrentUser.membershipType === MembershipType.FREE
+        ? 1
+        : mockCurrentUser.membershipType === MembershipType.KIDS
+          ? 2
+          : 5,
     isKidsRingfenced: mockCurrentUser.membershipType === MembershipType.KIDS,
   },
   expires: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(), // 30 days from now
-};
+}
 
 // ===========================
 // MOCK CHECKOUT SESSION
@@ -373,7 +425,7 @@ export const mockCheckoutSession = {
   url: 'https://checkout.stripe.com/mock-session-url',
   success_url: 'http://localhost:3000/purchase/success?session_id=cs_mock_' + Date.now(),
   cancel_url: 'http://localhost:3000/premiere',
-};
+}
 
 // ===========================
 // MOCK STRIPE PRICES
@@ -383,31 +435,31 @@ export const mockStripePrices = {
   FREE: { id: 'price_free', amount: 0, currency: 'usd', interval: 'month' },
   KIDS: { id: 'price_kids', amount: 999, currency: 'usd', interval: 'month' },
   FULL: { id: 'price_full', amount: 1999, currency: 'usd', interval: 'month' },
-};
+}
 
 // ===========================
 // HELPER FUNCTIONS
 // ===========================
 
 export function getMockUserByEmail(email: string): User | undefined {
-  return mockUsers.find(user => user.email === email);
+  return mockUsers.find((user) => user.email === email)
 }
 
 export function getMockVideoById(id: string): Video | undefined {
-  return mockCatalog.find(video => video.id === id);
+  return mockCatalog.find((video) => video.id === id)
 }
 
 export function getMockDevicesByUserId(userId: string): Device[] {
-  return mockDevices.filter(device => device.userId === userId);
+  return mockDevices.filter((device) => device.userId === userId)
 }
 
 export function getMockSubscriptionByUserId(userId: string): Subscription | undefined {
-  return mockSubscriptions.find(sub => sub.userId === userId);
+  return mockSubscriptions.find((sub) => sub.userId === userId)
 }
 
 // Export mock data logger
 export function logMockData(context: string, data?: any): void {
   if (process.env.NODE_ENV === 'development') {
-    console.log(`[MOCK DATA] ${context}`, data || '');
+    console.log(`[MOCK DATA] ${context}`, data || '')
   }
 }

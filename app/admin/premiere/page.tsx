@@ -7,5 +7,5 @@ export default function AdminPremierePage() {
         {/* TODO: Implement CRUD for premiere titles when backend is ready */}
       </div>
     </div>
-  );
+  )
 }

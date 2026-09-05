@@ -1,10 +1,9 @@
-
 .shaka-advanced-wrapper {
   position: relative;
   width: 70%;
   height: auto;
   background: #000;
-  overflow: hidden; 
+  overflow: hidden;
 }
 
 .shaka-video {
@@ -240,7 +239,9 @@
 
   opacity: 1;
   transform: translateY(0);
-  transition: opacity 0.25s ease, transform 0.25s ease;
+  transition:
+    opacity 0.25s ease,
+    transform 0.25s ease;
 }
 
 /* ✅ Hide title when Shaka controls hide (works via JS class toggle) */

@@ -1,4 +1,4 @@
-import React from "react";
+import React from 'react'
 
 const ScreenLoader = () => {
   return (
@@ -7,20 +7,20 @@ const ScreenLoader = () => {
         className="spinner-border"
         role="status"
         style={{
-          width: "3rem",
-          height: "3rem",
-          borderWidth: "5px",
-          borderColor: "#fe4a55",
-          borderTopColor: "white",
+          width: '3rem',
+          height: '3rem',
+          borderWidth: '5px',
+          borderColor: '#fe4a55',
+          borderTopColor: 'white',
         }}
       >
         <span className="visually-hidden">Loading...</span>
       </div>
-      <p style={{ color: "black", marginTop: "1rem", fontWeight: "bold" }}>
+      <p style={{ color: 'black', marginTop: '1rem', fontWeight: 'bold' }}>
         Loading course details...
       </p>
     </div>
-  );
-};
+  )
+}
 
-export default ScreenLoader;
+export default ScreenLoader

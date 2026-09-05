@@ -86,13 +86,16 @@ export function uploadFileWithProgress(req: UploadRequest): Promise<UploadResult
 
       const headers: Record<string, string> = {}
       const rawHeaders = xhr.getAllResponseHeaders()
-      rawHeaders.trim().split(/\r?\n/).forEach((line) => {
-        const parts = line.split(': ')
-        const key = parts.shift()?.toLowerCase()
-        if (key) {
-          headers[key] = parts.join(': ')
-        }
-      })
+      rawHeaders
+        .trim()
+        .split(/\r?\n/)
+        .forEach((line) => {
+          const parts = line.split(': ')
+          const key = parts.shift()?.toLowerCase()
+          if (key) {
+            headers[key] = parts.join(': ')
+          }
+        })
 
       if (status >= 200 && status < 300) {
         resolve({ status, response, headers })

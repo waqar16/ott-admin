@@ -1,6 +1,6 @@
 /**
  * Content Management Types
- * 
+ *
  * TypeScript type definitions for content, assets, renditions, uploads, and manifests.
  * Reference: API_DOCUMENTATION_PART3.pdf - Content Management endpoints
  */
@@ -11,7 +11,14 @@
 
 // Aligned with backend choices
 // Content Type: structural classification of content entity
-export type ContentType = 'movie' | 'series' | 'episode' | 'trailer' | 'documentary' | 'season' | 'democontent';
+export type ContentType =
+  | 'movie'
+  | 'series'
+  | 'episode'
+  | 'trailer'
+  | 'documentary'
+  | 'season'
+  | 'democontent'
 // Media Type: video projection / VR mode
 export type MediaType =
   | 'flat'
@@ -20,211 +27,214 @@ export type MediaType =
   | 'vr_360_tb'
   | 'vr_180_mono'
   | 'vr_180_sbs'
-  | 'vr_180_tb';
+  | 'vr_180_tb'
 // Status lifecycle
-export type ContentStatus = 'ready' |'draft' | 'uploaded' | 'published' | 'inactive' | 'failed' | 'archived';
-export type IngestStatus = 'ready' | 'processing' | 'uploading' | 'failed';
-export type ImageType = 'poster' | 'banner' | 'thumbnail';
-export type VisibilityMode = 'public' | 'beta';
+export type ContentStatus =
+  | 'ready'
+  | 'draft'
+  | 'uploaded'
+  | 'published'
+  | 'inactive'
+  | 'failed'
+  | 'archived'
+export type IngestStatus = 'ready' | 'processing' | 'uploading' | 'failed'
+export type ImageType = 'poster' | 'banner' | 'thumbnail'
+export type VisibilityMode = 'public' | 'beta'
 export type ContentMetadataPayload = {
-  content: string;
-  id?:string;
-  directors: string[];
-  producers: string[];
-  cast: string[];
-  genres: string[];
-  release_year?: number;
-  age_rating?: string;
-  language?: string;
-  subtitles_available: string[];
-  production_company?: string;
-  country?: string;
-  awards: string[];
-};
+  content: string
+  id?: string
+  directors: string[]
+  producers: string[]
+  cast: string[]
+  genres: string[]
+  release_year?: number
+  age_rating?: string
+  language?: string
+  subtitles_available: string[]
+  production_company?: string
+  country?: string
+  awards: string[]
+}
 export interface Content {
-  id: string;
-  trailer_id?:string;
-  trailer_youtube_url?:string;
-  transcoding_progress?: number;
-  ingest_status?: IngestStatus;
-  is_demo_content?:boolean;
-  title: string;
-  trailerType?:string;
-  description: string;
-  content_type: ContentType;
-  trailer_url:null | string;
-  media_type: MediaType;
-  is_educational?:boolean;
-  visibility_mode: VisibilityMode;
-  content_metadata?: ContentMetadataPayload;
-  status: ContentStatus;
-  is_kid_safe: boolean;
-  is_ppv: boolean;
-  price?: number;
-  genres?: string[];
-  creators?: string[];
-  children?:[];
-  parent?:number;
-  poster_url?: string;
-  banner_url?: string;
-  thumbnail_url?: string;
-  duration_seconds?: number;
-  release_date?: string;
-  rating?: string;
-  director?: string;
-  cast?: string[];
-  season_number?: number;
-  episode_number?:number;
-  created_at: string;
-  updated_at: string;
-  user_id?: string;
-
+  id: string
+  trailer_id?: string
+  trailer_youtube_url?: string
+  transcoding_progress?: number
+  ingest_status?: IngestStatus
+  is_demo_content?: boolean
+  title: string
+  trailerType?: string
+  description: string
+  content_type: ContentType
+  trailer_url: null | string
+  media_type: MediaType
+  is_educational?: boolean
+  visibility_mode: VisibilityMode
+  content_metadata?: ContentMetadataPayload
+  status: ContentStatus
+  is_kid_safe: boolean
+  is_ppv: boolean
+  price?: number
+  genres?: string[]
+  creators?: string[]
+  children?: []
+  parent?: number
+  poster_url?: string
+  banner_url?: string
+  thumbnail_url?: string
+  duration_seconds?: number
+  release_date?: string
+  rating?: string
+  director?: string
+  cast?: string[]
+  season_number?: number
+  episode_number?: number
+  created_at: string
+  updated_at: string
+  user_id?: string
 }
 
 export interface CreateContentPayload {
-  title: string;
-  trailer_id?:string;
-  creators?:string[];
-  is_demo_content?:boolean;
-  is_educational:boolean;
+  title: string
+  trailer_id?: string
+  creators?: string[]
+  is_demo_content?: boolean
+  is_educational: boolean
 
-  description: string;
-  content_type: ContentType;
-  media_type: MediaType;
-  visibility_mode?: VisibilityMode;
-  status?: ContentStatus;
-  is_kid_safe?: boolean;
-  is_ppv?: boolean;
-  trailerType?:string;
-  price?: number;
-  genres?: string[];
-  duration_seconds?: number;
-  trailer_youtube_url?: string;
-  release_date?: string;
-  rating?: string;
-  director?: string;
-  cast?: string[];
-  parent?:string;
-  season_number?:number;
-  episode_number?:number;
-  
+  description: string
+  content_type: ContentType
+  media_type: MediaType
+  visibility_mode?: VisibilityMode
+  status?: ContentStatus
+  is_kid_safe?: boolean
+  is_ppv?: boolean
+  trailerType?: string
+  price?: number
+  genres?: string[]
+  duration_seconds?: number
+  trailer_youtube_url?: string
+  release_date?: string
+  rating?: string
+  director?: string
+  cast?: string[]
+  parent?: string
+  season_number?: number
+  episode_number?: number
 }
 
 export interface UpdateContentPayload {
-  title?: string;
-  description?: string;
-  content_type?: ContentType;
-  creators?:string[];
+  title?: string
+  description?: string
+  content_type?: ContentType
+  creators?: string[]
 
-  media_type?: MediaType;
-  visibility_mode?: VisibilityMode;
-  trailer_youtube_url?: string;
-  status?: ContentStatus;
-  is_kid_safe?: boolean;
-  is_ppv?: boolean;
-  price?: number;
-  genres?: string[];
-  duration_seconds?: number;
-  release_date?: string;
-  rating?: string;
-  director?: string;
-  cast?: string[];
+  media_type?: MediaType
+  visibility_mode?: VisibilityMode
+  trailer_youtube_url?: string
+  status?: ContentStatus
+  is_kid_safe?: boolean
+  is_ppv?: boolean
+  price?: number
+  genres?: string[]
+  duration_seconds?: number
+  release_date?: string
+  rating?: string
+  director?: string
+  cast?: string[]
 }
 
 export interface ContentListResponse {
-  count: number;
-  next: string | null;
-  previous: string | null;
-  results: Content[];
+  count: number
+  next: string | null
+  previous: string | null
+  results: Content[]
 }
-export   interface ContentFilters {
-  status?: string;
-  media_type?: string;
-  content_type?:string;
-  visibility_mode?: VisibilityMode;
+export interface ContentFilters {
+  status?: string
+  media_type?: string
+  content_type?: string
+  visibility_mode?: VisibilityMode
 
-  search?: string;
-  is_kid_safe?: boolean;
-  is_ppv?: boolean;
+  search?: string
+  is_kid_safe?: boolean
+  is_ppv?: boolean
 }
 // ============================================================================
 // ASSET & UPLOAD TYPES
 // ============================================================================
 
 export interface Asset {
-  id: string;
-  content: string;
-  s3_key: string;
-  bucket: string;
-  size_bytes: number;
-  mime_type?: string;
-  ingest_status: IngestStatus;
-  original_filename?: string;
-  created_at: string;
-  updated_at: string;
+  id: string
+  content: string
+  s3_key: string
+  bucket: string
+  size_bytes: number
+  mime_type?: string
+  ingest_status: IngestStatus
+  original_filename?: string
+  created_at: string
+  updated_at: string
 }
 
 export interface UploadPresignedPostInitResponse {
   upload_url: {
-    url: string;
-    fields: Record<string, string>;
-  };
-  s3_key: string;
-  msg?: string;
+    url: string
+    fields: Record<string, string>
+  }
+  s3_key: string
+  msg?: string
 }
 
 export interface MultipartUploadInitResponse {
-  upload_id: string;
-  s3_key: string;
-  part_size: number;
-  num_parts: number;
-  msg?: string;
+  upload_id: string
+  s3_key: string
+  part_size: number
+  num_parts: number
+  msg?: string
 }
 
 export interface MultipartPresignedUrl {
-  part_number: number;
-  presigned_url: string;
+  part_number: number
+  presigned_url: string
 }
 
 export interface UploadMultipartCompleteRequest {
-  upload_id: string;
-  s3_key: string;
-  content_id: string;
-  filename: string;
-  parts: Array<{ part_number: number; etag: string }>;
+  upload_id: string
+  s3_key: string
+  content_id: string
+  filename: string
+  parts: Array<{ part_number: number; etag: string }>
 }
 
-export type UploadInitResponse = UploadPresignedPostInitResponse | MultipartUploadInitResponse;
+export type UploadInitResponse = UploadPresignedPostInitResponse | MultipartUploadInitResponse
 
 export interface S3CallbackPayload {
-  s3_key: string;
-  bucket: string;
-  size: number;
+  s3_key: string
+  bucket: string
+  size: number
 }
 
 export interface ImageUploadResponse {
-  thumbnail_url: string;
-  s3_key: string;
+  thumbnail_url: string
+  s3_key: string
 }
 
 // ============================================================================
 // RENDITION TYPES
 // ============================================================================
 
-export interface Rendition 
-  {
-    
-  id: string;  
-  width: number;
-  stream_url:string;
-  height: number;
-  bitrate: number; 
-  label: string; 
+export interface Rendition {
+  id: string
+  width: number
+  stream_url: string
+  height: number
+  bitrate: number
+  label: string
 }
 
 export interface RenditionsListResponse {
-  content_id: number;
-  renditions: Rendition[];
+  content_id: number
+  renditions: Rendition[]
 }
 
 // ============================================================================
@@ -232,9 +242,9 @@ export interface RenditionsListResponse {
 // ============================================================================
 
 export interface ManifestResponse {
-  text: string;
-  content_type: string;
-  url?: string;
+  text: string
+  content_type: string
+  url?: string
 }
 
 // ============================================================================
@@ -242,63 +252,63 @@ export interface ManifestResponse {
 // ============================================================================
 
 export interface Series {
-  id: string;
-  title: string;
-  description: string;
-  poster_url?: string;
-  banner_url?: string;
-  status: ContentStatus;
-  is_kid_safe: boolean;
-  genres?: string[];
-  created_at: string;
-  updated_at: string;
+  id: string
+  title: string
+  description: string
+  poster_url?: string
+  banner_url?: string
+  status: ContentStatus
+  is_kid_safe: boolean
+  genres?: string[]
+  created_at: string
+  updated_at: string
 }
 
 export interface Season {
-  id: string;
-  series: string;
-  season_number: number;
-  title: string;
-  description: string;
-  poster_url?: string;
-  created_at: string;
-  updated_at: string;
+  id: string
+  series: string
+  season_number: number
+  title: string
+  description: string
+  poster_url?: string
+  created_at: string
+  updated_at: string
 }
 
 export interface Episode {
-  id: string;
-  season: string;
-  episode_number: number;
-  title: string;
-  description: string;
-  duration_seconds?: number;
-  thumbnail_url?: string;
-  status: ContentStatus;
-  created_at: string;
-  updated_at: string;
+  id: string
+  season: string
+  episode_number: number
+  title: string
+  description: string
+  duration_seconds?: number
+  thumbnail_url?: string
+  status: ContentStatus
+  created_at: string
+  updated_at: string
 }
 
 export interface CreateSeriesPayload {
-  title: string;
-  description: string;
-  status?: ContentStatus;
-  is_kid_safe?: boolean;
-  genres?: string[];
+  title: string
+  description: string
+  status?: ContentStatus
+  is_kid_safe?: boolean
+  genres?: string[]
 }
 
 export interface CreateSeasonPayload {
-  series: string;
-  season_number: number;
-  title: string;
-  description: string;
+  series: string
+  season_number: number
+  title: string
+  description: string
 }
 
 export interface CreateEpisodePayload {
-  season: string;
-  episode_number: number;
-  title: string;
-  description: string;
-  duration_seconds?: number;
+  season: string
+  episode_number: number
+  title: string
+  description: string
+  duration_seconds?: number
 }
 
 // ============================================================================
@@ -306,41 +316,41 @@ export interface CreateEpisodePayload {
 // ============================================================================
 
 export interface MediaConvertWebhookPayload {
-  version: string;
-  id: string;
-  'detail-type': string;
-  source: string;
-  account: string;
-  time: string;
-  region: string;
-  resources: string[];
+  version: string
+  id: string
+  'detail-type': string
+  source: string
+  account: string
+  time: string
+  region: string
+  resources: string[]
   detail: {
-    status: 'COMPLETE' | 'ERROR' | 'PROGRESSING';
+    status: 'COMPLETE' | 'ERROR' | 'PROGRESSING'
     outputGroupDetails?: Array<{
       outputDetails?: Array<{
-        outputFilePaths?: string[];
-        durationInMs?: number;
+        outputFilePaths?: string[]
+        durationInMs?: number
         videoDetails?: {
-          widthInPx?: number;
-          heightInPx?: number;
-        };
-      }>;
-    }>;
-    userMetadata?: Record<string, string>;
-    errorMessage?: string;
-  };
+          widthInPx?: number
+          heightInPx?: number
+        }
+      }>
+    }>
+    userMetadata?: Record<string, string>
+    errorMessage?: string
+  }
 }
 
 export interface ParsedMediaConvertResult {
-  status: 'COMPLETE' | 'ERROR' | 'PROGRESSING';
+  status: 'COMPLETE' | 'ERROR' | 'PROGRESSING'
   created_renditions: Array<{
-    output_file: string;
-    width?: number;
-    height?: number;
-    duration_ms?: number;
-  }>;
-  error_message?: string;
-  metadata?: Record<string, string>;
+    output_file: string
+    width?: number
+    height?: number
+    duration_ms?: number
+  }>
+  error_message?: string
+  metadata?: Record<string, string>
 }
 
 // ============================================================================
@@ -348,9 +358,9 @@ export interface ParsedMediaConvertResult {
 // ============================================================================
 
 export interface DrmKeyResponse {
-  key: string;
-  key_id?: string;
-  license_url?: string;
+  key: string
+  key_id?: string
+  license_url?: string
 }
 
 // ============================================================================
@@ -358,23 +368,23 @@ export interface DrmKeyResponse {
 // ============================================================================
 
 export interface ApiError {
-  status: number;
-  message: string;
-  body?: any;
-  needAuth?: boolean;
+  status: number
+  message: string
+  body?: any
+  needAuth?: boolean
 }
 export interface PaymentPlan {
-  id: string;
-  name: string;
-  description: string;
-  price: number;
-  currency: string;
-  duration_days: number;
-  max_devices: number;
-  max_profiles: number;
-  can_access_premium: boolean;
-  ad_supported: boolean;
-  stripe_price_id: string;
-  is_active: boolean;
-  created_at: string;
+  id: string
+  name: string
+  description: string
+  price: number
+  currency: string
+  duration_days: number
+  max_devices: number
+  max_profiles: number
+  can_access_premium: boolean
+  ad_supported: boolean
+  stripe_price_id: string
+  is_active: boolean
+  created_at: string
 }

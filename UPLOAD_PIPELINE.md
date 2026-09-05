@@ -23,8 +23,8 @@ Complete serverless media upload flow with S3 signed URLs, Lambda processing, an
        │                                    │
        │ 2. Signed URL                      │ Generate
        │<───────────────────────────────────┘ Pre-signed URL
-       │                                           
-       │ 3. Direct Upload                          
+       │
+       │ 3. Direct Upload
        ├──────────────────────>┌──────────────┐
        │                       │  S3 Uploads  │
        │                       │    Bucket    │
@@ -89,10 +89,10 @@ Response:
 
 ```typescript
 // Using XMLHttpRequest for progress tracking
-const xhr = new XMLHttpRequest();
-xhr.open('PUT', uploadUrl);
-xhr.setRequestHeader('Content-Type', fileType);
-xhr.send(fileBuffer);
+const xhr = new XMLHttpRequest()
+xhr.open('PUT', uploadUrl)
+xhr.setRequestHeader('Content-Type', fileType)
+xhr.send(fileBuffer)
 ```
 
 ### 4. Lambda Processors Triggered
@@ -119,6 +119,7 @@ Response:
 ### Video Processing (MediaConvert)
 
 **Outputs:**
+
 - **HLS Adaptive Streaming**
   - 1080p @ 5 Mbps (High Quality)
   - 720p @ 2.5 Mbps (Medium Quality)
@@ -128,6 +129,7 @@ Response:
 - **Thumbnails** (20 frames extracted)
 
 **Output Structure:**
+
 ```
 s3://processed-bucket/processed/video/{fileId}/
 ├── hls/
@@ -149,6 +151,7 @@ s3://processed-bucket/processed/video/{fileId}/
 ### Image Processing (Sharp)
 
 **Outputs:**
+
 - **WebP Format** (modern browsers)
   - Original size
   - Large (1920x1080)
@@ -159,6 +162,7 @@ s3://processed-bucket/processed/video/{fileId}/
   - Same resolution variants
 
 **Output Structure:**
+
 ```
 s3://processed-bucket/processed/image/{fileId}/
 ├── original.webp
@@ -191,6 +195,7 @@ terraform apply -var="environment=dev"
 ```
 
 **Variables:**
+
 - `aws_region`: AWS region (default: us-east-1)
 - `project_name`: Project name for resources (default: ott-platform)
 - `environment`: Environment name (dev/staging/prod)
@@ -249,31 +254,34 @@ aws s3 cp sharp-layer.zip s3://ott-platform-deployment-artifacts-dev/layers/
 Generate a pre-signed S3 URL for direct upload.
 
 **Request:**
+
 ```typescript
 {
-  fileName: string;
-  fileType: string; // MIME type
-  fileSize: number; // bytes
-  contentType: 'video' | 'image' | 'subtitle' | 'thumbnail';
+  fileName: string
+  fileType: string // MIME type
+  fileSize: number // bytes
+  contentType: 'video' | 'image' | 'subtitle' | 'thumbnail'
 }
 ```
 
 **Response:**
+
 ```typescript
 {
-  uploadUrl: string;
-  fileId: string;
-  fileKey: string;
-  expiresAt: string;
+  uploadUrl: string
+  fileId: string
+  fileKey: string
+  expiresAt: string
   metadata: {
-    bucket: string;
-    region: string;
-    contentType: string;
-  };
+    bucket: string
+    region: string
+    contentType: string
+  }
 }
 ```
 
 **Errors:**
+
 - `401`: Unauthorized (not signed in)
 - `400`: Invalid request (missing fields, invalid file type, file too large)
 - `500`: Server error
@@ -283,9 +291,11 @@ Generate a pre-signed S3 URL for direct upload.
 Check upload and processing status.
 
 **Query Parameters:**
+
 - `fileId` (required): File identifier
 
 **Response:**
+
 ```typescript
 {
   fileId: string;
@@ -311,13 +321,13 @@ Check upload and processing status.
 ### UploadFlow Component
 
 ```tsx
-import { UploadFlow } from '@/components/UploadFlow';
+import { UploadFlow } from '@/components/UploadFlow'
 
 function AdminContentPage() {
   const handleUploadComplete = (fileKey: string, fileId: string) => {
-    console.log('Upload completed:', { fileKey, fileId });
+    console.log('Upload completed:', { fileKey, fileId })
     // Update your database, show success message, etc.
-  };
+  }
 
   return (
     <UploadFlow
@@ -326,17 +336,19 @@ function AdminContentPage() {
       maxFiles={5}
       acceptedFileTypes="video/mp4,video/quicktime"
     />
-  );
+  )
 }
 ```
 
 **Props:**
+
 - `contentType`: Type of content ('video' | 'image' | 'subtitle' | 'thumbnail')
 - `onUploadComplete?`: Callback when processing completes
 - `maxFiles?`: Maximum number of files (default: 5)
 - `acceptedFileTypes?`: File types to accept (uses defaults based on contentType)
 
 **Features:**
+
 - ✅ Drag-and-drop support
 - ✅ Multiple file selection
 - ✅ Upload progress tracking
@@ -368,6 +380,7 @@ NEXTAUTH_SECRET=your_secret_key
 ### Lambda Functions
 
 Set via Terraform/CloudFormation:
+
 - `MEDIACONVERT_ENDPOINT`: MediaConvert regional endpoint
 - `MEDIACONVERT_ROLE`: IAM role ARN for MediaConvert
 - `OUTPUT_BUCKET`: S3 bucket for processed outputs
@@ -472,16 +485,19 @@ aws cloudwatch put-metric-alarm \
 ## 💰 Cost Optimization
 
 ### S3
+
 - Use Intelligent-Tiering for uploads
 - Delete raw uploads after 7 days
 - Enable compression for processed files
 
 ### Lambda
+
 - Optimize memory allocation
 - Use provisioned concurrency for predictable load
 - Enable Lambda Insights for monitoring
 
 ### MediaConvert
+
 - Use on-demand pricing for variable workload
 - Consider reserved pricing for high volume
 - Optimize encoding settings for quality/speed balance
@@ -520,14 +536,14 @@ describe('Upload API', () => {
         fileSize: 1048576,
         contentType: 'video',
       }),
-    });
-    
-    expect(response.status).toBe(200);
-    const data = await response.json();
-    expect(data.uploadUrl).toBeDefined();
-    expect(data.fileId).toBeDefined();
-  });
-});
+    })
+
+    expect(response.status).toBe(200)
+    const data = await response.json()
+    expect(data.uploadUrl).toBeDefined()
+    expect(data.fileId).toBeDefined()
+  })
+})
 ```
 
 ## 📖 Additional Resources
@@ -540,6 +556,7 @@ describe('Upload API', () => {
 ## 🤝 Contributing
 
 When adding new features:
+
 1. Update Lambda functions with new processing logic
 2. Modify MediaConvert job settings as needed
 3. Update Terraform/CloudFormation templates

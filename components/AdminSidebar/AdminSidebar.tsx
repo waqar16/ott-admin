@@ -1,10 +1,8 @@
+'use client'
 
-"use client";
-
-import { useEffect, useState } from "react";
-import Link from "next/link";
-import { usePathname } from "next/navigation";
-
+import React, { useEffect, useState } from 'react'
+import Link from 'next/link'
+import { usePathname } from 'next/navigation'
 import {
   FiHome,
   FiUsers,
@@ -13,356 +11,333 @@ import {
   FiChevronDown,
   FiChevronUp,
   FiList,
-  FiUserPlus,
-  FiMessageSquare
-} from "react-icons/fi";
-import { BiDollar, BiFolder, BiMovie, BiPlus, BiTv } from "react-icons/bi";
-import { GrAnalytics, GrDocumentCloud, GrPlan } from "react-icons/gr";
-import { BsCash, BsFileBarGraph, BsPersonFillGear, BsQuestionDiamondFill, BsSubscript } from "react-icons/bs";
-import FullScreenLoader from "../Loader/FullScreenLoader";
-import { usePlatformSettings } from "@/lib/platformSettings";
- import { titan_one,cinzel, varela_round } from "@/app/layout";
-import { leagueSpartan } from "@/fonts/fonts";
-import FullScreenRedirectLoader from "../Loader/FullScreenRedirectLoader";
-export default function AdminSidebar() {
-  const { settings } = usePlatformSettings();
-  const pathname = usePathname();
-  const [collapsed, setCollapsed] = useState(false);
+  FiMessageSquare,
+  FiUserCheck,
+} from 'react-icons/fi'
+import { BiDollar, BiMovie, BiTv } from 'react-icons/bi'
+import { GrPlan } from 'react-icons/gr'
+import { usePlatformSettings } from '@/lib/platformSettings'
+import { leagueSpartan } from '@/fonts/fonts'
 
-  const [openUsers, setOpenUsers] = useState(false);
-  const [openFaqs, setOpenFaqs] = useState(false);
-  const [openPayments, setOpenPayments] = useState(false);
-  const [openTemplates, setOpenTemplates] = useState(false);
-  const [openShows, setOpenShows] = useState(false);
-  const [isNavigating, setIsNavigating] = useState(false);
+// Replacing Bs icon imports with standard react-icons ones to prevent import issues
+import {
+  BsSubscript as BsSubscriptIcon,
+  BsCash as BsCashIcon,
+  BsQuestionDiamondFill as BsQuestionIcon,
+  BsFileBarGraph as BsAnalyticsIcon,
+} from 'react-icons/bs'
+
+import SidebarTooltip from './SidebarTooltip'
+
+interface AdminSidebarProps {
+  collapsed: boolean
+  setCollapsed: (collapsed: boolean) => void
+}
+
+export default function AdminSidebar({ collapsed, setCollapsed }: AdminSidebarProps) {
+  const { settings } = usePlatformSettings()
+  const pathname = usePathname()
+
+  // Dropdown states
+  const [openUsers, setOpenUsers] = useState(false)
+  const [openFaqs, setOpenFaqs] = useState(false)
+  const [openContent, setOpenContent] = useState(false)
+  const [openPayments, setOpenPayments] = useState(false)
+
+  const isActive = (path: string) => pathname === path
+  const isSubActive = (paths: string[]) => paths.includes(pathname)
+
+  // Auto-expand appropriate dropdowns based on the active path on mount
+  useEffect(() => {
+    if (pathname.startsWith('/admin/users') || pathname.startsWith('/admin/pre-signup')) setOpenUsers(true)
+    if (pathname.startsWith('/admin/faqs')) setOpenFaqs(true)
+    if (
+      pathname.startsWith('/admin/movie') ||
+      pathname.startsWith('/admin/series') ||
+      pathname.startsWith('/admin/trailer')
+    ) {
+      setOpenContent(true)
+    }
+    if (pathname.startsWith('/admin/payment') || pathname.startsWith('/admin/subscriptions')) {
+      setOpenPayments(true)
+    }
+  }, [pathname])
+
+  const handleDropdownClick = (openState: boolean, setOpenState: (val: boolean) => void) => {
+    if (collapsed) {
+      setCollapsed(false)
+      setOpenState(true)
+    } else {
+      setOpenState(!openState)
+    }
+  }
 
   const linkBase =
-    "w-11/12 flex items-center text-sm gap-3 px-4 py-2 rounded-md text-gray-300 hover:bg-[var(--main-color)] hover:text-white transition";
-  const activeClass = "bg-[var(--main-color)] text-white  ";
-
-  const isActive = (path: string) => pathname === path;
- useEffect(() => {
-  // Route change completed
-  setIsNavigating(false);
-}, [pathname]);
-
-  const brandName = settings.site_name || "UR VIEW";
-  const logoUrl = settings.logo_url;
+    'group relative w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm transition-all duration-200'
+  const activeClass =
+    'bg-blue-50 dark:bg-blue-950/30 text-[var(--main-color)] dark:text-blue-400 font-semibold border-r-2 border-[var(--main-color)]'
+  const inactiveClass =
+    'text-slate-600 dark:text-neutral-400 hover:bg-slate-100 dark:hover:bg-neutral-900 hover:text-slate-900 dark:hover:text-white'
+  const subLinkClass =
+    'flex items-center gap-3 px-4 py-2 rounded-lg text-xs transition-colors duration-150'
 
   return (
-    <div className={`  w-[260px] bg-black h-screen text-gray-200 fixed left-0 top-0 shadow-xl overflow-y-auto   ${varela_round.className}`}>
-      
-      {isNavigating && <FullScreenRedirectLoader message="loading" showSidebar={true}/>}
-      <div className="py-5 text-center border-b border-gray-700">
-        <div className="flex flex-row items-center gap-2 w-full justify-center">
-           
-          <img src="/mainLogo.webp" className="w-8 h-auto mr-2"/><h1 className={`text-xl font-bold text-white ${leagueSpartan.className}`}> Admin Panel</h1>
+    <aside
+      className={`h-screen bg-white dark:bg-neutral-950 border-r border-slate-200/80 dark:border-neutral-900/80 text-slate-700 dark:text-neutral-300 transition-all duration-300 z-40 fixed left-0 top-0 flex flex-col justify-between select-none ${collapsed ? 'w-[76px]' : 'w-[260px]'
+        }`}
+    >
+      <div className="flex flex-col flex-1 overflow-y-auto minimal-scrollbar">
+        {/* Header/Logo */}
+        <div className="h-16 flex items-center justify-center border-b border-slate-200/80 dark:border-neutral-900/80 px-4">
+          <div className="flex items-center space-x-2.5">
+            <img
+              src="/mainLogo.webp"
+              alt="Logo"
+              className="w-8 h-auto object-contain hover:scale-105 transition-transform"
+            />
+            {!collapsed && (
+              <span
+                className={`text-lg font-bold text-slate-800 dark:text-white tracking-wider ${leagueSpartan.className} animate-fade-in`}
+              >
+                Admin Panel
+              </span>
+            )}
+          </div>
         </div>
-      </div>
-       
 
-      <div className="mt-4 flex flex-col items-center space-y-2">
+        {/* Navigation list */}
+        <nav className="p-3 space-y-1.5 flex flex-col items-center">
+          {/* Overview Link */}
+          <SidebarTooltip content="Overview" disabled={!collapsed}>
+            <Link
+              href="/admin"
+              className={`${linkBase} ${isActive('/admin') ? activeClass : inactiveClass}`}
+            >
+              <FiHome className="w-[18px] h-[18px] flex-shrink-0" />
+              {!collapsed && <span className="truncate">Overview</span>}
+            </Link>
+          </SidebarTooltip>
 
- 
-        <Link
-onClick={() => {
-  if (pathname !== "/admin") {
-    setIsNavigating(true);
-  }
-}}          href="/admin"
-          className={`${linkBase} ${isActive("/admin") ? activeClass : ""}`}
-        >
-          <FiHome size={18} /> Overview
-        </Link>
-        <Link
-onClick={() => {
-  if (pathname !== "/admin/analytics") {
-    setIsNavigating(true);
-  }
-}}          href="/admin/analytics"
-          className={`${linkBase} ${isActive("/admin/analytics") ? activeClass : ""}`}
-        >
-          <BsFileBarGraph size={18} /> Analytics
-        </Link>
-        <Link
-onClick={() => {
-  if (pathname !== "/admin/creator") {
-    setIsNavigating(true);
-  }
-}}          href={"/admin/creator"}
-          className={`${linkBase} ${isActive("/admin/creator") ? activeClass : ""}`}
-        >
-          <FiUsers size={18} /> Creators
-        </Link>
-          <Link
-onClick={() => {
-  if (pathname !== "/admin/revenue") {
-    setIsNavigating(true);
-  }
-}}          href={"/admin/revenue"}
-          className={`${linkBase} ${isActive("/admin/revenue") ? activeClass : ""}`}
-        >
-          <BiDollar size={18} />Creators  Revenue
-        </Link>
-        {/* Users dropdown */}
-        <div className="w-11/12">
-          <button
-            onClick={() => {
-              setOpenUsers(!openUsers)
-              setOpenShows(false)
-              setOpenPayments(false)
-              setOpenTemplates(false)
-              setOpenFaqs(false)
-            }}
-            className={`${linkBase} w-full justify-between`}
-          >
-            <span className="flex items-center gap-3">
-              <FiUsers size={18} /> Users
-            </span>
-            {openUsers ? <FiChevronUp /> : <FiChevronDown />}
-          </button>
+          {/* Analytics Link */}
+          <SidebarTooltip content="Analytics" disabled={!collapsed}>
+            <Link
+              href="/admin/analytics"
+              className={`${linkBase} ${isActive('/admin/analytics') ? activeClass : inactiveClass}`}
+            >
+              <BsAnalyticsIcon className="w-[18px] h-[18px] flex-shrink-0" />
+              {!collapsed && <span className="truncate">Analytics</span>}
+            </Link>
+          </SidebarTooltip>
 
-          {openUsers && (
-            <div className="ml-4 mt-1 flex flex-col space-y-1">
-              <Link
-onClick={() => {
-  if (pathname !== "/admin/users") {
-    setIsNavigating(true);
-  }
-}}                href={"/admin/users"}
-                className={`${linkBase} ${isActive("/admin/users") ? activeClass : ""} text-xs`}
+          {/* Creators Link */}
+          <SidebarTooltip content="Creators" disabled={!collapsed}>
+            <Link
+              href="/admin/creator"
+              className={`${linkBase} ${isActive('/admin/creator') ? activeClass : inactiveClass}`}
+            >
+              <FiUsers className="w-[18px] h-[18px] flex-shrink-0" />
+              {!collapsed && <span className="truncate">Creators</span>}
+            </Link>
+          </SidebarTooltip>
+
+          {/* Creators Revenue Link */}
+          <SidebarTooltip content="Revenue" disabled={!collapsed}>
+            <Link
+              href="/admin/revenue"
+              className={`${linkBase} ${isActive('/admin/revenue') ? activeClass : inactiveClass}`}
+            >
+              <BiDollar className="w-[18px] h-[18px] flex-shrink-0" />
+              {!collapsed && <span className="truncate">Revenue</span>}
+            </Link>
+          </SidebarTooltip>
+
+          {/* Users Dropdown */}
+          <div className="w-full">
+            <SidebarTooltip content="Users" disabled={!collapsed}>
+              <button
+                onClick={() => handleDropdownClick(openUsers, setOpenUsers)}
+                className={`${linkBase} ${isSubActive(['/admin/users', '/admin/pre-signup']) && !collapsed
+                    ? 'text-[var(--main-color)] dark:text-blue-400 font-semibold'
+                    : inactiveClass
+                  }`}
               >
-                <FiList size={16} />Manage Users
-              </Link>
- {/* <Link
-onClick={() => {
-  if (pathname !== "/admin/user-profiles") {
-    setIsNavigating(true);
-  }
-}}                href="/admin/user-profiles"
-                className={`${linkBase} ${isActive("/admin/user-profiles") ? activeClass : ""}  text-xs`}
-              >
-                <BsPersonFillGear size={16} /> Manage User Profiles
-              </Link> */}
-              {/* <Link
-onClick={() => {
-  if (pathname !== "/admin/settings") {
-    setLoading(true);
-  }
-}}                href="/admin/create-user"
-                className={`${linkBase} ${isActive("/admin/create-user") ? "bg-blue-700 text-white" : ""}`}
-              >
-                <FiUserPlus size={16} />  Add User
-              </Link> */}
-
-            </div>
-          )}
-        </div>
-{/* Faqs Dropdown */}
- <div className="w-11/12">
-          <button
-            onClick={() => {
-              setOpenFaqs(!openFaqs)
-              setOpenUsers(false)
-              setOpenShows(false)
-              setOpenTemplates(false)
-              setOpenPayments(false)
-            }}
-            className={`${linkBase} w-full justify-between`}
-          >
-            <span className="flex items-center gap-3">
-              <BsQuestionDiamondFill size={18} /> Faqs
-            </span>
-            {openFaqs ? <FiChevronUp /> : <FiChevronDown />}
-          </button>
-
-          {openFaqs && (
-            <div className="ml-4 mt-1 flex flex-col space-y-1">
-              <Link
-onClick={() => {
-  if (pathname !== "/admin/faqs") {
-    setIsNavigating(true);
-  }
-}}                href={"/admin/faqs"}
-                className={`${linkBase} ${isActive("/admin/faqs") ? activeClass : ""}  text-xs`}
-              >
-                <FiMessageSquare size={16} />Manage FAQS
-              </Link>
-  
-
-            </div>
-          )}
-        </div>
-        {/* Templates dropdown */}
-        <div className="w-11/12">
-          <button
-            onClick={() => {
-              setOpenPayments(false)
-              setOpenUsers(false)
-              setOpenFaqs(false)
-              setOpenTemplates(!openTemplates)}}
-            className={`${linkBase} w-full justify-between`}
-          >
-            <span className="flex items-center gap-3">
-              <FiFileText size={18} /> Content
-            </span>
-            {openTemplates ? <FiChevronUp /> : <FiChevronDown />}
-          </button>
-
-          {openTemplates && (
-            <div className="ml-4 mt-1 flex flex-col space-y-1">
-              <Link
-onClick={() => {
-  if (pathname !== "/admin/movie-management") {
-    setIsNavigating(true);
-  }
-}}                href="/admin/movie-management"
-                className={`${linkBase} ${isActive("/admin/movie-management") ? activeClass : ""}  text-xs`}
-              >
-                <BiMovie size={16} /> Movies
-              </Link>
-              {/* <div>
-                <button
-                  onClick={() => {
-                    setOpenUsers(false)
-                    setOpenShows(!openShows)
-                    setOpenPayments(false)
-                  }}
-                  className={`${linkBase} w-full justify-between`}
-                >
-                  <span className="flex items-center gap-3 text-start">
-                    <FiList size={16} /> Shows
-                  </span>
-                  {openShows ? <FiChevronUp /> : <FiChevronDown />}
-                </button>
-              </div> */}
-              {/* {openShows && (
-                <div className="ml-4 mt-1 flex flex-col space-y-1">
-
-                  <Link
-onClick={() => {
-  if (pathname !== "/admin/settings") {
-    setLoading(true);
-  }
-}}                    href="/admin/series-management"
-                    className={`${linkBase} ${isActive("/admin/series-management") ? "bg-blue-700 text-white" : ""}`}
-                  >
-                    <BiTv size={16} />   Series
-                  </Link>
-                  <Link
-onClick={() => {
-  if (pathname !== "/admin/settings") {
-    setLoading(true);
-  }
-}}                    href="/admin/episode-management"
-                    className={`${linkBase} ${isActive("/admin/episode-management") ? "bg-blue-700 text-white" : ""}`}
-                  >
-                    <BiFolder size={16} />   Episode
-                  </Link>
-
-                </div>)} */}
+                <div className="flex items-center gap-3">
+                  <FiUsers className="w-[18px] h-[18px] flex-shrink-0" />
+                  {!collapsed && <span className="truncate">Users</span>}
+                </div>
+                {!collapsed &&
+                  (openUsers ? (
+                    <FiChevronUp className="w-3.5 h-3.5" />
+                  ) : (
+                    <FiChevronDown className="w-3.5 h-3.5" />
+                  ))}
+              </button>
+            </SidebarTooltip>
+            {openUsers && !collapsed && (
+              <div className="pl-6 mt-1 flex flex-col space-y-1 border-l border-slate-200 dark:border-neutral-900 ml-5">
                 <Link
-onClick={() => {
-  if (pathname !== "/admin/series-management") {
-    setIsNavigating(true);
-  }
-}}                    href="/admin/series-management"
-                    className={`${linkBase} ${isActive("/admin/series-management") ? activeClass : ""}  text-xs`}
-                  >
-                    <BiTv size={16} />   Series
-                  </Link>
-              {/* <Link
-onClick={() => {
-  if (pathname !== "/admin/documentary-management") {
-    setIsNavigating(true);
-  }
-}}                href="/admin/documentary-management"
+                  href="/admin/users"
+                  className={`${subLinkClass} ${isActive('/admin/users') ? 'text-[var(--main-color)] dark:text-blue-400 font-semibold' : 'text-slate-500 dark:text-neutral-500 hover:text-slate-800 dark:hover:text-slate-200'}`}
+                >
+                  <FiList className="w-3.5 h-3.5" />
+                  <span>Manage Users</span>
+                </Link>
+                <Link
+                  href="/admin/pre-signup"
+                  className={`${subLinkClass} ${isActive('/admin/pre-signup') ? 'text-[var(--main-color)] dark:text-blue-400 font-semibold' : 'text-slate-500 dark:text-neutral-500 hover:text-slate-800 dark:hover:text-slate-200'}`}
+                >
+                  <FiUserCheck className="w-3.5 h-3.5" />
+                  <span>Pre-Signup & Waitlist</span>
+                </Link>
+              </div>
+            )}
+          </div>
 
-                className={`${linkBase} ${isActive("/admin/documentary-management") ? activeClass : ""}  text-xs`}
+          {/* Faqs Dropdown */}
+          <div className="w-full">
+            <SidebarTooltip content="FAQs" disabled={!collapsed}>
+              <button
+                onClick={() => handleDropdownClick(openFaqs, setOpenFaqs)}
+                className={`${linkBase} ${isSubActive(['/admin/faqs']) && !collapsed
+                    ? 'text-[var(--main-color)] dark:text-blue-400 font-semibold'
+                    : inactiveClass
+                  }`}
               >
-                <GrDocumentCloud size={16} /> Documentary
-              </Link> */}
-              <Link
-onClick={() => {
-  if (pathname !== "/admin/trailer-management") {
-    setIsNavigating(true);
-  }
-}}                href="/admin/trailer-management"
-                className={`${linkBase} ${isActive("/admin/trailer-management") ? activeClass : ""}  text-xs`}
+                <div className="flex items-center gap-3">
+                  <BsQuestionIcon className="w-[18px] h-[18px] flex-shrink-0" />
+                  {!collapsed && <span className="truncate">FAQs</span>}
+                </div>
+                {!collapsed &&
+                  (openFaqs ? (
+                    <FiChevronUp className="w-3.5 h-3.5" />
+                  ) : (
+                    <FiChevronDown className="w-3.5 h-3.5" />
+                  ))}
+              </button>
+            </SidebarTooltip>
+            {openFaqs && !collapsed && (
+              <div className="pl-6 mt-1 flex flex-col space-y-1 border-l border-slate-200 dark:border-neutral-900 ml-5">
+                <Link
+                  href="/admin/faqs"
+                  className={`${subLinkClass} ${isActive('/admin/faqs') ? 'text-[var(--main-color)] dark:text-blue-400 font-semibold' : 'text-slate-500 dark:text-neutral-500 hover:text-slate-800 dark:hover:text-slate-200'}`}
+                >
+                  <FiMessageSquare className="w-3.5 h-3.5" />
+                  <span>Manage FAQs</span>
+                </Link>
+              </div>
+            )}
+          </div>
+
+          {/* Content Dropdown */}
+          <div className="w-full">
+            <SidebarTooltip content="Content" disabled={!collapsed}>
+              <button
+                onClick={() => handleDropdownClick(openContent, setOpenContent)}
+                className={`${linkBase} ${isSubActive([
+                  '/admin/movie-management',
+                  '/admin/series-management',
+                  '/admin/trailer-management',
+                ]) && !collapsed
+                    ? 'text-[var(--main-color)] dark:text-blue-400 font-semibold'
+                    : inactiveClass
+                  }`}
               >
-                <BiTv size={16} /> Trailers
-              </Link>
+                <div className="flex items-center gap-3">
+                  <FiFileText className="w-[18px] h-[18px] flex-shrink-0" />
+                  {!collapsed && <span className="truncate">Content</span>}
+                </div>
+                {!collapsed &&
+                  (openContent ? (
+                    <FiChevronUp className="w-3.5 h-3.5" />
+                  ) : (
+                    <FiChevronDown className="w-3.5 h-3.5" />
+                  ))}
+              </button>
+            </SidebarTooltip>
+            {openContent && !collapsed && (
+              <div className="pl-6 mt-1 flex flex-col space-y-1 border-l border-slate-200 dark:border-neutral-900 ml-5">
+                <Link
+                  href="/admin/movie-management"
+                  className={`${subLinkClass} ${isActive('/admin/movie-management') ? 'text-[var(--main-color)] dark:text-blue-400 font-semibold' : 'text-slate-500 dark:text-neutral-500 hover:text-slate-800 dark:hover:text-slate-200'}`}
+                >
+                  <BiMovie className="w-3.5 h-3.5" />
+                  <span>Movies</span>
+                </Link>
+                <Link
+                  href="/admin/series-management"
+                  className={`${subLinkClass} ${isActive('/admin/series-management') ? 'text-[var(--main-color)] dark:text-blue-400 font-semibold' : 'text-slate-500 dark:text-neutral-500 hover:text-slate-800 dark:hover:text-slate-200'}`}
+                >
+                  <BiTv className="w-3.5 h-3.5" />
+                  <span>Series</span>
+                </Link>
+                <Link
+                  href="/admin/trailer-management"
+                  className={`${subLinkClass} ${isActive('/admin/trailer-management') ? 'text-[var(--main-color)] dark:text-blue-400 font-semibold' : 'text-slate-500 dark:text-neutral-500 hover:text-slate-800 dark:hover:text-slate-200'}`}
+                >
+                  <BiTv className="w-3.5 h-3.5" />
+                  <span>Trailers</span>
+                </Link>
+              </div>
+            )}
+          </div>
 
-              {/* <Link
-onClick={() => {
-  if (pathname !== "/admin/demo-content-management") {
-    setIsNavigating(true);
-  }
-}}                href="/admin/demo-content-management"
-                className={`${linkBase} ${isActive("/admin/demo-content-management") ? activeClass : ""}  text-xs`}
+          {/* Payment Dropdown */}
+          <div className="w-full">
+            <SidebarTooltip content="Payment" disabled={!collapsed}>
+              <button
+                onClick={() => handleDropdownClick(openPayments, setOpenPayments)}
+                className={`${linkBase} ${isSubActive(['/admin/payment-plans', '/admin/subscriptions']) && !collapsed
+                    ? 'text-[var(--main-color)] dark:text-blue-400 font-semibold'
+                    : inactiveClass
+                  }`}
               >
-                <FiList size={16} /> Demo Contents
-              </Link> */}
-            </div>
-          )}
-        </div>
- <div className="w-11/12">
-          <button
-            onClick={() => {
-              setOpenPayments(!openPayments)
-              setOpenUsers(false)
-              setOpenFaqs(false)
-              setOpenShows(false)
-              setOpenTemplates(false)
-            }}
-            className={`${linkBase} w-full justify-between`}
-          >
-            <span className="flex items-center gap-3">
-              <BsCash size={18} /> Payment
-            </span>
-            {openPayments ? <FiChevronUp /> : <FiChevronDown />}
-          </button>
+                <div className="flex items-center gap-3">
+                  <BsCashIcon className="w-[18px] h-[18px] flex-shrink-0" />
+                  {!collapsed && <span className="truncate">Payment</span>}
+                </div>
+                {!collapsed &&
+                  (openPayments ? (
+                    <FiChevronUp className="w-3.5 h-3.5" />
+                  ) : (
+                    <FiChevronDown className="w-3.5 h-3.5" />
+                  ))}
+              </button>
+            </SidebarTooltip>
+            {openPayments && !collapsed && (
+              <div className="pl-6 mt-1 flex flex-col space-y-1 border-l border-slate-200 dark:border-neutral-900 ml-5">
+                <Link
+                  href="/admin/payment-plans"
+                  className={`${subLinkClass} ${isActive('/admin/payment-plans') ? 'text-[var(--main-color)] dark:text-blue-400 font-semibold' : 'text-slate-500 dark:text-neutral-500 hover:text-slate-800 dark:hover:text-slate-200'}`}
+                >
+                  <BsSubscriptIcon className="w-3.5 h-3.5" />
+                  <span>Payment Plans</span>
+                </Link>
+                <Link
+                  href="/admin/subscriptions"
+                  className={`${subLinkClass} ${isActive('/admin/subscriptions') ? 'text-[var(--main-color)] dark:text-blue-400 font-semibold' : 'text-slate-500 dark:text-neutral-500 hover:text-slate-800 dark:hover:text-slate-200'}`}
+                >
+                  <GrPlan className="w-3.5 h-3.5" />
+                  <span>Subscriptions</span>
+                </Link>
+              </div>
+            )}
+          </div>
 
-          {openPayments && (
-            <div className="ml-4 mt-1 flex flex-col space-y-1">
-              <Link
-onClick={() => {
-  if (pathname !== "/admin/payment-plans") {
-    setIsNavigating(true);
-  }
-}}                href={"/admin/payment-plans"}
-                className={`${linkBase} ${isActive("/admin/payment-plans") ? activeClass : ""}  text-xs`}
-              >
-                <BsSubscript size={16} />   Payment Plans
-              </Link>
-
-              <Link
-onClick={() => {
-  if (pathname !== "/admin/subscriptions") {
-    setIsNavigating(true);
-  }
-}}                href="/admin/subscriptions"
-                className={`${linkBase} ${isActive("/admin/subscriptions") ? activeClass : ""}  text-xs`}
-              >
-                <GrPlan size={16} /> Subscriptions
-              </Link>
-
-            </div>
-          )}
-        </div>
-        {/* Settings */}
-        <Link
-onClick={() => {
-  if (pathname !== "/admin/settings") {
-    setIsNavigating(true);
-  }
-}}          href={`/admin/settings`}
-          className={`${linkBase} ${isActive("/admin/settings") ? activeClass : ""}`}
-        >
-          <FiSettings size={18} /> Settings
-        </Link>
-
+          {/* Settings Link */}
+          <SidebarTooltip content="Settings" disabled={!collapsed}>
+            <Link
+              href="/admin/settings"
+              className={`${linkBase} ${isActive('/admin/settings') ? activeClass : inactiveClass}`}
+            >
+              <FiSettings className="w-[18px] h-[18px] flex-shrink-0" />
+              {!collapsed && <span className="truncate">Settings</span>}
+            </Link>
+          </SidebarTooltip>
+        </nav>
       </div>
-    </div>
-  );
+
+      {/* Version/Build Footer */}
+
+    </aside>
+  )
 }

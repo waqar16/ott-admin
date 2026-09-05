@@ -1,12 +1,12 @@
 /**
  * Content Management API Module
- * 
+ *
  * API client for content CRUD, upload initialization, image uploads,
  * series/seasons/episodes, renditions, and manifest operations.
- * 
+ *
  * Reference: API_DOCUMENTATION_PART3.pdf - Content Management endpoints
  * Base URL: Uses NEXT_PUBLIC_API_BASE from environment variables
- * 
+ *
  * Implements:
  * - Content CRUD (create, read, update, list, publish)
  * - Upload initialization (presigned POST)
@@ -16,20 +16,20 @@
  * - Renditions listing
  * - Manifest retrieval
  * - DRM key retrieval
- * 
+ *
  * Security Notes:
  * - All authenticated endpoints require Authorization header with JWT
  * - S3 callback endpoint requires x-api-key header (dev simulation only)
  * - MediaConvert webhook requires x-api-key header (dev simulation only)
  * - In production, S3 and MediaConvert should call backend directly via event notifications
- * 
+ *
  * TODO: security - Confirm server-side webhook signature validation
  * TODO: security - Implement API key rotation strategy
  * TODO: security - Use httpOnly cookies for production authentication
  */
 
-import { API_BASE, USE_MOCK_DATA, logMockDataUsage } from './config';
-import { getAccessToken } from './tokenStore';
+import { API_BASE, USE_MOCK_DATA, logMockDataUsage } from './config'
+import { getAccessToken } from './tokenStore'
 import type {
   Content,
   CreateContentPayload,
@@ -51,13 +51,13 @@ import type {
   CreateEpisodePayload,
   DrmKeyResponse,
   ApiError,
-} from './types/content';
+} from './types/content'
 
 // ============================================================================
 // CONFIGURATION
 // ============================================================================
 
-const S3_CALLBACK_KEY = process.env.NEXT_PUBLIC_S3_CALLBACK_KEY || 'devtestkey';
+const S3_CALLBACK_KEY = process.env.NEXT_PUBLIC_S3_CALLBACK_KEY || 'devtestkey'
 
 // ============================================================================
 // MOCK DATA
@@ -97,7 +97,7 @@ const MOCK_CONTENT: Content[] = [
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
   },
-];
+]
 
 const MOCK_RENDITIONS: Rendition[] = [
   {
@@ -128,9 +128,9 @@ const MOCK_RENDITIONS: Rendition[] = [
     quality_label: '1080p',
     created_at: new Date().toISOString(),
   },
-];
+]
 
-let mockContentStore = [...MOCK_CONTENT];
+let mockContentStore = [...MOCK_CONTENT]
 
 // ============================================================================
 // API HELPERS
@@ -140,49 +140,49 @@ let mockContentStore = [...MOCK_CONTENT];
  * Build authorization headers for authenticated requests
  */
 export function getAuthHeaders(): HeadersInit {
-  const token = getAccessToken();
+  const token = getAccessToken()
   const headers: HeadersInit = {
     'Content-Type': 'application/json',
-  };
-  
-  if (token) {
-    headers['Authorization'] = `Bearer ${token}`;
   }
-  
-  return headers;
+
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`
+  }
+
+  return headers
 }
 
 /**
  * Handle API errors and create structured error object
  */
 async function handleApiError(response: Response): Promise<ApiError> {
-  let body;
+  let body
   try {
-    body = await response.json();
+    body = await response.json()
   } catch {
-    body = null;
+    body = null
   }
-  
+
   // Handle array-based error messages (e.g., from validation)
-  let message = response.statusText || 'An error occurred';
+  let message = response.statusText || 'An error occurred'
   if (Array.isArray(body)) {
-    message = typeof body[0] === 'string' ? body[0] : message;
+    message = typeof body[0] === 'string' ? body[0] : message
   } else {
-    message = body?.message || body?.detail || message;
+    message = body?.message || body?.detail || message
   }
-  
+
   const error: ApiError = {
     status: response.status,
     message,
     body,
-  };
-  
+  }
+
   // Mark 401 errors for auth handling
   if (response.status === 401) {
-    error.needAuth = true;
+    error.needAuth = true
   }
-  
-  return error;
+
+  return error
 }
 
 // ============================================================================
@@ -194,44 +194,42 @@ async function handleApiError(response: Response): Promise<ApiError> {
  * POST /api/v1/content/contents
  */
 export async function deleteContentContent(contentId): Promise<any> {
-  
-  
-  const token = getAccessToken();
+  const token = getAccessToken()
   if (!token) {
     throw {
       status: 401,
       message: 'Not authenticated — please login',
       needAuth: true,
-    } as ApiError;
+    } as ApiError
   }
-  
+
   try {
-    const url = `${API_BASE}api/v1/content/contents/${contentId}`;
+    const url = `${API_BASE}api/v1/content/contents/${contentId}`
     const response = await fetch(url, {
       method: 'DELETE',
-      headers: getAuthHeaders(), 
-    });
-    
+      headers: getAuthHeaders(),
+    })
+
     if (!response.ok) {
-      throw await handleApiError(response);
+      throw await handleApiError(response)
     }
-    
-    return await response.json();
+
+    return await response.json()
   } catch (error) {
     if ((error as ApiError).status) {
-      throw error;
+      throw error
     }
     throw {
       status: 0,
       message: 'Network error - please check your connection',
       body: error,
-    } as ApiError;
+    } as ApiError
   }
 }
 export async function createContent(payload: CreateContentPayload): Promise<Content> {
   if (USE_MOCK_DATA) {
-    logMockDataUsage('createContent');
-    
+    logMockDataUsage('createContent')
+
     const newContent: Content = {
       id: `content-${Date.now()}`,
       ...payload,
@@ -241,43 +239,43 @@ export async function createContent(payload: CreateContentPayload): Promise<Cont
       is_ppv: payload.is_ppv || false,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
-    };
-    
-    mockContentStore.push(newContent);
-    return newContent;
+    }
+
+    mockContentStore.push(newContent)
+    return newContent
   }
-  
-  const token = getAccessToken();
+
+  const token = getAccessToken()
   if (!token) {
     throw {
       status: 401,
       message: 'Not authenticated — please login',
       needAuth: true,
-    } as ApiError;
+    } as ApiError
   }
-  
+
   try {
-    const url = `${API_BASE}api/v1/content/contents`;
+    const url = `${API_BASE}api/v1/content/contents`
     const response = await fetch(url, {
       method: 'POST',
       headers: getAuthHeaders(),
       body: JSON.stringify(payload),
-    });
-    
+    })
+
     if (!response.ok) {
-      throw await handleApiError(response);
+      throw await handleApiError(response)
     }
-    
-    return await response.json();
+
+    return await response.json()
   } catch (error) {
     if ((error as ApiError).status) {
-      throw error;
+      throw error
     }
     throw {
       status: 0,
       message: 'Network error - please check your connection',
       body: error,
-    } as ApiError;
+    } as ApiError
   }
 }
 
@@ -290,92 +288,88 @@ export async function updateContent(
   payload: UpdateContentPayload
 ): Promise<Content> {
   if (USE_MOCK_DATA) {
-    logMockDataUsage('updateContent');
-    
-    const index = mockContentStore.findIndex(c => c.id === contentId);
+    logMockDataUsage('updateContent')
+
+    const index = mockContentStore.findIndex((c) => c.id === contentId)
     if (index === -1) {
       throw {
         status: 404,
         message: 'Content not found',
-      } as ApiError;
+      } as ApiError
     }
-    
+
     mockContentStore[index] = {
       ...mockContentStore[index],
       ...payload,
       updated_at: new Date().toISOString(),
-    };
-    
-    return mockContentStore[index];
+    }
+
+    return mockContentStore[index]
   }
-  
-  const token = getAccessToken();
+
+  const token = getAccessToken()
   if (!token) {
     throw {
       status: 401,
       message: 'Not authenticated — please login',
       needAuth: true,
-    } as ApiError;
+    } as ApiError
   }
-  
+
   try {
-    const url = `${API_BASE}api/v1/content/contents/${contentId}`;
+    const url = `${API_BASE}api/v1/content/contents/${contentId}`
     const response = await fetch(url, {
       method: 'PATCH',
       headers: getAuthHeaders(),
       body: JSON.stringify(payload),
-    });
-    
+    })
+
     if (!response.ok) {
-      throw await handleApiError(response);
-    } 
-    return await response.json();
+      throw await handleApiError(response)
+    }
+    return await response.json()
   } catch (error) {
     if ((error as ApiError).status) {
-      throw error;
+      throw error
     }
     throw {
       status: 0,
       message: 'Network error - please check your connection',
       body: error,
-    } as ApiError;
+    } as ApiError
   }
 }
-export async function deleteContent(
-  contentId: string
-): Promise<number|string> {
-   
-  
-  const token = getAccessToken();
+export async function deleteContent(contentId: string): Promise<number | string> {
+  const token = getAccessToken()
   if (!token) {
     throw {
       status: 401,
       message: 'Not authenticated — please login',
       needAuth: true,
-    } as ApiError;
+    } as ApiError
   }
-  
+
   try {
-    const url = `${API_BASE}api/v1/content/contents/${contentId}`;
+    const url = `${API_BASE}api/v1/content/contents/${contentId}`
     const response = await fetch(url, {
       method: 'DELETE',
-      headers: getAuthHeaders(), 
-    });
-    
+      headers: getAuthHeaders(),
+    })
+
     if (!response.ok) {
-      throw await handleApiError(response);
+      throw await handleApiError(response)
     }
-    
+
     return response.status
   } catch (error) {
     if ((error as ApiError).status) {
-      throw error;
+      throw error
     }
     throw {
       status: 0,
       message: 'Network error - please check your connection',
       body: error,
-    } as ApiError;
+    } as ApiError
   }
 }
 /**
@@ -384,49 +378,49 @@ export async function deleteContent(
  */
 export async function getContent(contentId: string): Promise<Content> {
   if (USE_MOCK_DATA) {
-    logMockDataUsage('getContent');
-    
-    const content = mockContentStore.find(c => c.id === contentId);
+    logMockDataUsage('getContent')
+
+    const content = mockContentStore.find((c) => c.id === contentId)
     if (!content) {
       throw {
         status: 404,
         message: 'Content not found',
-      } as ApiError;
+      } as ApiError
     }
-    
-    return content;
+
+    return content
   }
-  
-  const token = getAccessToken();
+
+  const token = getAccessToken()
   if (!token) {
     throw {
       status: 401,
       message: 'Not authenticated — please login',
       needAuth: true,
-    } as ApiError;
+    } as ApiError
   }
-  
+
   try {
-    const url = `${API_BASE}api/v1/content/contents/${contentId}`;
+    const url = `${API_BASE}api/v1/content/contents/${contentId}`
     const response = await fetch(url, {
       method: 'GET',
       headers: getAuthHeaders(),
-    });
-    
+    })
+
     if (!response.ok) {
-      throw await handleApiError(response);
+      throw await handleApiError(response)
     }
-    
-    return await response.json();
+
+    return await response.json()
   } catch (error) {
     if ((error as ApiError).status) {
-      throw error;
+      throw error
     }
     throw {
       status: 0,
       message: 'Network error - please check your connection',
       body: error,
-    } as ApiError;
+    } as ApiError
   }
 }
 
@@ -437,188 +431,184 @@ export async function getContent(contentId: string): Promise<Content> {
 export async function listContent({
   page = 1,
   pageSize = 20,
-  status, 
+  status,
   content_type,
   visibility_mode,
   is_kid_safe,
   is_ppv,
-  search, 
-  media_type 
+  search,
+  media_type,
 }: {
-  page?: number;
-  pageSize?: number;
-  status?: string; 
-  content_type?: string;
-  visibility_mode?: 'public' | 'beta';
-  is_kid_safe?: boolean;
-  is_ppv?: boolean;
-  search?: string;
-  media_type?: string;
+  page?: number
+  pageSize?: number
+  status?: string
+  content_type?: string
+  visibility_mode?: 'public' | 'beta'
+  is_kid_safe?: boolean
+  is_ppv?: boolean
+  search?: string
+  media_type?: string
 } = {}): Promise<ContentListResponse> {
   if (USE_MOCK_DATA) {
-    logMockDataUsage('listContent');
-        console.log(typeof Boolean(is_kid_safe),"typeof typeof Boolean(is_kid_safe) == boolean")
-    console.log(typeof Boolean(is_ppv),"typeof Boolean(is_ppv) == boolean")
-    let filtered = [...mockContentStore];
-    
+    logMockDataUsage('listContent')
+    console.log(typeof Boolean(is_kid_safe), 'typeof typeof Boolean(is_kid_safe) == boolean')
+    console.log(typeof Boolean(is_ppv), 'typeof Boolean(is_ppv) == boolean')
+    let filtered = [...mockContentStore]
+
     if (status) {
-      filtered = filtered.filter(c => c.status === status);
+      filtered = filtered.filter((c) => c.status === status)
     }
     if (media_type) {
-      filtered = filtered.filter(c => c.media_type === media_type);
+      filtered = filtered.filter((c) => c.media_type === media_type)
     }
     if (content_type) {
-      filtered = filtered.filter(c => c.content_type === content_type);
+      filtered = filtered.filter((c) => c.content_type === content_type)
     }
     if (visibility_mode) {
-      filtered = filtered.filter(c => c.visibility_mode === visibility_mode);
+      filtered = filtered.filter((c) => c.visibility_mode === visibility_mode)
     }
     if (typeof Boolean(is_kid_safe) == 'boolean') {
-      filtered = filtered.filter(c => c.is_kid_safe === is_kid_safe);
+      filtered = filtered.filter((c) => c.is_kid_safe === is_kid_safe)
     }
 
     if (typeof Boolean(is_ppv) == 'boolean') {
-      filtered = filtered.filter(c => c.is_ppv === is_ppv);
+      filtered = filtered.filter((c) => c.is_ppv === is_ppv)
     }
     if (search) {
-      const searchLower = search.toLowerCase();
-      filtered = filtered.filter(c =>
-        c.title.toLowerCase().includes(searchLower) ||
-        c.description.toLowerCase().includes(searchLower)
-      );
+      const searchLower = search.toLowerCase()
+      filtered = filtered.filter(
+        (c) =>
+          c.title.toLowerCase().includes(searchLower) ||
+          c.description.toLowerCase().includes(searchLower)
+      )
     }
-    
-    const start = (page - 1) * pageSize;
-    const end = start + pageSize;
-    const paginated = filtered.slice(start, end);
-    
+
+    const start = (page - 1) * pageSize
+    const end = start + pageSize
+    const paginated = filtered.slice(start, end)
+
     return {
       count: filtered.length,
       next: end < filtered.length ? `page=${page + 1}` : null,
       previous: page > 1 ? `page=${page - 1}` : null,
       results: paginated,
-    };
+    }
   }
-  
-  const token = getAccessToken();
+
+  const token = getAccessToken()
   if (!token) {
     throw {
       status: 401,
       message: 'Not authenticated — please login',
       needAuth: true,
-    } as ApiError;
+    } as ApiError
   }
-  
+
   try {
     const params = new URLSearchParams({
       page: page.toString(),
       page_size: pageSize.toString(),
-    });
-    
-    if (status) params.append('status', status);
-    if (media_type) params.append('media_type', media_type);
-    if (content_type) params.append('content_type', content_type);
-    if (visibility_mode) params.append('visibility_mode', visibility_mode);
-    if (typeof Boolean(is_kid_safe) === 'boolean') params.append('is_kid_safe', String(is_kid_safe));
-    if (typeof Boolean(is_ppv) === 'boolean') params.append('is_ppv', String(is_ppv));
-    if (search) params.append('search', search);
-    
-    const url =  
-    `${API_BASE}api/v1/content/contents?content_type=${content_type}&${params.toString()}`;
+    })
+
+    if (status) params.append('status', status)
+    if (media_type) params.append('media_type', media_type)
+    if (content_type) params.append('content_type', content_type)
+    if (visibility_mode) params.append('visibility_mode', visibility_mode)
+    if (typeof Boolean(is_kid_safe) === 'boolean') params.append('is_kid_safe', String(is_kid_safe))
+    if (typeof Boolean(is_ppv) === 'boolean') params.append('is_ppv', String(is_ppv))
+    if (search) params.append('search', search)
+
+    const url = `${API_BASE}api/v1/content/contents?content_type=${content_type}&${params.toString()}`
     const response = await fetch(url, {
       method: 'GET',
       headers: getAuthHeaders(),
-    });
-    
+    })
+
     if (!response.ok) {
-      throw await handleApiError(response);
+      throw await handleApiError(response)
     }
-    
-    return await response.json();
+
+    return await response.json()
   } catch (error) {
     if ((error as ApiError).status) {
-      throw error;
+      throw error
     }
     throw {
       status: 0,
       message: 'Network error - please check your connection',
       body: error,
-    } as ApiError;
+    } as ApiError
   }
 }
 export async function retryTranscoding(contentId: string): Promise<any> {
-  
-  
-  const token = getAccessToken();
+  const token = getAccessToken()
   if (!token) {
     throw {
       status: 401,
       message: 'Not authenticated — please login',
       needAuth: true,
-    } as ApiError;
+    } as ApiError
   }
-  
+
   try {
-    const url = `${API_BASE}api/v1/admin-dashboard/content/video-assets/${contentId}/retry-transcode`;
+    const url = `${API_BASE}api/v1/admin-dashboard/content/video-assets/${contentId}/retry-transcode`
     const response = await fetch(url, {
       method: 'POST',
-      headers: getAuthHeaders(), 
-    });
-    
+      headers: getAuthHeaders(),
+    })
+
     if (!response.ok) {
-      throw await handleApiError(response);
+      throw await handleApiError(response)
     }
-    
-    return await response.json();
+
+    return await response.json()
   } catch (error) {
     if ((error as ApiError).status) {
-      throw error;
+      throw error
     }
     throw {
       status: 0,
       message: 'Network error - please check your connection',
       body: error,
-    } as ApiError;
+    } as ApiError
   }
 }
 /**
  * Publish content (change status to published)
  * POST /api/v1/content/content/{content_id}/publish
  */
-export async function publishContent(contentId: string,status?:string): Promise<Content> {
-  
-  
-  const token = getAccessToken();
+export async function publishContent(contentId: string, status?: string): Promise<Content> {
+  const token = getAccessToken()
   if (!token) {
     throw {
       status: 401,
       message: 'Not authenticated — please login',
       needAuth: true,
-    } as ApiError;
+    } as ApiError
   }
-  
+
   try {
-    const url = `${API_BASE}api/v1/content/contents/${contentId}`;
+    const url = `${API_BASE}api/v1/content/contents/${contentId}`
     const response = await fetch(url, {
       method: 'PATCH',
       headers: getAuthHeaders(),
-      body: JSON.stringify({ status: status??'published' }),
-    });
-    
+      body: JSON.stringify({ status: status ?? 'published' }),
+    })
+
     if (!response.ok) {
-      throw await handleApiError(response);
+      throw await handleApiError(response)
     }
-    
-    return await response.json();
+
+    return await response.json()
   } catch (error) {
     if ((error as ApiError).status) {
-      throw error;
+      throw error
     }
     throw {
       status: 0,
       message: 'Network error - please check your connection',
       body: error,
-    } as ApiError;
+    } as ApiError
   }
 }
 
@@ -637,8 +627,8 @@ export async function initUpload(
   googleAccessToken?: string
 ): Promise<UploadPresignedPostInitResponse> {
   if (USE_MOCK_DATA) {
-    logMockDataUsage('initUpload');
-    
+    logMockDataUsage('initUpload')
+
     // Mock presigned POST response
     return {
       upload_url: {
@@ -653,82 +643,20 @@ export async function initUpload(
         },
       },
       s3_key: `raw/content/${contentId}/${filename}`,
-    };
+    }
   }
-  
-  const token = getAccessToken();
+
+  const token = getAccessToken()
   if (!token) {
     throw {
       status: 401,
       message: 'Not authenticated — please login',
       needAuth: true,
-    } as ApiError;
-  } 
-  try {
-    const url = `${API_BASE}api/v1/content/content/upload/init`;
-    let response;
-    if(isDriveUpload){
-      response = await fetch(url, {
-      method: 'POST',
-      headers: getAuthHeaders(),
-      body: JSON.stringify({
-        google_drive_file_id:filename,
-        content_id: contentId,
-        filename,
-        google_drive_access_token: googleAccessToken
-      }),
-    })
-    } 
-    else{
-      response = await fetch(url, {
-      method: 'POST',
-      headers: getAuthHeaders(),
-      body: JSON.stringify({
-        filename,
-        content_id: contentId,
-      }),
-    })
-    }
-    if (!response.ok) {
-      throw await handleApiError(response);
-    }
-    
-    return await response.json();
-  } catch (error) {
-    if ((error as ApiError).status) {
-      throw error;
-    }
-    throw {
-      status: 0,
-      message: 'Network error - please check your connection',
-      body: error,
-    } as ApiError;
+    } as ApiError
   }
-}
-
-/**
- * Initialize multipart upload and get upload_id
- * POST /api/v1/content/content/upload/multipart/init
- */
-export async function initMultipartUpload(
-  contentId: string,
-  filename: string,
-  fileSize?:string|number,
-  isDriveUpload?: boolean,
-  googleAccessToken?: string
-): Promise<MultipartUploadInitResponse> {
-  const token = getAccessToken();
-  if (!token) {
-    throw {
-      status: 401,
-      message: 'Not authenticated — please login',
-      needAuth: true,
-    } as ApiError;
-  }
-
   try {
-    const url = `${API_BASE}api/v1/content/content/upload/multipart/init`;
-    let response;
+    const url = `${API_BASE}api/v1/content/content/upload/init`
+    let response
     if (isDriveUpload) {
       response = await fetch(url, {
         method: 'POST',
@@ -739,7 +667,68 @@ export async function initMultipartUpload(
           filename,
           google_drive_access_token: googleAccessToken,
         }),
-      });
+      })
+    } else {
+      response = await fetch(url, {
+        method: 'POST',
+        headers: getAuthHeaders(),
+        body: JSON.stringify({
+          filename,
+          content_id: contentId,
+        }),
+      })
+    }
+    if (!response.ok) {
+      throw await handleApiError(response)
+    }
+
+    return await response.json()
+  } catch (error) {
+    if ((error as ApiError).status) {
+      throw error
+    }
+    throw {
+      status: 0,
+      message: 'Network error - please check your connection',
+      body: error,
+    } as ApiError
+  }
+}
+
+/**
+ * Initialize multipart upload and get upload_id
+ * POST /api/v1/content/content/upload/multipart/init
+ */
+export async function initMultipartUpload(
+  contentId: string,
+  filename: string,
+  fileSize?: string | number,
+  isDriveUpload?: boolean,
+  googleAccessToken?: string
+): Promise<MultipartUploadInitResponse> {
+  const token = getAccessToken()
+  if (!token) {
+    throw {
+      status: 401,
+      message: 'Not authenticated — please login',
+      needAuth: true,
+    } as ApiError
+  }
+
+  try {
+    const url = `${API_BASE}api/v1/content/content/upload/multipart/init`
+    let response
+    if (isDriveUpload) {
+      response = await fetch(url, {
+        method: 'POST',
+        headers: getAuthHeaders(),
+        body: JSON.stringify({
+          google_drive_file_id: filename,
+          content_id: contentId,
+          filename,
+          google_drive_access_token: googleAccessToken,
+        }),
+      })
     } else {
       response = await fetch(url, {
         method: 'POST',
@@ -748,25 +737,24 @@ export async function initMultipartUpload(
           filename,
           content_id: contentId,
           file_size: fileSize,
-
         }),
-      });
+      })
     }
 
     if (!response.ok) {
-      throw await handleApiError(response);
+      throw await handleApiError(response)
     }
 
-    return await response.json();
+    return await response.json()
   } catch (error) {
     if ((error as ApiError).status) {
-      throw error;
+      throw error
     }
     throw {
       status: 0,
       message: 'Network error - please check your connection',
       body: error,
-    } as ApiError;
+    } as ApiError
   }
 }
 
@@ -775,17 +763,17 @@ export async function getMultipartPresignedUrls(
   s3_key: string,
   file_size: number
 ): Promise<{ presigned_urls: MultipartPresignedUrl[] }> {
-  const token = getAccessToken();
+  const token = getAccessToken()
   if (!token) {
     throw {
       status: 401,
       message: 'Not authenticated — please login',
       needAuth: true,
-    } as ApiError;
+    } as ApiError
   }
 
   try {
-    const url = `${API_BASE}api/v1/content/content/upload/multipart/presigned-urls`;
+    const url = `${API_BASE}api/v1/content/content/upload/multipart/presigned-urls`
     const response = await fetch(url, {
       method: 'POST',
       headers: getAuthHeaders(),
@@ -794,22 +782,22 @@ export async function getMultipartPresignedUrls(
         s3_key,
         file_size,
       }),
-    });
+    })
 
     if (!response.ok) {
-      throw await handleApiError(response);
+      throw await handleApiError(response)
     }
 
-    return await response.json();
+    return await response.json()
   } catch (error) {
     if ((error as ApiError).status) {
-      throw error;
+      throw error
     }
     throw {
       status: 0,
       message: 'Network error - please check your connection',
       body: error,
-    } as ApiError;
+    } as ApiError
   }
 }
 
@@ -820,17 +808,17 @@ export async function completeMultipartUpload(
   filename: string,
   parts: Array<{ part_number: number; etag: string }>
 ): Promise<any> {
-  const token = getAccessToken();
+  const token = getAccessToken()
   if (!token) {
     throw {
       status: 401,
       message: 'Not authenticated — please login',
       needAuth: true,
-    } as ApiError;
+    } as ApiError
   }
 
   try {
-    const url = `${API_BASE}api/v1/content/content/upload/multipart/complete`;
+    const url = `${API_BASE}api/v1/content/content/upload/multipart/complete`
     const response = await fetch(url, {
       method: 'POST',
       headers: getAuthHeaders(),
@@ -841,49 +829,49 @@ export async function completeMultipartUpload(
         filename,
         parts,
       }),
-    });
+    })
 
     if (!response.ok) {
-      throw await handleApiError(response);
+      throw await handleApiError(response)
     }
 
-    return await response.json();
+    return await response.json()
   } catch (error) {
     if ((error as ApiError).status) {
-      throw error;
+      throw error
     }
     throw {
       status: 0,
       message: 'Network error - please check your connection',
       body: error,
-    } as ApiError;
+    } as ApiError
   }
 }
 
 /**
  * Simulate S3 callback (DEV ONLY)
  * POST /api/v1/content/uploads/s3-callback
- * 
+ *
  * PRODUCTION NOTE: In production, this endpoint should ONLY be called by S3 via event notifications.
  * The frontend should NOT call this endpoint in production.
  * This function is strictly for local dev/testing to simulate the S3 callback.
- * 
+ *
  * TODO: security - Implement webhook signature validation on backend
  * TODO: security - Rotate API keys regularly
  */
 export async function postUploadCallback(payload: S3CallbackPayload): Promise<any> {
   if (USE_MOCK_DATA) {
-    logMockDataUsage('postUploadCallback');
-    
+    logMockDataUsage('postUploadCallback')
+
     return {
       message: 'S3 callback processed (mock)',
       asset_id: `asset-${Date.now()}`,
       status: 'pending',
-    };
+    }
   }
-  
+
   try {
-    const url = `${API_BASE}api/v1/content/uploads/s3-callback`;
+    const url = `${API_BASE}api/v1/content/uploads/s3-callback`
     const response = await fetch(url, {
       method: 'POST',
       headers: {
@@ -891,22 +879,22 @@ export async function postUploadCallback(payload: S3CallbackPayload): Promise<an
         'x-api-key': S3_CALLBACK_KEY,
       },
       body: JSON.stringify(payload),
-    });
-    
+    })
+
     if (!response.ok) {
-      throw await handleApiError(response);
+      throw await handleApiError(response)
     }
-    
-    return await response.json();
+
+    return await response.json()
   } catch (error) {
     if ((error as ApiError).status) {
-      throw error;
+      throw error
     }
     throw {
       status: 0,
       message: 'Network error - please check your connection',
       body: error,
-    } as ApiError;
+    } as ApiError
   }
 }
 
@@ -918,71 +906,72 @@ export async function postUploadCallback(payload: S3CallbackPayload): Promise<an
  * Upload poster or banner image
  * POST /api/v1/content/content/{content_id}/images
  */
-export async function fetchSubtitles(
-  contentId: string,
-  
-): Promise<any> {
-  
-  const token = getAccessToken();
+export async function fetchSubtitles(contentId: string): Promise<any> {
+  const token = getAccessToken()
   if (!token) {
     throw {
       status: 401,
       message: 'Not authenticated — please login',
       needAuth: true,
-    } as ApiError;
+    } as ApiError
   }
-  
+
   try {
-    const url = `${API_BASE}api/v1/content/content/${contentId}/subtitles/list`;
-    
+    const url = `${API_BASE}api/v1/content/content/${contentId}/subtitles/list`
+
     // const formData = new FormData();
     // formData.append('file', file);
     // formData.append('image_type', imageType);
-    
+
     const response = await fetch(url, {
       method: 'GET',
       headers: {
         Authorization: `Bearer ${token}`,
-      }, 
-    });
-    
+      },
+    })
+
     if (!response.ok) {
-      throw await handleApiError(response);
+      throw await handleApiError(response)
     }
-    
-    return await response.json();
+
+    return await response.json()
   } catch (error) {
     if ((error as ApiError).status) {
-      throw error;
+      throw error
     }
     throw {
       status: 0,
       message: 'Network error - please check your connection',
       body: error,
-    } as ApiError;
+    } as ApiError
   }
 }
-export async function uploadSubtitles(assetId: string, files: File[], languages: string[], names: string[]) {
+export async function uploadSubtitles(
+  assetId: string,
+  files: File[],
+  languages: string[],
+  names: string[]
+) {
   try {
-    const token = getAccessToken();
-  if (!token) {
-    throw {
-      status: 401,
-      message: 'Not authenticated — please login',
-      needAuth: true,
-    } as ApiError;
-  }
+    const token = getAccessToken()
+    if (!token) {
+      throw {
+        status: 401,
+        message: 'Not authenticated — please login',
+        needAuth: true,
+      } as ApiError
+    }
     const fd = new FormData()
 
     files.forEach((file, i) => {
-      fd.append("files[]", file)            // file
-      fd.append("languages[]", languages[i]) // language of the subtitle
-      fd.append("names[]", names[i])         // subtitle display name
+      fd.append('files[]', file) // file
+      fd.append('languages[]', languages[i]) // language of the subtitle
+      fd.append('names[]', names[i]) // subtitle display name
     })
 
     const response = await fetch(`${API_BASE}api/v1/content/content/${assetId}/subtitles/bulk`, {
-      method: "POST",
-      headers:{
+      method: 'POST',
+      headers: {
         Authorization: `Bearer ${token}`,
       },
       body: fd,
@@ -995,11 +984,10 @@ export async function uploadSubtitles(assetId: string, files: File[], languages:
     }
 
     const data = await response.json()
-    console.log("Upload successful", data)
+    console.log('Upload successful', data)
     return data
-
   } catch (err) {
-    console.error("Error uploading subtitles:", err)
+    console.error('Error uploading subtitles:', err)
     throw err
   }
 }
@@ -1008,7 +996,7 @@ export async function uploadDubbings(
   files: File[],
   languages: string[],
   names: string[],
-  isDefault: boolean[]  
+  isDefault: boolean[]
 ) {
   try {
     const token = getAccessToken()
@@ -1023,23 +1011,20 @@ export async function uploadDubbings(
     const fd = new FormData()
 
     files.forEach((file, i) => {
-      fd.append('files[]', file)                     // FILE
-      fd.append('languages[]', languages[i])         // POST
-      fd.append('names[]', names[i])                 // POST
+      fd.append('files[]', file) // FILE
+      fd.append('languages[]', languages[i]) // POST
+      fd.append('names[]', names[i]) // POST
       fd.append('is_default[]', String(isDefault[i])) // POST → "true" | "false"
     })
 
-    const response = await fetch(
-      `${API_BASE}api/v1/content/content/${assetId}/audiotracks/bulk`,
-      {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-        body: fd,
-        // ❗ Do NOT set Content-Type
-      }
-    )
+    const response = await fetch(`${API_BASE}api/v1/content/content/${assetId}/audiotracks/bulk`, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+      body: fd,
+      // ❗ Do NOT set Content-Type
+    })
 
     if (!response.ok) {
       const errorText = await response.text()
@@ -1059,53 +1044,53 @@ export async function uploadImageForEpisode(
   imageType: 'poster' | 'banner' | 'thumbnail'
 ): Promise<ImageUploadResponse> {
   if (USE_MOCK_DATA) {
-    logMockDataUsage('uploadImage');
-    
+    logMockDataUsage('uploadImage')
+
     // Mock image upload response
     return {
       thumbnail_url: `https://cdn.example.com/images/${contentId}/${imageType}_${Date.now()}.jpg`,
       s3_key: `images/${contentId}/${imageType}_${Date.now()}.jpg`,
-    };
+    }
   }
-  
-  const token = getAccessToken();
+
+  const token = getAccessToken()
   if (!token) {
     throw {
       status: 401,
       message: 'Not authenticated — please login',
       needAuth: true,
-    } as ApiError;
+    } as ApiError
   }
-  
+
   try {
-    const url = `${API_BASE}api/v1/content/content/${contentId}/images`;
-    
-    const formData = new FormData();
-    formData.append('file', file);
-    formData.append('image_type', 'episode-thumbnail');
-    
+    const url = `${API_BASE}api/v1/content/content/${contentId}/images`
+
+    const formData = new FormData()
+    formData.append('file', file)
+    formData.append('image_type', 'episode-thumbnail')
+
     const response = await fetch(url, {
       method: 'POST',
       headers: {
         Authorization: `Bearer ${token}`,
       },
       body: formData,
-    });
-    
+    })
+
     if (!response.ok) {
-      throw await handleApiError(response);
+      throw await handleApiError(response)
     }
-    
-    return await response.json();
+
+    return await response.json()
   } catch (error) {
     if ((error as ApiError).status) {
-      throw error;
+      throw error
     }
     throw {
       status: 0,
       message: 'Network error - please check your connection',
       body: error,
-    } as ApiError;
+    } as ApiError
   }
 }
 // ============================================================================
@@ -1122,59 +1107,59 @@ export async function uploadImage(
   imageType: 'poster' | 'banner' | 'episode-thumbnail'
 ): Promise<ImageUploadResponse> {
   if (USE_MOCK_DATA) {
-    logMockDataUsage('uploadImage');
-    
+    logMockDataUsage('uploadImage')
+
     // Mock image upload response
     return {
       thumbnail_url: `https://cdn.example.com/images/${contentId}/${imageType}_${Date.now()}.jpg`,
       s3_key: `images/${contentId}/${imageType}_${Date.now()}.jpg`,
-    };
+    }
   }
-  
-  const token = getAccessToken();
+
+  const token = getAccessToken()
   if (!token) {
     throw {
       status: 401,
       message: 'Not authenticated — please login',
       needAuth: true,
-    } as ApiError;
+    } as ApiError
   }
-  
+
   try {
-    const url = `${API_BASE}api/v1/content/content/${contentId}/images`;
-    
-    const formData = new FormData();
-    formData.append('file', file);
-    formData.append('image_type', imageType);
-    
+    const url = `${API_BASE}api/v1/content/content/${contentId}/images`
+
+    const formData = new FormData()
+    formData.append('file', file)
+    formData.append('image_type', imageType)
+
     const response = await fetch(url, {
       method: 'POST',
       headers: {
         Authorization: `Bearer ${token}`,
       },
       body: formData,
-    });
-    
+    })
+
     if (!response.ok) {
-      throw await handleApiError(response);
+      throw await handleApiError(response)
     }
-    
-    return await response.json();
+
+    return await response.json()
   } catch (error) {
     if ((error as ApiError).status) {
-      throw error;
+      throw error
     }
     throw {
       status: 0,
       message: 'Network error - please check your connection',
       body: error,
-    } as ApiError;
+    } as ApiError
   }
 }
 export async function createSeries(payload: CreateSeriesPayload): Promise<Series> {
   if (USE_MOCK_DATA) {
-    logMockDataUsage('createSeries');
-    
+    logMockDataUsage('createSeries')
+
     return {
       id: `series-${Date.now()}`,
       ...payload,
@@ -1182,40 +1167,40 @@ export async function createSeries(payload: CreateSeriesPayload): Promise<Series
       is_kid_safe: payload.is_kid_safe || false,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
-    };
+    }
   }
-  
-  const token = getAccessToken();
+
+  const token = getAccessToken()
   if (!token) {
     throw {
       status: 401,
       message: 'Not authenticated — please login',
       needAuth: true,
-    } as ApiError;
+    } as ApiError
   }
-  
+
   try {
-    const url = `${API_BASE}api/v1/content/series`;
+    const url = `${API_BASE}api/v1/content/series`
     const response = await fetch(url, {
       method: 'POST',
       headers: getAuthHeaders(),
       body: JSON.stringify(payload),
-    });
-    
+    })
+
     if (!response.ok) {
-      throw await handleApiError(response);
+      throw await handleApiError(response)
     }
-    
-    return await response.json();
+
+    return await response.json()
   } catch (error) {
     if ((error as ApiError).status) {
-      throw error;
+      throw error
     }
     throw {
       status: 0,
       message: 'Network error - please check your connection',
       body: error,
-    } as ApiError;
+    } as ApiError
   }
 }
 
@@ -1225,47 +1210,47 @@ export async function createSeries(payload: CreateSeriesPayload): Promise<Series
  */
 export async function createSeason(payload: CreateSeasonPayload): Promise<Season> {
   if (USE_MOCK_DATA) {
-    logMockDataUsage('createSeason');
-    
+    logMockDataUsage('createSeason')
+
     return {
       id: `season-${Date.now()}`,
       ...payload,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
-    };
+    }
   }
-  
-  const token = getAccessToken();
+
+  const token = getAccessToken()
   if (!token) {
     throw {
       status: 401,
       message: 'Not authenticated — please login',
       needAuth: true,
-    } as ApiError;
+    } as ApiError
   }
-  
+
   try {
-    const url = `${API_BASE}api/v1/content/seasons`;
+    const url = `${API_BASE}api/v1/content/seasons`
     const response = await fetch(url, {
       method: 'POST',
       headers: getAuthHeaders(),
       body: JSON.stringify(payload),
-    });
-    
+    })
+
     if (!response.ok) {
-      throw await handleApiError(response);
+      throw await handleApiError(response)
     }
-    
-    return await response.json();
+
+    return await response.json()
   } catch (error) {
     if ((error as ApiError).status) {
-      throw error;
+      throw error
     }
     throw {
       status: 0,
       message: 'Network error - please check your connection',
       body: error,
-    } as ApiError;
+    } as ApiError
   }
 }
 
@@ -1275,48 +1260,48 @@ export async function createSeason(payload: CreateSeasonPayload): Promise<Season
  */
 export async function createEpisode(payload: CreateEpisodePayload): Promise<Episode> {
   if (USE_MOCK_DATA) {
-    logMockDataUsage('createEpisode');
-    
+    logMockDataUsage('createEpisode')
+
     return {
       id: `episode-${Date.now()}`,
       ...payload,
       status: 'draft',
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
-    };
+    }
   }
-  
-  const token = getAccessToken();
+
+  const token = getAccessToken()
   if (!token) {
     throw {
       status: 401,
       message: 'Not authenticated — please login',
       needAuth: true,
-    } as ApiError;
+    } as ApiError
   }
-  
+
   try {
-    const url = `${API_BASE}api/v1/content/episodes`;
+    const url = `${API_BASE}api/v1/content/episodes`
     const response = await fetch(url, {
       method: 'POST',
       headers: getAuthHeaders(),
       body: JSON.stringify(payload),
-    });
-    
+    })
+
     if (!response.ok) {
-      throw await handleApiError(response);
+      throw await handleApiError(response)
     }
-    
-    return await response.json();
+
+    return await response.json()
   } catch (error) {
     if ((error as ApiError).status) {
-      throw error;
+      throw error
     }
     throw {
       status: 0,
       message: 'Network error - please check your connection',
       body: error,
-    } as ApiError;
+    } as ApiError
   }
 }
 
@@ -1329,51 +1314,51 @@ export async function uploadEpisodeThumbnail(
   file: File
 ): Promise<ImageUploadResponse> {
   if (USE_MOCK_DATA) {
-    logMockDataUsage('uploadEpisodeThumbnail');
-    
+    logMockDataUsage('uploadEpisodeThumbnail')
+
     return {
       thumbnail_url: `https://cdn.example.com/episodes/${episodeId}/thumbnail_${Date.now()}.jpg`,
       s3_key: `episodes/${episodeId}/thumbnail_${Date.now()}.jpg`,
-    };
+    }
   }
-  
-  const token = getAccessToken();
+
+  const token = getAccessToken()
   if (!token) {
     throw {
       status: 401,
       message: 'Not authenticated — please login',
       needAuth: true,
-    } as ApiError;
+    } as ApiError
   }
-  
+
   try {
-    const url = `${API_BASE}api/v1/content/episodes/${episodeId}/upload-thumbnail`;
-    
-    const formData = new FormData();
-    formData.append('file', file);
-    
+    const url = `${API_BASE}api/v1/content/episodes/${episodeId}/upload-thumbnail`
+
+    const formData = new FormData()
+    formData.append('file', file)
+
     const response = await fetch(url, {
       method: 'POST',
       headers: {
         Authorization: `Bearer ${token}`,
       },
       body: formData,
-    });
-    
+    })
+
     if (!response.ok) {
-      throw await handleApiError(response);
+      throw await handleApiError(response)
     }
-    
-    return await response.json();
+
+    return await response.json()
   } catch (error) {
     if ((error as ApiError).status) {
-      throw error;
+      throw error
     }
     throw {
       status: 0,
       message: 'Network error - please check your connection',
       body: error,
-    } as ApiError;
+    } as ApiError
   }
 }
 
@@ -1387,78 +1372,77 @@ export async function uploadEpisodeThumbnail(
  */
 export async function getRenditions(contentId: string): Promise<RenditionsListResponse> {
   if (USE_MOCK_DATA) {
-    logMockDataUsage('getRenditions');
-    
+    logMockDataUsage('getRenditions')
+
     return {
       count: MOCK_RENDITIONS.length,
       results: MOCK_RENDITIONS,
-    };
+    }
   }
-  
-  const token = getAccessToken();
+
+  const token = getAccessToken()
   if (!token) {
     throw {
       status: 401,
       message: 'Not authenticated — please login',
       needAuth: true,
-    } as ApiError;
+    } as ApiError
   }
-  
+
   try {
-    const url = `${API_BASE}api/v1/content/content/${contentId}/renditions`;
+    const url = `${API_BASE}api/v1/content/content/${contentId}/renditions`
     const response = await fetch(url, {
       method: 'GET',
       headers: getAuthHeaders(),
-    });
-    
+    })
+
     if (!response.ok) {
-      throw await handleApiError(response);
+      throw await handleApiError(response)
     }
-    
-    return await response.json();
+
+    return await response.json()
   } catch (error) {
     if ((error as ApiError).status) {
-      throw error;
+      throw error
     }
     throw {
       status: 0,
       message: 'Network error - please check your connection',
       body: error,
-    } as ApiError;
+    } as ApiError
   }
 }
 export async function getStreamingUrl(contentId: string): Promise<any> {
-  
-  const token = getAccessToken();
+  const token = getAccessToken()
   if (!token) {
     throw {
       status: 401,
       message: 'Not authenticated — please login',
       needAuth: true,
-    } as ApiError;
+    } as ApiError
   }
-  
+
   try {
-    const url = `${API_BASE}api/v1/content/content/${contentId}/stream`;
+    const url = `${API_BASE}api/v1/content/content/${contentId}/stream`
     const response = await fetch(url, {
       method: 'GET',
       headers: getAuthHeaders(),
-    });
-    
+    })
+
     if (!response.ok) {
-      throw await handleApiError(response);
+      throw await handleApiError(response)
     }
-    
-    return await response.json();
+
+    return await response.json()
   } catch (error) {
     if ((error as ApiError).status) {
-      throw error;
+      throw error
     }
     throw {
       status: 0,
       message: 'Network error - please check your connection',
       body: error,
-    } as ApiError;
+    } as ApiError
   }
 }
 
@@ -1468,59 +1452,59 @@ export async function getStreamingUrl(contentId: string): Promise<any> {
  */
 export async function getManifest(contentId: string): Promise<ManifestResponse> {
   if (USE_MOCK_DATA) {
-    logMockDataUsage('getManifest');
-    
+    logMockDataUsage('getManifest')
+
     // Mock HLS manifest
     const mockManifest = `#EXTM3U
 #EXT-X-VERSION:3
 #EXT-X-STREAM-INF:BANDWIDTH=2500000,RESOLUTION=1280x720
 https://cdn.example.com/content-${contentId}/720p/playlist.m3u8
 #EXT-X-STREAM-INF:BANDWIDTH=5000000,RESOLUTION=1920x1080
-https://cdn.example.com/content-${contentId}/1080p/playlist.m3u8`;
-    
+https://cdn.example.com/content-${contentId}/1080p/playlist.m3u8`
+
     return {
       text: mockManifest,
       content_type: 'application/vnd.apple.mpegurl',
       url: `https://cdn.example.com/content-${contentId}/master.m3u8`,
-    };
+    }
   }
-  
-  const token = getAccessToken();
+
+  const token = getAccessToken()
   if (!token) {
     throw {
       status: 401,
       message: 'Not authenticated — please login',
       needAuth: true,
-    } as ApiError;
+    } as ApiError
   }
-  
+
   try {
-    const url = `${API_BASE}api/v1/content/content/manifest/${contentId}`;
+    const url = `${API_BASE}api/v1/content/content/manifest/${contentId}`
     const response = await fetch(url, {
       method: 'GET',
       headers: getAuthHeaders(),
-    });
-    
+    })
+
     if (!response.ok) {
-      throw await handleApiError(response);
+      throw await handleApiError(response)
     }
-    
-    const text = await response.text();
-    
+
+    const text = await response.text()
+
     return {
       text,
       content_type: response.headers.get('content-type') || 'text/plain',
       url: response.url,
-    };
+    }
   } catch (error) {
     if ((error as ApiError).status) {
-      throw error;
+      throw error
     }
     throw {
       status: 0,
       message: 'Network error - please check your connection',
       body: error,
-    } as ApiError;
+    } as ApiError
   }
 }
 
@@ -1531,54 +1515,54 @@ https://cdn.example.com/content-${contentId}/1080p/playlist.m3u8`;
 /**
  * Get DRM key for content playback
  * GET /api/v1/content/drm/key
- * 
+ *
  * NOTE: This endpoint should be called by the video player during playback when DRM is required.
  * The key is sensitive and should only be retrieved when needed.
- * 
+ *
  * TODO: Implement DRM license server integration
  * TODO: Add DRM key rotation mechanism
  */
 export async function getDrmKey(contentId: string): Promise<DrmKeyResponse> {
   if (USE_MOCK_DATA) {
-    logMockDataUsage('getDrmKey');
-    
+    logMockDataUsage('getDrmKey')
+
     return {
       key: btoa('mock_drm_key_12345'),
       key_id: `key_${contentId}`,
       license_url: `https://drm.example.com/license/${contentId}`,
-    };
+    }
   }
-  
-  const token = getAccessToken();
+
+  const token = getAccessToken()
   if (!token) {
     throw {
       status: 401,
       message: 'Not authenticated — please login',
       needAuth: true,
-    } as ApiError;
+    } as ApiError
   }
-  
+
   try {
-    const url = `${API_BASE}api/v1/content/drm/key?content_id=${contentId}`;
+    const url = `${API_BASE}api/v1/content/drm/key?content_id=${contentId}`
     const response = await fetch(url, {
       method: 'GET',
       headers: getAuthHeaders(),
-    });
-    
+    })
+
     if (!response.ok) {
-      throw await handleApiError(response);
+      throw await handleApiError(response)
     }
-    
-    return await response.json();
+
+    return await response.json()
   } catch (error) {
     if ((error as ApiError).status) {
-      throw error;
+      throw error
     }
     throw {
       status: 0,
       message: 'Network error - please check your connection',
       body: error,
-    } as ApiError;
+    } as ApiError
   }
 }
 
@@ -1589,24 +1573,24 @@ export async function getDrmKey(contentId: string): Promise<DrmKeyResponse> {
 /**
  * Simulate MediaConvert webhook (DEV ONLY)
  * POST /api/v1/content/uploads/mediaconvert-webhook
- * 
+ *
  * PRODUCTION NOTE: In production, this endpoint should ONLY be called by AWS MediaConvert.
  * The frontend should NOT call this endpoint in production.
  * This function is strictly for local dev/testing to simulate the MediaConvert webhook.
  */
 export async function simulateMediaConvertWebhook(payload: any): Promise<any> {
   if (USE_MOCK_DATA) {
-    logMockDataUsage('simulateMediaConvertWebhook');
-    
+    logMockDataUsage('simulateMediaConvertWebhook')
+
     return {
       message: 'MediaConvert webhook processed (mock)',
       status: 'COMPLETE',
       renditions_created: 2,
-    };
+    }
   }
-  
+
   try {
-    const url = `${API_BASE}api/v1/content/uploads/mediaconvert-webhook`;
+    const url = `${API_BASE}api/v1/content/uploads/mediaconvert-webhook`
     const response = await fetch(url, {
       method: 'POST',
       headers: {
@@ -1614,21 +1598,21 @@ export async function simulateMediaConvertWebhook(payload: any): Promise<any> {
         'x-api-key': S3_CALLBACK_KEY,
       },
       body: JSON.stringify(payload),
-    });
-    
+    })
+
     if (!response.ok) {
-      throw await handleApiError(response);
+      throw await handleApiError(response)
     }
-    
-    return await response.json();
+
+    return await response.json()
   } catch (error) {
     if ((error as ApiError).status) {
-      throw error;
+      throw error
     }
     throw {
       status: 0,
       message: 'Network error - please check your connection',
       body: error,
-    } as ApiError;
+    } as ApiError
   }
 }
