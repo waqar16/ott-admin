@@ -24,12 +24,13 @@ export async function middleware(request: NextRequest) {
       return NextResponse.redirect(new URL('/', request.url))
     }
 
-    // Validate token
+    // Validate token with defensive timeout to prevent indefinite middleware stall
     const accessCheck = await axios.get(`${API_BASE}api/v1/me`, {
       headers: { Authorization: `Bearer ${token}` },
+      timeout: 7000,
     })
 
-    const role = accessCheck.data.role
+    const role = accessCheck.data?.role || accessCheck.data?.user?.role || accessCheck.data?.data?.role
     // ADMIN ROUTES
     if (pathname.startsWith('/admin')) {
       if (role !== 'admin') {
