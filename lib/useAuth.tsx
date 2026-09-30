@@ -159,6 +159,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           refreshToken: response.refresh_token,
         })
 
+        // Populate user state in background to prevent uninitialized auth state in components
+        fetchUser(response.access_token, false).catch((err) => {
+          console.error('[useAuth] Failed to load user profile after login:', err)
+        })
+
         setLoading(false)
         return {
           access_token: response.access_token,

@@ -63,8 +63,8 @@ export function setTokens({
 }): void {
   if (typeof window === 'undefined') return
   try {
-    Cookies.set('access_token', accessToken)
-    Cookies.set('refresh_token', refreshToken)
+    Cookies.set('access_token', accessToken, { path: '/', sameSite: 'lax' })
+    Cookies.set('refresh_token', refreshToken, { path: '/', sameSite: 'lax' })
   } catch (error) {
     console.error('[tokenStore] Failed to set tokens:', error)
   }
@@ -76,6 +76,8 @@ export function setTokens({
 export function clearTokens(): void {
   if (typeof window === 'undefined') return
   try {
+    Cookies.remove('access_token', { path: '/' })
+    Cookies.remove('refresh_token', { path: '/' })
     localStorage.removeItem(ACCESS_TOKEN_KEY)
     localStorage.removeItem(REFRESH_TOKEN_KEY)
   } catch (error) {

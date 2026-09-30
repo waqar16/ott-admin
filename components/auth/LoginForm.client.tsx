@@ -8,15 +8,14 @@
 'use client'
 import React, { useEffect, useState } from 'react'
 import { useAuth } from '@/lib/useAuth'
-import { USE_MOCK_DATA } from '@/lib/config'
 import { useRouter } from 'next/navigation'
 import { HiEye, HiEyeOff } from 'react-icons/hi'
 import { toast } from 'sonner'
 import { leagueSpartan } from '@/fonts/fonts'
 
-interface LoginFormProps {}
+interface LoginFormProps { }
 
-export function LoginForm({}: LoginFormProps) {
+export function LoginForm({ }: LoginFormProps) {
   const { login } = useAuth()
   const router = useRouter()
   const [mounted, setMounted] = useState(false)
@@ -26,9 +25,9 @@ export function LoginForm({}: LoginFormProps) {
   const [show2FA, setShow2FA] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [loginLoading, setLoginLoading] = React.useState(false)
-  const [showPassword, setShowPassword] = React.useState(false)
-  const [showRedirectLoader, setShowRedirectLoader] = React.useState<{
+  const [loginLoading, setLoginLoading] = useState(false)
+  const [showPassword, setShowPassword] = useState(false)
+  const [showRedirectLoader, setShowRedirectLoader] = useState<{
     show: boolean
     message: string
   }>({ show: false, message: '' })
@@ -45,41 +44,52 @@ export function LoginForm({}: LoginFormProps) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+
     setError(null)
     setIsSubmitting(true)
     setLoginLoading(true)
+
     try {
       const result = await login(email, password, token2fa || undefined)
+      console.log('[LoginForm] login API succeeded')
+      console.log('[LoginForm] authenticated role:', result?.role)
 
       if (result.twoFactorRequired) {
         setShow2FA(true)
-        setIsSubmitting(false)
         return
       }
-      if (result.role == 'user') {
+
+      if (result.role === 'user' || result.role === 'beta_tester') {
         toast.error('You do not have access to this platform.')
-        router.push('/')
-      } else if (result.role == 'admin') {
-        setShowRedirectLoader({ show: true, message: 'Redirecting to Admin Dashboard' })
-        router.push('/admin')
+        router.replace('/')
+        return
       }
 
-      setIsSubmitting(false)
+      if (result.role === 'admin') {
+        setShowRedirectLoader({
+          show: true,
+          message: 'Redirecting to Admin Dashboard',
+        })
+        console.log('[LoginForm] redirecting to /admin')
+
+        router.replace('/admin')
+        return
+      }
+
+      setError('Unable to determine your account permissions.')
     } catch (err: any) {
-      console.log(err)
+      console.error('[LoginForm] login failed:', err)
 
-      // Default fallback
-      let message = 'Unable to login'
+      setShowRedirectLoader({
+        show: false,
+        message: '',
+      })
 
-      // ApiError or normal Error
-      if (err?.message) {
-        message = err.message
-      }
-
-      setError(message)
+      setError(err?.message || 'Unable to login')
+    } finally {
       setIsSubmitting(false)
+      setLoginLoading(false)
     }
-    setLoginLoading(false)
   }
 
   return (
@@ -168,11 +178,10 @@ export function LoginForm({}: LoginFormProps) {
 
       <form
         onSubmit={handleSubmit}
-        className={`space-y-4 transition-all duration-300 ${
-          isSubmitting || loginLoading || showRedirectLoader.show
-            ? 'opacity-50 pointer-events-none blur-[1px]'
-            : ''
-        }`}
+        className={`space-y-4 transition-all duration-300 ${isSubmitting || loginLoading || showRedirectLoader.show
+          ? 'opacity-50 pointer-events-none blur-[1px]'
+          : ''
+          }`}
       >
         <div className="relative flex-1 md:w-auto w-full">
           <input
@@ -280,6 +289,8 @@ export function LoginForm({}: LoginFormProps) {
               </svg>
               Signing in...
             </span>
+          ) : showRedirectLoader.show ? (
+            'Redirecting...'
           ) : show2FA ? (
             'Verify Code'
           ) : (
