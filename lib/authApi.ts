@@ -33,12 +33,33 @@ export class ApiError extends Error {
 }
 
 /**
+ * Helper to perform fetch with defensive timeout to prevent hanging network requests
+ */
+async function fetchWithTimeout(
+  url: string,
+  options: RequestInit = {},
+  timeoutMs = 15000
+): Promise<Response> {
+  const controller = new AbortController()
+  const timeoutId = setTimeout(() => controller.abort(), timeoutMs)
+  try {
+    return await fetch(url, {
+      ...options,
+      signal: options.signal || controller.signal,
+    })
+  } finally {
+    clearTimeout(timeoutId)
+  }
+}
+
+/**
  * User profile interface
  */
 export interface User {
   id: string
   email: string
   name: string
+  role?: string
   profile_picture?: string
   subscription_tier?: 'free' | 'premium' | 'vip'
   is_verified?: boolean
@@ -68,23 +89,25 @@ export async function login(credentials: {
   device_type?: string
   token_2fa?: string
 }): Promise<LoginResponse> {
-  // Mock mode fallback
-
   try {
-    const response = await fetch(`${API_BASE}api/v1/login`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
+    const response = await fetchWithTimeout(
+      `${API_BASE}api/v1/login`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: credentials.email,
+          password: credentials.password,
+          device_id: credentials.device_id || generateDeviceId(),
+          device_type: credentials.device_type || 'web',
+          ...(credentials.token_2fa && { token_2fa: credentials.token_2fa }),
+        }),
       },
-      body: JSON.stringify({
-        email: credentials.email,
-        password: credentials.password,
-        device_id: credentials.device_id || generateDeviceId(),
-        device_type: credentials.device_type || 'web',
-        ...(credentials.token_2fa && { token_2fa: credentials.token_2fa }),
-      }),
-    })
-    console.log('response', response)
+      15000
+    )
+
     const data = await response.json()
 
     if (!response.ok) {
@@ -99,13 +122,15 @@ export async function login(credentials: {
       access_token: data.access_token || data.access,
       refresh_token: data.refresh_token || data.refresh,
       two_factor_required: data.two_factor_required || false,
-      role: data.user.role || 'none',
+      role: data?.role || data?.user?.role || data?.data?.role || 'none',
       status: response.status,
     }
-  } catch (error) {
+  } catch (error: any) {
     if (error instanceof ApiError) throw error
+    if (error?.name === 'AbortError') {
+      throw new ApiError(408, 'Login request timed out. Please check your network connection.')
+    }
 
-    console.log('error')
     throw new ApiError(0, error instanceof Error ? error.message : 'Network error during login')
   }
 }
@@ -197,15 +222,19 @@ export async function refreshToken(refreshToken: string): Promise<LoginResponse>
   }
 
   try {
-    const response = await fetch(`${API_BASE}api/v1/token/refresh`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
+    const response = await fetchWithTimeout(
+      `${API_BASE}api/v1/token/refresh`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          refresh: refreshToken,
+        }),
       },
-      body: JSON.stringify({
-        refresh: refreshToken,
-      }),
-    })
+      10000
+    )
 
     const data = await response.json()
 
@@ -221,8 +250,11 @@ export async function refreshToken(refreshToken: string): Promise<LoginResponse>
       access_token: data.access_token || data.access,
       refresh_token: data.refresh_token || data.refresh || refreshToken,
     }
-  } catch (error) {
+  } catch (error: any) {
     if (error instanceof ApiError) throw error
+    if (error?.name === 'AbortError') {
+      throw new ApiError(408, 'Token refresh request timed out')
+    }
 
     console.error('[authApi] Token refresh error:', error)
     throw new ApiError(
@@ -255,14 +287,18 @@ export async function me(accessToken: string): Promise<User> {
   }
 
   try {
-    const response = await fetch(`${API_BASE}api/v1/me`, {
-      method: 'GET',
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-        'Content-Type': 'application/json',
-        // 'ngrok-skip-browser-warning': 'true'
+    const response = await fetchWithTimeout(
+      `${API_BASE}api/v1/me`,
+      {
+        method: 'GET',
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          'Content-Type': 'application/json',
+          // 'ngrok-skip-browser-warning': 'true'
+        },
       },
-    })
+      10000
+    )
 
     const data = await response.json()
 

@@ -1,16 +1,10 @@
 'use client'
 
-import { useEffect, useState } from 'react'
 import { LoginForm } from '@/components/auth/LoginForm.client'
 import { leagueSpartan } from '@/fonts/fonts'
 import { LuFilm, LuTv, LuUsers, LuCreditCard, LuChartBar, LuShield } from 'react-icons/lu'
 
 export default function LoginPage() {
-  const [mounted, setMounted] = useState(false)
-
-  useEffect(() => {
-    setMounted(true)
-  }, [])
 
   return (
     <>
@@ -255,7 +249,7 @@ export default function LoginPage() {
               </div>
 
               {/* Login Form Render */}
-              {mounted && <LoginForm />}
+              <LoginForm />
             </div>
           </div>
 
