@@ -6,19 +6,22 @@
  */
 
 'use client'
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useRef } from 'react'
 import { useAuth } from '@/lib/useAuth'
 import { useRouter } from 'next/navigation'
 import { HiEye, HiEyeOff } from 'react-icons/hi'
 import { toast } from 'sonner'
 import { leagueSpartan } from '@/fonts/fonts'
 
+const REDIRECT_TIMEOUT_MS = 10000
+
 interface LoginFormProps { }
 
 export function LoginForm({ }: LoginFormProps) {
-  const { login } = useAuth()
+  const { login, user, isLoggedIn, loading } = useAuth()
   const router = useRouter()
-  const [mounted, setMounted] = useState(false)
+  const redirectTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [token2fa, setToken2fa] = useState('')
@@ -32,63 +35,118 @@ export function LoginForm({ }: LoginFormProps) {
     message: string
   }>({ show: false, message: '' })
 
+  // Clean up redirect timeout on unmount to prevent timers surviving navigation
   useEffect(() => {
-    setMounted(true)
+    return () => {
+      if (redirectTimeoutRef.current) {
+        clearTimeout(redirectTimeoutRef.current)
+        redirectTimeoutRef.current = null
+      }
+    }
   }, [])
 
-  // Render the auth form only on the client to avoid SSR hydration
-  // mismatches from browser/password-manager DOM mutations on inputs.
-  if (!mounted) {
-    return null
-  }
+  // If already authenticated as admin, seamlessly redirect to /admin
+  useEffect(() => {
+    if (!loading && isLoggedIn && user?.role === 'admin') {
+      console.log('[LoginForm] Already authenticated as admin, redirecting to /admin')
+      router.replace('/admin')
+    }
+  }, [loading, isLoggedIn, user, router])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
+    // Clear any previous redirect timeout
+    if (redirectTimeoutRef.current) {
+      clearTimeout(redirectTimeoutRef.current)
+      redirectTimeoutRef.current = null
+    }
+
     setError(null)
+    setShowRedirectLoader({ show: false, message: '' })
     setIsSubmitting(true)
     setLoginLoading(true)
 
+    console.log('[LoginForm] Starting login')
+
     try {
       const result = await login(email, password, token2fa || undefined)
-      console.log('[LoginForm] login API succeeded')
-      console.log('[LoginForm] authenticated role:', result?.role)
+      console.log('[LoginForm] Login API succeeded', {
+        role: result?.role,
+      })
 
       if (result.twoFactorRequired) {
+        setIsSubmitting(false)
+        setLoginLoading(false)
+        setShowRedirectLoader({ show: false, message: '' })
         setShow2FA(true)
         return
       }
 
       if (result.role === 'user' || result.role === 'beta_tester') {
+        setIsSubmitting(false)
+        setLoginLoading(false)
+        setShowRedirectLoader({ show: false, message: '' })
         toast.error('You do not have access to this platform.')
         router.replace('/')
         return
       }
 
       if (result.role === 'admin') {
+        // Transition: Stop API loading states before showing redirect state
+        setIsSubmitting(false)
+        setLoginLoading(false)
+
         setShowRedirectLoader({
           show: true,
           message: 'Redirecting to Admin Dashboard',
         })
-        console.log('[LoginForm] redirecting to /admin')
+
+        console.log('[LoginForm] Starting admin redirect')
+
+        redirectTimeoutRef.current = setTimeout(() => {
+          console.warn('[LoginForm] Admin redirect timeout')
+
+          setShowRedirectLoader({
+            show: false,
+            message: '',
+          })
+
+          setError(
+            'Login was successful, but the dashboard is taking too long to load. Please try again.'
+          )
+
+          setIsSubmitting(false)
+          setLoginLoading(false)
+
+          redirectTimeoutRef.current = null
+        }, REDIRECT_TIMEOUT_MS)
 
         router.replace('/admin')
         return
       }
 
+      setIsSubmitting(false)
+      setLoginLoading(false)
+      setShowRedirectLoader({ show: false, message: '' })
       setError('Unable to determine your account permissions.')
     } catch (err: any) {
-      console.error('[LoginForm] login failed:', err)
+      console.error('[LoginForm] login failed:', err?.message || 'Login failed')
+
+      if (redirectTimeoutRef.current) {
+        clearTimeout(redirectTimeoutRef.current)
+        redirectTimeoutRef.current = null
+      }
 
       setShowRedirectLoader({
         show: false,
         message: '',
       })
 
-      setError(err?.message || 'Unable to login')
-    } finally {
       setIsSubmitting(false)
       setLoginLoading(false)
+
+      setError(err?.message || 'Unable to login')
     }
   }
 

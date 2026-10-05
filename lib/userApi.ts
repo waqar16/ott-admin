@@ -10,6 +10,11 @@ export type User = {
   role: string
   is_active: boolean
   created_at: Date
+  email_verified?: boolean
+  receive_notifications?: boolean
+  kid_mode?: boolean
+  educational_mode?: boolean
+
 }
 
 export async function getUsers(): Promise<User[]> {

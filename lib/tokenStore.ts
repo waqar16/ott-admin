@@ -29,7 +29,7 @@ import Cookies from 'js-cookie'
 export function getAccessToken(): string | null {
   if (typeof window === 'undefined') return null
   try {
-    return Cookies.get('access_token') || null
+    return Cookies.get('access_token') || localStorage.getItem(ACCESS_TOKEN_KEY) || null
   } catch (error) {
     console.error('[tokenStore] Failed to get access token:', error)
     return null
@@ -43,7 +43,7 @@ export function getAccessToken(): string | null {
 export function getRefreshToken(): string | null {
   if (typeof window === 'undefined') return null
   try {
-    return localStorage.getItem(REFRESH_TOKEN_KEY)
+    return Cookies.get('refresh_token') || localStorage.getItem(REFRESH_TOKEN_KEY) || null
   } catch (error) {
     console.error('[tokenStore] Failed to get refresh token:', error)
     return null
@@ -65,6 +65,8 @@ export function setTokens({
   try {
     Cookies.set('access_token', accessToken, { path: '/', sameSite: 'lax' })
     Cookies.set('refresh_token', refreshToken, { path: '/', sameSite: 'lax' })
+    localStorage.setItem(ACCESS_TOKEN_KEY, accessToken)
+    localStorage.setItem(REFRESH_TOKEN_KEY, refreshToken)
   } catch (error) {
     console.error('[tokenStore] Failed to set tokens:', error)
   }
