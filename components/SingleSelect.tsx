@@ -54,7 +54,7 @@ export default function SingleSelect({ label, options, value, onChange }: Single
         typeof window !== 'undefined' &&
         createPortal(
           <div
-            className="bottom-0 fixed z-[9999] bg-neutral-950 rounded-lg shadow-lg border border-gray-700 max-h-48 overflow-y-auto minimal-scrollbar"
+            className="bottom-0 fixed z-[9999]  bg-neutral-950 rounded-lg shadow-lg border border-gray-700 max-h-48 overflow-y-auto minimal-scrollbar"
             style={{
               top: buttonRect?.bottom,
               left: buttonRect?.left,
@@ -65,7 +65,7 @@ export default function SingleSelect({ label, options, value, onChange }: Single
               <div
                 key={opt.id}
                 onClick={() => selectOption(opt.id)}
-                className="px-4 py-2 cursor-pointer hover:bg-gray-700 text-neutral-200"
+                className="px-4 py-2 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 text-neutral-200"
               >
                 {opt.name}
               </div>

@@ -3,22 +3,85 @@
 import React, { useEffect, useRef, useState, useMemo } from 'react'
 import { createPortal } from 'react-dom'
 import { FiCheck, FiChevronDown, FiSearch, FiX, FiUser } from 'react-icons/fi'
+import { getCreators } from '@/lib/creatorApi'
 
 export interface CreatorItem {
-  id?: string
+  id?: string | number
+  _id?: string | number
+  pk?: string | number
+  creator_id?: string | number
   name: string
   email?: string | null
   bio?: string | null
 }
 
+export function getCreatorId(creator: any): string {
+  if (!creator) return ''
+  const val = creator.id ?? creator._id ?? creator.pk ?? creator.creator_id
+  return val !== null && val !== undefined ? String(val).trim() : ''
+}
+
+export function extractCreatorIds(contentData: any): string[] {
+  if (!contentData) return []
+
+  const candidates = [
+    contentData.creators,
+    contentData.creator_ids,
+    contentData.creatorIds,
+    contentData.assigned_creators,
+    contentData.creator_details,
+    contentData.content_creators,
+    contentData.creator,
+  ]
+
+  const rawList: any[] = []
+  for (const field of candidates) {
+    if (field !== undefined && field !== null) {
+      if (Array.isArray(field)) {
+        rawList.push(...field)
+      } else {
+        rawList.push(field)
+      }
+    }
+  }
+
+  const ids: string[] = []
+  for (const item of rawList) {
+    if (item === null || item === undefined) continue
+    let idStr = ''
+    if (typeof item === 'string' || typeof item === 'number') {
+      idStr = String(item).trim()
+    } else if (typeof item === 'object') {
+      const extracted =
+        item.id ??
+        item.creator_id ??
+        item.creatorId ??
+        item._id ??
+        item.pk ??
+        (typeof item.creator === 'object'
+          ? item.creator?.id ?? item.creator?._id ?? item.creator?.pk
+          : item.creator)
+      if (extracted !== null && extracted !== undefined) {
+        idStr = String(extracted).trim()
+      }
+    }
+    if (idStr && !ids.includes(idStr)) {
+      ids.push(idStr)
+    }
+  }
+
+  return ids
+}
+
 interface MultiSelectCreatorProps {
-  allCreators: CreatorItem[]
+  allCreators?: CreatorItem[]
   formData: {
-    creators?: string[]
+    creators?: any[]
     [key: string]: any
   }
   setFormData: React.Dispatch<React.SetStateAction<any>>
   label?: string
+  isLoading?: boolean
 }
 
 export default function MultiSelectCreator({
@@ -26,6 +89,7 @@ export default function MultiSelectCreator({
   formData,
   setFormData,
   label = 'Assigned Creators',
+  isLoading = false,
 }: MultiSelectCreatorProps) {
   const [open, setOpen] = useState(false)
   const [search, setSearch] = useState('')
@@ -37,14 +101,46 @@ export default function MultiSelectCreator({
     width: 0,
   })
 
-  const selectedIds: string[] = formData.creators || []
+  // Fallback to fetch creators if allCreators is not provided or empty
+  const [internalCreators, setInternalCreators] = useState<CreatorItem[]>([])
+  const [internalLoading, setInternalLoading] = useState(false)
+
+  useEffect(() => {
+    if (allCreators && allCreators.length > 0) return
+    let isMounted = true
+    setInternalLoading(true)
+    getCreators()
+      .then((data) => {
+        if (isMounted && Array.isArray(data)) {
+          setInternalCreators(data)
+        }
+      })
+      .catch((err) => {
+        console.error('Error fetching fallback creators in MultiSelectCreator:', err)
+      })
+      .finally(() => {
+        if (isMounted) setInternalLoading(false)
+      })
+    return () => {
+      isMounted = false
+    }
+  }, [allCreators])
+
+  const effectiveCreators: CreatorItem[] =
+    allCreators && allCreators.length > 0 ? allCreators : internalCreators
+  const loadingCreators = isLoading || (internalLoading && effectiveCreators.length === 0)
+
+  // Normalize selected IDs consistently as clean strings
+  const selectedIds: string[] = useMemo(() => {
+    return extractCreatorIds(formData)
+  }, [formData.creators, formData.creator_ids, formData.creator])
 
   const updatePosition = () => {
     if (buttonRef.current) {
       const rect = buttonRef.current.getBoundingClientRect()
       setPosition({
-        top: rect.bottom + window.scrollY + 6,
-        left: rect.left + window.scrollX,
+        top: rect.bottom + 6,
+        left: rect.left,
         width: rect.width,
       })
     }
@@ -57,24 +153,33 @@ export default function MultiSelectCreator({
     setOpen((prev) => !prev)
   }
 
-  const toggleCreator = (id: string, e?: React.MouseEvent) => {
+  const toggleCreator = (rawId: any, e?: React.MouseEvent) => {
     if (e) e.stopPropagation()
+    const id = String(rawId || '').trim()
+    if (!id) return
     setFormData((prev: any) => {
-      const currentList: string[] = prev.creators || []
-      const exists = currentList.includes(id)
+      const currentList: string[] = extractCreatorIds(prev)
+      const exists = currentList.some((cId) => cId === id)
+      const nextList = exists
+        ? currentList.filter((cId) => cId !== id)
+        : [...currentList, id]
       return {
         ...prev,
-        creators: exists ? currentList.filter((cId) => cId !== id) : [...currentList, id],
+        creators: nextList,
       }
     })
   }
 
-  const removeCreator = (id: string, e: React.MouseEvent) => {
+  const removeCreator = (rawId: any, e: React.MouseEvent) => {
     e.stopPropagation()
-    setFormData((prev: any) => ({
-      ...prev,
-      creators: (prev.creators || []).filter((cId: string) => cId !== id),
-    }))
+    const id = String(rawId || '').trim()
+    setFormData((prev: any) => {
+      const currentList: string[] = extractCreatorIds(prev)
+      return {
+        ...prev,
+        creators: currentList.filter((cId) => cId !== id),
+      }
+    })
   }
 
   const clearAll = (e: React.MouseEvent) => {
@@ -88,13 +193,13 @@ export default function MultiSelectCreator({
   // Filter creators based on search query
   const filteredCreators = useMemo(() => {
     const q = search.trim().toLowerCase()
-    if (!q) return allCreators
-    return allCreators.filter(
-      (c) =>
-        c.name.toLowerCase().includes(q) ||
-        (c.email && c.email.toLowerCase().includes(q))
-    )
-  }, [allCreators, search])
+    if (!q) return effectiveCreators
+    return effectiveCreators.filter((c) => {
+      const name = String(c?.name || '').toLowerCase()
+      const email = String(c?.email || '').toLowerCase()
+      return name.includes(q) || email.includes(q)
+    })
+  }, [effectiveCreators, search])
 
   // Close dropdown on outside click or resize
   useEffect(() => {
@@ -156,20 +261,27 @@ export default function MultiSelectCreator({
         <div className="flex flex-wrap items-center gap-1.5 flex-1 min-w-0">
           {selectedIds.length === 0 ? (
             <span className="text-sm text-muted-foreground">
-              {allCreators.length === 0 ? 'No creators available' : 'Assign creators to title...'}
+              {loadingCreators
+                ? 'Loading creators...'
+                : effectiveCreators.length === 0
+                  ? 'No creators available'
+                  : 'Assign creators to title...'}
             </span>
           ) : (
             selectedIds.map((id) => {
-              const matched = allCreators.find((c) => c.id === id)
-              const displayName = matched?.name || `Creator (${id.slice(0, 6)}...)`
+              const strId = String(id).trim()
+              const matched = effectiveCreators.find((c) => getCreatorId(c) === strId)
+              const displayName =
+                matched?.name ||
+                (strId.length > 6 ? `Creator (${strId.slice(0, 6)}...)` : `Creator (${strId})`)
               return (
                 <span
-                  key={id}
+                  key={strId}
                   className="inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-md bg-primary/10 text-primary border border-primary/20 max-w-[180px]"
                 >
                   <span className="truncate">{displayName}</span>
                   <span
-                    onClick={(e) => removeCreator(id, e)}
+                    onClick={(e) => removeCreator(strId, e)}
                     className="hover:bg-primary/20 rounded p-0.5 cursor-pointer text-primary"
                     title="Remove creator"
                   >
@@ -182,9 +294,8 @@ export default function MultiSelectCreator({
         </div>
 
         <FiChevronDown
-          className={`w-4 h-4 text-muted-foreground shrink-0 transition-transform duration-200 ${
-            open ? 'rotate-180 text-primary' : ''
-          }`}
+          className={`w-4 h-4 text-muted-foreground shrink-0 transition-transform duration-200 ${open ? 'rotate-180 text-primary' : ''
+            }`}
         />
       </div>
 
@@ -219,28 +330,31 @@ export default function MultiSelectCreator({
 
             {/* Creators Options List */}
             <div className="max-h-56 overflow-y-auto p-1 divide-y divide-border/20">
-              {filteredCreators.length > 0 ? (
+              {loadingCreators && effectiveCreators.length === 0 ? (
+                <div className="p-4 text-center text-xs text-muted-foreground flex items-center justify-center gap-2">
+                  <span className="animate-spin inline-block w-3.5 h-3.5 border-2 border-primary border-t-transparent rounded-full" />
+                  Loading creators...
+                </div>
+              ) : filteredCreators.length > 0 ? (
                 filteredCreators.map((creator) => {
-                  const creatorId = creator.id || ''
-                  const isSelected = selectedIds.includes(creatorId)
+                  const creatorId = getCreatorId(creator)
+                  const isSelected = creatorId ? selectedIds.includes(creatorId) : false
 
                   return (
                     <div
-                      key={creatorId}
+                      key={creatorId || creator.name}
                       onClick={(e) => toggleCreator(creatorId, e)}
-                      className={`flex items-center justify-between px-3 py-2 text-xs rounded-lg cursor-pointer transition-colors ${
-                        isSelected
+                      className={`flex items-center justify-between px-3 py-2 text-xs rounded-lg cursor-pointer transition-colors ${isSelected
                           ? 'bg-primary/10 text-primary font-medium'
                           : 'hover:bg-accent text-foreground'
-                      }`}
+                        }`}
                     >
                       <div className="flex items-center gap-2 min-w-0">
                         <div
-                          className={`w-4 h-4 rounded border flex items-center justify-center shrink-0 ${
-                            isSelected
+                          className={`w-4 h-4 rounded border flex items-center justify-center shrink-0 ${isSelected
                               ? 'bg-primary border-primary text-primary-foreground'
                               : 'border-muted-foreground/40 bg-background'
-                          }`}
+                            }`}
                         >
                           {isSelected && <FiCheck className="w-3 h-3" />}
                         </div>
