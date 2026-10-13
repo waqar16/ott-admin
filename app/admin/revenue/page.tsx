@@ -162,9 +162,9 @@ export default function CreatorReportPage() {
   const hasCreators = creatorsList.length > 0
   const isFiltered = Boolean(
     filters.start_date ||
-      filters.end_date ||
-      filters.revenue ||
-      filters.creator_share_percentage
+    filters.end_date ||
+    filters.revenue ||
+    filters.creator_share_percentage
   )
 
   return (
@@ -172,7 +172,7 @@ export default function CreatorReportPage() {
       initial={{ opacity: 0, y: 6 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3 }}
-      className="p-4 sm:p-6 md:p-8 space-y-6 max-w-7xl mx-auto min-h-screen bg-background text-foreground"
+      className="p-4 sm:p-4 md:p-6 space-y-6 w-full mx-auto min-h-screen bg-background text-foreground"
     >
       {/* 1. Header */}
       <CreatorReportHeader
