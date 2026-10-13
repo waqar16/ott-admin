@@ -398,7 +398,7 @@ export default function ContentEditor(props: ContentEditorProps) {
 
     price: content?.price || 0,
     genres: content?.genres || [],
-    creators: content?.creators || [],
+    creators: (content?.creators || []).map((c: any) => (typeof c === 'string' ? c : c?.id || c)),
 
     parent: parentId,
   })
@@ -896,6 +896,17 @@ export default function ContentEditor(props: ContentEditorProps) {
 
   useEffect(() => {
     setMounted(true)
+    async function loadCreators() {
+      try {
+        const creators = await getCreators()
+        if (Array.isArray(creators)) {
+          setAllcreators(creators as any)
+        }
+      } catch (err) {
+        console.error('Failed to load creators for content editor:', err)
+      }
+    }
+    loadCreators()
   }, [])
   if (!mounted) return null
   return (
@@ -1101,7 +1112,7 @@ export default function ContentEditor(props: ContentEditorProps) {
                             )}
                           </>
                         )}
-                        {(contentType == 'series' || contentType == 'movie') && (
+                        {(contentType == 'series' || contentType == 'movie' || contentType == 'documentary') && (
                           <MultiSelectCreator
                             allCreators={allcreators}
                             formData={formData}

@@ -1,28 +1,51 @@
 'use client'
 
-import React from 'react'
+import React, { useState } from 'react'
 import { Performer } from '../types'
-import { FiDollarSign, FiEye, FiFilm, FiPieChart, FiUser } from 'react-icons/fi'
+import {
+  FiDollarSign,
+  FiEye,
+  FiFilm,
+  FiFileText,
+  FiDownload,
+  FiUser,
+  FiRefreshCw,
+} from 'react-icons/fi'
 
 interface CreatorTableProps {
   creators: Performer[]
+  currency?: string
+  onViewStatement: (creatorId: string, creatorName: string) => void
+  onExportStatement: (creatorId: string, creatorName: string) => Promise<void>
 }
 
-export const CreatorTable: React.FC<CreatorTableProps> = ({ creators }) => {
+export const CreatorTable: React.FC<CreatorTableProps> = ({
+  creators,
+  currency = 'GBP',
+  onViewStatement,
+  onExportStatement,
+}) => {
+  const [exportingId, setExportingId] = useState<string | null>(null)
+
   const formatCurrency = (val: number | string) => {
     const num = typeof val === 'string' ? parseFloat(val) : val
-    if (isNaN(num)) return '$0.00'
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-      minimumFractionDigits: 2,
-    }).format(num)
+    if (isNaN(num)) return `£0.00`
+    try {
+      return new Intl.NumberFormat('en-GB', {
+        style: 'currency',
+        currency: currency || 'GBP',
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+      }).format(num)
+    } catch {
+      return `${num.toFixed(2)} ${currency}`
+    }
   }
 
   const formatNumber = (val: number | string) => {
     const num = typeof val === 'string' ? parseFloat(val) : val
     if (isNaN(num)) return '0'
-    return new Intl.NumberFormat('en-US').format(Math.round(num))
+    return new Intl.NumberFormat('en-US').format(num)
   }
 
   const getInitials = (name?: string) => {
@@ -32,16 +55,27 @@ export const CreatorTable: React.FC<CreatorTableProps> = ({ creators }) => {
     return name.slice(0, 2).toUpperCase()
   }
 
+  const handleExport = async (id: string, name: string) => {
+    try {
+      setExportingId(id)
+      await onExportStatement(id, name)
+    } finally {
+      setExportingId(null)
+    }
+  }
+
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
         <div>
-          <h2 className="text-xl font-bold tracking-tight text-foreground">All Creators Breakdown</h2>
+          <h2 className="text-xl font-bold tracking-tight text-foreground">
+            Section 2: Creator Revenue Breakdown
+          </h2>
           <p className="text-xs text-muted-foreground">
-            Detailed view counts, revenue shares, and content performance by creator
+            View counts, platform share %, royalty earnings, and individual creator statements
           </p>
         </div>
-        <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-accent text-accent-foreground border border-border">
+        <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-accent text-accent-foreground border border-border self-start sm:self-auto">
           {creators.length} Creators
         </span>
       </div>
@@ -55,16 +89,20 @@ export const CreatorTable: React.FC<CreatorTableProps> = ({ creators }) => {
                 <th className="py-3.5 px-4">Creator</th>
                 <th className="py-3.5 px-4 text-right">Unique Views</th>
                 <th className="py-3.5 px-4 text-right">Share %</th>
-                <th className="py-3.5 px-4 text-right">Total Revenue</th>
+                <th className="py-3.5 px-4 text-right">Earnings ({currency})</th>
                 <th className="py-3.5 px-4">Top Contents</th>
+                <th className="py-3.5 px-4 text-right">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border/50">
               {creators.map((creator, index) => {
-                const name = creator.creator_name || 'UrView Creator'
+                const name = creator.creator_name || 'URview Creator'
+                const creatorId = creator.creator_id || String(index + 1)
+                const isExporting = exportingId === creatorId
+
                 return (
                   <tr
-                    key={index}
+                    key={creatorId || index}
                     className="hover:bg-accent/40 transition-colors duration-150 group"
                   >
                     {/* Creator Info */}
@@ -77,7 +115,9 @@ export const CreatorTable: React.FC<CreatorTableProps> = ({ creators }) => {
                           <span className="font-semibold text-foreground block group-hover:text-primary transition-colors">
                             {name}
                           </span>
-                          <span className="text-xs text-muted-foreground">ID: #{index + 1}</span>
+                          <span className="text-[11px] text-muted-foreground font-mono">
+                            {creator.creator_id ? `${creator.creator_id.slice(0, 8)}...` : `ID: #${index + 1}`}
+                          </span>
                         </div>
                       </div>
                     </td>
@@ -92,7 +132,7 @@ export const CreatorTable: React.FC<CreatorTableProps> = ({ creators }) => {
                     {/* Share % */}
                     <td className="py-4 px-4 text-right align-top">
                       <span className="inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-full bg-primary/10 text-primary border border-primary/20">
-                        {creator.percentage_of_total_views}%
+                        {Number(creator.percentage_of_total_views).toFixed(1)}%
                       </span>
                     </td>
 
@@ -106,14 +146,15 @@ export const CreatorTable: React.FC<CreatorTableProps> = ({ creators }) => {
                     {/* Top Contents Chips */}
                     <td className="py-4 px-4 align-top">
                       {creator.top_contents && creator.top_contents.length > 0 ? (
-                        <div className="flex flex-wrap gap-1.5 max-w-md">
+                        <div className="flex flex-wrap gap-1.5 max-w-xs">
                           {creator.top_contents.map((content) => (
                             <span
                               key={content.content_id}
-                              className="inline-flex items-center gap-1.5 text-xs bg-muted hover:bg-accent/80 border border-border/60 px-2.5 py-1 rounded-md transition-colors"
+                              className="inline-flex items-center gap-1.5 text-xs bg-muted hover:bg-accent/80 border border-border/60 px-2 py-0.5 rounded-md transition-colors"
+                              title={content.title}
                             >
                               <FiFilm className="w-3 h-3 text-muted-foreground shrink-0" />
-                              <span className="truncate max-w-[140px] font-medium text-foreground">
+                              <span className="truncate max-w-[120px] font-medium text-foreground">
                                 {content.title}
                               </span>
                               <span className="text-[10px] text-muted-foreground font-semibold">
@@ -126,6 +167,37 @@ export const CreatorTable: React.FC<CreatorTableProps> = ({ creators }) => {
                         <span className="text-xs text-muted-foreground italic">No top content</span>
                       )}
                     </td>
+
+                    {/* Actions */}
+                    <td className="py-4 px-4 text-right align-top whitespace-nowrap">
+                      <div className="flex items-center justify-end gap-1.5">
+                        {creator.creator_id && (
+                          <>
+                            <button
+                              onClick={() => onViewStatement(creator.creator_id!, name)}
+                              className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-medium rounded-lg bg-accent text-accent-foreground hover:bg-accent/80 border border-border transition-colors cursor-pointer"
+                              title="View Confidential Royalty Statement"
+                            >
+                              <FiFileText className="w-3.5 h-3.5 text-primary" />
+                              <span>Statement</span>
+                            </button>
+
+                            <button
+                              onClick={() => handleExport(creator.creator_id!, name)}
+                              disabled={isExporting}
+                              className="inline-flex items-center gap-1 p-1 text-xs font-medium rounded-lg text-muted-foreground hover:text-foreground hover:bg-accent border border-transparent hover:border-border transition-colors cursor-pointer disabled:opacity-50"
+                              title="Download Statement Excel"
+                            >
+                              {isExporting ? (
+                                <FiRefreshCw className="w-3.5 h-3.5 animate-spin text-primary" />
+                              ) : (
+                                <FiDownload className="w-3.5 h-3.5" />
+                              )}
+                            </button>
+                          </>
+                        )}
+                      </div>
+                    </td>
                   </tr>
                 )
               })}
@@ -137,10 +209,13 @@ export const CreatorTable: React.FC<CreatorTableProps> = ({ creators }) => {
       {/* Mobile Card List View (< md) */}
       <div className="md:hidden space-y-3">
         {creators.map((creator, index) => {
-          const name = creator.creator_name || 'UrView Creator'
+          const name = creator.creator_name || 'URview Creator'
+          const creatorId = creator.creator_id || String(index + 1)
+          const isExporting = exportingId === creatorId
+
           return (
             <div
-              key={index}
+              key={creatorId || index}
               className="bg-card border border-border/80 rounded-xl p-4 shadow-sm space-y-3 hover:border-primary/30 transition-all"
             >
               <div className="flex items-center justify-between border-b border-border/40 pb-3">
@@ -151,7 +226,7 @@ export const CreatorTable: React.FC<CreatorTableProps> = ({ creators }) => {
                   <div>
                     <h3 className="font-semibold text-foreground text-sm">{name}</h3>
                     <span className="text-xs text-muted-foreground">
-                      {creator.percentage_of_total_views}% Share
+                      {Number(creator.percentage_of_total_views).toFixed(1)}% Share
                     </span>
                   </div>
                 </div>
@@ -191,6 +266,31 @@ export const CreatorTable: React.FC<CreatorTableProps> = ({ creators }) => {
                       </div>
                     ))}
                   </div>
+                </div>
+              )}
+
+              {creator.creator_id && (
+                <div className="flex items-center justify-end gap-2 pt-2 border-t border-border/40">
+                  <button
+                    onClick={() => onViewStatement(creator.creator_id!, name)}
+                    className="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg bg-accent text-accent-foreground border border-border transition-colors cursor-pointer"
+                  >
+                    <FiFileText className="w-3.5 h-3.5 text-primary" />
+                    <span>View Statement</span>
+                  </button>
+
+                  <button
+                    onClick={() => handleExport(creator.creator_id!, name)}
+                    disabled={isExporting}
+                    className="inline-flex items-center justify-center gap-1 px-3 py-1.5 text-xs font-medium rounded-lg text-muted-foreground hover:bg-accent border border-border transition-colors cursor-pointer disabled:opacity-50"
+                  >
+                    {isExporting ? (
+                      <FiRefreshCw className="w-3.5 h-3.5 animate-spin text-primary" />
+                    ) : (
+                      <FiDownload className="w-3.5 h-3.5" />
+                    )}
+                    <span>Excel</span>
+                  </button>
                 </div>
               )}
             </div>
