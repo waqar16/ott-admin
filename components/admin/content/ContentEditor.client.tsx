@@ -22,6 +22,7 @@ import {
   initUpload,
   initMultipartUpload,
   publishContent,
+  getContent,
 } from '@/lib/contentApi'
 import {
   uploadWithCallback,
@@ -44,7 +45,7 @@ import GoogleDriveButton, {
   type DriveFile,
 } from '@/components/GoogleDriveUploadButton/GoogleDriveButton'
 import { getCreators } from '@/lib/creatorApi'
-import MultiSelectCreator from '@/components/MultiSelectCreator'
+import MultiSelectCreator, { extractCreatorIds, CreatorItem } from '@/components/MultiSelectCreator'
 
 export interface ContentEditorProps {
   content?: Content | null
@@ -343,7 +344,8 @@ export default function ContentEditor(props: ContentEditorProps) {
   const isEditing = !!content
   const [step, setStep] = useState(1)
   const [allGenre, setAllGenre] = useState<[]>([])
-  const [allcreators, setAllcreators] = useState<[]>([])
+  const [allcreators, setAllcreators] = useState<CreatorItem[]>([])
+  const [creatorsLoading, setCreatorsLoading] = useState(true)
   const nextStep = () => setStep((prev) => prev + 1)
   const prevStep = () => setStep((prev) => prev - 1)
   const [loading, setLoading] = useState(false)
@@ -398,20 +400,113 @@ export default function ContentEditor(props: ContentEditorProps) {
 
     price: content?.price || 0,
     genres: content?.genres || [],
-    creators: (content?.creators || []).map((c: any) => (typeof c === 'string' ? c : c?.id || c)),
+    creators: extractCreatorIds(content),
 
-    parent: parentId,
+    parent: content?.parent !== undefined && content?.parent !== null ? String(content.parent) : parentId,
   })
+
+  // Sync formData and createdContent when content prop changes (e.g. switching between items or resetting)
+  useEffect(() => {
+    if (content) {
+      setCreatedContent(content)
+      const initialCreators = extractCreatorIds(content)
+      setFormData({
+        title: content.title || '',
+        description: content.description || '',
+        content_type: content.content_type || contentType,
+        media_type: content.media_type || 'flat',
+        visibility_mode: content.visibility_mode || 'public',
+        trailerType: content.trailerType || 'movie',
+        season_number: content.season_number,
+        episode_number: content.episode_number,
+        status: content.status || 'draft',
+        is_demo_content: content.is_demo_content || false,
+        is_kid_safe: content.is_kid_safe || false,
+        is_ppv: content.is_ppv || false,
+        is_educational: content.is_educational || false,
+        price: content.price || 0,
+        genres: content.genres || [],
+        creators: initialCreators,
+        parent: content.parent !== undefined && content.parent !== null ? String(content.parent) : parentId,
+      })
+
+      if (content.content_metadata) {
+        setMetaData(content.content_metadata)
+      }
+    } else {
+      setCreatedContent(null)
+      setFormData({
+        title: '',
+        description: '',
+        content_type: contentType,
+        media_type: 'flat',
+        visibility_mode: 'public',
+        trailerType: 'movie',
+        season_number: seasonNumber,
+        episode_number: undefined,
+        status: 'draft',
+        is_demo_content: false,
+        is_kid_safe: false,
+        is_ppv: false,
+        is_educational: false,
+        price: 0,
+        genres: [],
+        creators: [],
+        parent: parentId,
+      })
+    }
+  }, [content, contentType, parentId, seasonNumber])
+
+  // Fetch full content in edit mode to ensure creator assignments & metadata are complete
+  useEffect(() => {
+    let isMounted = true
+    async function fetchFullContent() {
+      if (!content?.id) return
+      try {
+        const full = await getContent(content.id)
+        if (!isMounted || !full) return
+
+        const fullCreators = extractCreatorIds(full)
+        if (fullCreators.length > 0) {
+          setFormData((prev) => {
+            const currentList = extractCreatorIds(prev)
+            const merged = Array.from(new Set([...currentList, ...fullCreators]))
+            return {
+              ...prev,
+              creators: merged,
+            }
+          })
+        }
+
+        if (full.content_metadata) {
+          setMetaData((prev) => ({
+            ...prev,
+            ...full.content_metadata,
+          }))
+        }
+      } catch (err) {
+        console.warn('Could not fetch full content details:', err)
+      }
+    }
+
+    if (isEditing && content?.id) {
+      fetchFullContent()
+    }
+
+    return () => {
+      isMounted = false
+    }
+  }, [content?.id, isEditing])
 
   useEffect(() => {
     if (createdContent?.id) {
       setMetaData((prev) => ({
         ...prev,
         content: createdContent.id,
-        genres: formData.genres,
+        genres: formData.genres || [],
       }))
     }
-  }, [createdContent])
+  }, [createdContent, formData.genres])
 
   function handleChange(field: keyof CreateContentPayload, value: any) {
     setFormData((prev) => ({ ...prev, [field]: value }))
@@ -447,8 +542,13 @@ export default function ContentEditor(props: ContentEditorProps) {
       setError(null)
       setSuccess(null)
 
+      const payload: CreateContentPayload = {
+        ...formData,
+        creators: extractCreatorIds(formData),
+      }
+
       if (content || createdContent) {
-        const updated = await updateContent(content?.id || createdContent?.id, formData)
+        const updated = await updateContent(content?.id || createdContent?.id, payload)
 
         nextStep()
 
@@ -466,7 +566,7 @@ export default function ContentEditor(props: ContentEditorProps) {
         setSuccess('Content updated successfully!')
         // onSuccess(updated);
       } else {
-        const created = await createContent(formData)
+        const created = await createContent(payload)
         if (setContent && contentType != 'season' && contentType != 'episode') {
           setContent((prev) => [created, ...prev])
         }
@@ -475,9 +575,9 @@ export default function ContentEditor(props: ContentEditorProps) {
             prev.map((s) =>
               s.id == parentId
                 ? {
-                    ...s,
-                    children: [...(s.children || []), created],
-                  }
+                  ...s,
+                  children: [...(s.children || []), created],
+                }
                 : s
             )
           )
@@ -491,9 +591,9 @@ export default function ContentEditor(props: ContentEditorProps) {
               children: series.children?.map((season) =>
                 season.id === parentId
                   ? {
-                      ...season,
-                      children: [...(season.children ?? []), created],
-                    }
+                    ...season,
+                    children: [...(season.children ?? []), created],
+                  }
                   : season
               ),
             }))
@@ -669,18 +769,18 @@ export default function ContentEditor(props: ContentEditorProps) {
         setCreatedContent((prev) =>
           prev
             ? {
-                ...prev,
-                [`${imageType}_url`]: result.thumbnail_url,
-              }
+              ...prev,
+              [`${imageType}_url`]: result.thumbnail_url,
+            }
             : null
         )
       } else {
         setCreatedContent((prev) =>
           prev
             ? {
-                ...prev,
-                [`thumbnail_url`]: result.thumbnail_url,
-              }
+              ...prev,
+              [`thumbnail_url`]: result.thumbnail_url,
+            }
             : null
         )
       }
@@ -733,6 +833,7 @@ export default function ContentEditor(props: ContentEditorProps) {
   }
   const fetchCreators = async () => {
     try {
+      setCreatorsLoading(true)
       let creators = await getCreators()
       if (Array.isArray(creators)) {
         setAllcreators(creators)
@@ -740,6 +841,8 @@ export default function ContentEditor(props: ContentEditorProps) {
     } catch (err) {
       console.log(err, 'error')
       setAllcreators([])
+    } finally {
+      setCreatorsLoading(false)
     }
   }
   useEffect(() => {
@@ -896,17 +999,6 @@ export default function ContentEditor(props: ContentEditorProps) {
 
   useEffect(() => {
     setMounted(true)
-    async function loadCreators() {
-      try {
-        const creators = await getCreators()
-        if (Array.isArray(creators)) {
-          setAllcreators(creators as any)
-        }
-      } catch (err) {
-        console.error('Failed to load creators for content editor:', err)
-      }
-    }
-    loadCreators()
   }, [])
   if (!mounted) return null
   return (
@@ -1037,9 +1129,11 @@ export default function ContentEditor(props: ContentEditorProps) {
                         type="text"
                         value={formData.title}
                         onChange={(e) => handleChange('title', e.target.value)}
-                        className="w-full px-4 py-2 bg-gray-700 text-white rounded-lg  outline-none ring-0 
-           focus:outline-none focus:ring-0 
-           focus-visible:outline-none focus-visible:ring-0"
+                        className="w-full px-4 py-2 bg-white dark:bg-gray-700
+    text-gray-900 dark:text-white
+    border border-gray-300 dark:border-gray-600
+    rounded-lg outline-none
+    focus:outline-none focus:ring-0"
                         placeholder="Enter content title"
                         required
                       />
@@ -1054,9 +1148,11 @@ export default function ContentEditor(props: ContentEditorProps) {
                       value={formData.description}
                       onChange={(e) => handleChange('description', e.target.value)}
                       rows={3}
-                      className="w-full px-4 py-2 bg-gray-700 text-white rounded-lg  outline-none ring-0 
-           focus:outline-none focus:ring-0 
-           focus-visible:outline-none focus-visible:ring-0"
+                      className="w-full px-4 py-2 bg-white dark:bg-gray-700
+    text-gray-900 dark:text-white
+    border border-gray-300 dark:border-gray-600
+    rounded-lg outline-none
+    focus:outline-none focus:ring-0"
                       placeholder="Enter content description"
                       required
                     />
@@ -1112,11 +1208,14 @@ export default function ContentEditor(props: ContentEditorProps) {
                             )}
                           </>
                         )}
-                        {(contentType == 'series' || contentType == 'movie' || contentType == 'documentary') && (
+                        {((formData.content_type || contentType) == 'series' ||
+                          (formData.content_type || contentType) == 'movie' ||
+                          (formData.content_type || contentType) == 'documentary') && (
                           <MultiSelectCreator
                             allCreators={allcreators}
                             formData={formData}
                             setFormData={setFormData}
+                            isLoading={creatorsLoading}
                           />
                         )}
                         <SingleSelect
@@ -1180,19 +1279,19 @@ export default function ContentEditor(props: ContentEditorProps) {
                           )}
                         {(formData.content_type == 'movie' ||
                           formData.content_type == 'series') && (
-                          <div className="flex items-center ">
-                            <input
-                              type="checkbox"
-                              id="is_educational"
-                              checked={formData.is_educational}
-                              onChange={(e) => handleChange('is_educational', e.target.checked)}
-                              className="w-4 h-4 text-blue-600 bg-gray-700 border-gray-600 rounded focus:ring-blue-500"
-                            />
-                            <label htmlFor="is_educational" className="ml-2 text-sm text-gray-300">
-                              Is Educational?
-                            </label>
-                          </div>
-                        )}
+                            <div className="flex items-center ">
+                              <input
+                                type="checkbox"
+                                id="is_educational"
+                                checked={formData.is_educational}
+                                onChange={(e) => handleChange('is_educational', e.target.checked)}
+                                className="w-4 h-4 text-blue-600 bg-gray-700 border-gray-600 rounded focus:ring-blue-500"
+                              />
+                              <label htmlFor="is_educational" className="ml-2 text-sm text-gray-300">
+                                Is Educational?
+                              </label>
+                            </div>
+                          )}
                         {contentType != 'democontent' && formData.content_type != 'episode' && (
                           <div className="flex items-center ">
                             <input
@@ -1294,7 +1393,8 @@ export default function ContentEditor(props: ContentEditorProps) {
                         onChange={(e) =>
                           setMetaData((p) => ({ ...p, release_year: Number(e.target.value) }))
                         }
-                        className="w-full px-4 py-2 bg-gray-700 text-white rounded"
+                        className="w-full px-4 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600  text-white rounded focus:outline-none focus:ring-0 
+           focus-visible:outline-none focus-visible:ring-0"
                       />
 
                       <select
@@ -1313,8 +1413,8 @@ export default function ContentEditor(props: ContentEditorProps) {
                         placeholder="Language"
                         value={metaData.language}
                         onChange={(e) => setMetaData((p) => ({ ...p, language: e.target.value }))}
-                        className="w-full px-4 py-2 bg-gray-700 text-white rounded"
-                      />
+                        className="w-full px-4 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600  text-white rounded focus:outline-none focus:ring-0 
+           focus-visible:outline-none focus-visible:ring-0" />
 
                       <TagInput
                         label="Subtitles Available"
@@ -1328,15 +1428,16 @@ export default function ContentEditor(props: ContentEditorProps) {
                         onChange={(e) =>
                           setMetaData((p) => ({ ...p, production_company: e.target.value }))
                         }
-                        className="w-full px-4 py-2 bg-gray-700 text-white rounded"
-                      />
+                        className="w-full px-4 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600  text-white rounded focus:outline-none focus:ring-0 
+           focus-visible:outline-none focus-visible:ring-0" />
+
 
                       <input
                         placeholder="Country"
                         value={metaData.country}
                         onChange={(e) => setMetaData((p) => ({ ...p, country: e.target.value }))}
-                        className="w-full px-4 py-2 bg-gray-700 text-white rounded"
-                      />
+                        className="w-full px-4 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600  text-white rounded focus:outline-none focus:ring-0 
+           focus-visible:outline-none focus-visible:ring-0" />
 
                       <TagInput
                         label="Awards"
@@ -1345,13 +1446,13 @@ export default function ContentEditor(props: ContentEditorProps) {
                       />
                     </div>
                     <div className="flex justify-between my-6">
-                      <button onClick={prevStep} className="px-4 py-2 bg-gray-600 rounded">
+                      <button onClick={prevStep} className="px-4 py-2 bg-gray-600 rounded text-white">
                         Back
                       </button>
 
                       <button
                         onClick={handleMetadataSubmit}
-                        className="px-6 py-2 bg-blue-600 rounded"
+                        className="px-6 py-2 bg-blue-600 rounded text-white"
                       >
                         Save & Next
                       </button>
@@ -1524,7 +1625,7 @@ export default function ContentEditor(props: ContentEditorProps) {
                               ) : null}
 
                               {/* Overlay */}
-                              <div className="absolute inset-0 bg-black/60 flex flex-col items-center justify-center text-center px-4 opacity-100 group-hover:bg-black/60 transition">
+                              <div className="absolute inset-0 bg-black/30 dark:bg-black/60 flex flex-col items-center justify-center text-center px-4 opacity-100 group-hover:bg-black/60 transition">
                                 <svg
                                   className="w-14 h-14 text-blue-400 mb-4"
                                   viewBox="0 0 24 24"
@@ -1559,13 +1660,13 @@ export default function ContentEditor(props: ContentEditorProps) {
                                   </g>
                                 </svg>
 
-                                <p className="text-white font-medium">
+                                <p className="text-neutral-900 dark:text-white font-medium">
                                   {createdContent.poster_url || posterFile
                                     ? 'Change Poster Image'
                                     : 'Click to Upload Poster'}
                                 </p>
 
-                                <p className="text-xs text-gray-300 mt-1">
+                                <p className="text-xs   dark:text-gray-300 mt-1">
                                   2:3 ratio · Recommended 1000×1500
                                 </p>
                               </div>
@@ -1623,7 +1724,7 @@ export default function ContentEditor(props: ContentEditorProps) {
                               ) : null}
 
                               {/* Overlay Content */}
-                              <div className="absolute inset-0 bg-black/60 flex flex-col items-center justify-center text-center px-6 group-hover:bg-black/60 transition">
+                              <div className="absolute inset-0 bg-black/30 dark:bg-black/60 flex flex-col items-center justify-center text-center px-6 group-hover:bg-black/60 transition">
                                 <svg
                                   className="w-14 h-14 text-blue-400 mb-4"
                                   viewBox="0 0 24 24"
@@ -1658,13 +1759,13 @@ export default function ContentEditor(props: ContentEditorProps) {
                                   </g>
                                 </svg>
 
-                                <p className="text-white font-semibold text-lg">
+                                <p className="text-neutral-900 dark:text-white text-lg">
                                   {createdContent.banner_url || bannerFile
                                     ? 'Change Banner Image'
                                     : 'Click to Upload Banner'}
                                 </p>
 
-                                <p className="text-xs text-gray-300 mt-1">
+                                <p className="text-xs dark:text-gray-300 mt-1">
                                   16:9 ratio · Recommended 1920×1080 · Hero banner
                                 </p>
                               </div>
@@ -1696,22 +1797,20 @@ export default function ContentEditor(props: ContentEditorProps) {
                           <div className="flex items-center gap-3 bg-neutral-800 p-2 rounded-lg w-fit mb-4">
                             <button
                               onClick={() => setImagesModeForMobile('poster')}
-                              className={`px-4 py-2 rounded-lg ${
-                                imagesModeForMobile === 'poster'
-                                  ? 'bg-orange-600 text-white'
-                                  : 'bg-gray-700 text-gray-300'
-                              }`}
+                              className={`px-4 py-2 rounded-lg ${imagesModeForMobile === 'poster'
+                                ? 'bg-orange-600 text-white'
+                                : 'bg-gray-700 text-gray-300'
+                                }`}
                             >
                               Poster
                             </button>
 
                             <button
                               onClick={() => setImagesModeForMobile('banner')}
-                              className={`px-4 py-2 rounded-lg ${
-                                imagesModeForMobile === 'banner'
-                                  ? 'bg-orange-600 text-white'
-                                  : 'bg-gray-700 text-gray-300'
-                              }`}
+                              className={`px-4 py-2 rounded-lg ${imagesModeForMobile === 'banner'
+                                ? 'bg-orange-600 text-white'
+                                : 'bg-gray-700 text-gray-300'
+                                }`}
                             >
                               Banner
                             </button>
@@ -2032,7 +2131,7 @@ export default function ContentEditor(props: ContentEditorProps) {
                                 </p>
                               </div>
                             ) : (
-                              <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-6 bg-black/60 group-hover:bg-black/60 transition">
+                              <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-6 bg-black/30 dark:bg-black/60 group-hover:bg-black/60 transition">
                                 <svg
                                   className="w-14 h-14 text-blue-400 mb-4"
                                   viewBox="0 0 24 24"
@@ -2067,7 +2166,7 @@ export default function ContentEditor(props: ContentEditorProps) {
                                   </g>
                                 </svg>
 
-                                <p className="text-white font-semibold text-lg">
+                                <p className="text-neutral-900 dark:text-white  text-lg">
                                   Click to Upload Video for{' '}
                                   {content?.content_type || createdContent.content_type}
                                 </p>
@@ -2148,22 +2247,20 @@ export default function ContentEditor(props: ContentEditorProps) {
                         <div className="flex items-center gap-3 bg-neutral-800 p-2 rounded-lg w-fit">
                           <button
                             onClick={() => setTrailerMode('upload')}
-                            className={`px-4 py-2 rounded-lg ${
-                              trailerMode === 'upload'
-                                ? 'bg-orange-600 text-white'
-                                : 'bg-gray-700 text-gray-300'
-                            }`}
+                            className={`px-4 py-2 rounded-lg ${trailerMode === 'upload'
+                              ? 'bg-orange-600 text-white'
+                              : 'bg-gray-700 text-gray-300'
+                              }`}
                           >
                             Upload File
                           </button>
 
                           <button
                             onClick={() => setTrailerMode('url')}
-                            className={`px-4 py-2 rounded-lg ${
-                              trailerMode === 'url'
-                                ? 'bg-orange-600 text-white'
-                                : 'bg-gray-700 text-gray-300'
-                            }`}
+                            className={`px-4 py-2 rounded-lg ${trailerMode === 'url'
+                              ? 'bg-orange-600 text-white'
+                              : 'bg-gray-700 text-gray-300'
+                              }`}
                           >
                             Use Video URL
                           </button>
@@ -2287,7 +2384,7 @@ export default function ContentEditor(props: ContentEditorProps) {
                                     </p>
                                   </div>
                                 ) : (
-                                  <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-6 bg-black/60 group-hover:bg-black/60 transition">
+                                  <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-6 bg-black/30 dark:bg-black/60 group-hover:bg-black/60 transition">
                                     <svg
                                       className="w-14 h-14 text-blue-400 mb-4"
                                       viewBox="0 0 24 24"
@@ -2325,11 +2422,11 @@ export default function ContentEditor(props: ContentEditorProps) {
                                       </g>
                                     </svg>
 
-                                    <p className="text-white font-semibold text-lg">
+                                    <p className="text-neutral-900 dark:text-white  text-lg">
                                       Click to Upload Video for{' '}
                                       {content?.content_type || createdContent.content_type}
                                     </p>
-                                    <p className="text-xs text-gray-300 mt-1">
+                                    <p className="text-xs dark:text-gray-300 mt-1">
                                       MP4, MOV, MKV, MP3 · Large files supported
                                     </p>
                                   </div>

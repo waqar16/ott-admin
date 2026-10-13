@@ -15,6 +15,7 @@ import {
   FiX,
   FiLoader,
 } from 'react-icons/fi'
+import { createPortal } from 'react-dom'
 import { toast } from 'sonner'
 import { TranscodingProgress } from '@/app/admin/movie-management/page'
 import UploadTrailerClient from '../admin/content/UploadTrailerClient'
@@ -103,6 +104,7 @@ export const ContentCard: React.FC<ContentCardProps> = ({
   const [confirmText, setConfirmText] = useState('')
   const [deleteOpen, setDeleteOpen] = useState(false)
   const [deleteLoading, setDeleteLoading] = useState(false)
+  const [mounted, setMounted] = useState(false)
 
   const [publishOpen, setPublishOpen] = useState(false)
   const [publishLoading, setPublishLoading] = useState(false)
@@ -114,6 +116,9 @@ export const ContentCard: React.FC<ContentCardProps> = ({
 
   const bgImage = item.banner_url || item.poster_url
 
+  React.useEffect(() => {
+    setMounted(true)
+  }, [])
   return (
     <div className="group relative flex flex-col justify-between overflow-hidden rounded-2xl border border-border/80 bg-card shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md hover:border-primary/30">
       {/* Top Banner Image Container */}
@@ -467,74 +472,78 @@ export const ContentCard: React.FC<ContentCardProps> = ({
       )}
 
       {/* CONFIRM DELETE MODAL */}
-      {deleteOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="bg-card border border-border rounded-2xl p-6 w-full max-w-md shadow-2xl space-y-4 relative">
-            <button
-              onClick={() => {
-                setDeleteOpen(false)
-                setConfirmText('')
-              }}
-              disabled={deleteLoading}
-              className="absolute top-4 right-4 text-muted-foreground hover:text-foreground p-1 rounded-md"
-            >
-              <FiX className="w-4 h-4" />
-            </button>
-
-            <div className="flex items-start gap-3">
-              <div className="p-2.5 rounded-full bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20">
-                <FiAlertTriangle className="w-5 h-5" />
-              </div>
-              <div>
-                <h3 className="text-base font-bold text-foreground">Delete Content Asset?</h3>
-                <p className="text-xs text-muted-foreground mt-0.5">
-                  Type <strong className="text-foreground font-semibold">"{item.title}"</strong> to permanently delete this content.
-                </p>
-              </div>
-            </div>
-
-            <input
-              value={confirmText}
-              onChange={(e) => setConfirmText(e.target.value)}
-              placeholder="Type content title..."
-              className="w-full px-3.5 py-2 text-sm bg-background border border-input text-foreground rounded-xl outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary"
-            />
-
-            <div className="flex items-center justify-end gap-3 pt-2">
+      {deleteOpen &&
+        mounted &&
+        createPortal(
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-in fade-in duration-200">
+            <div className="bg-card border border-border rounded-2xl p-6 w-full max-w-md shadow-2xl space-y-4 relative">
               <button
                 onClick={() => {
                   setDeleteOpen(false)
                   setConfirmText('')
                 }}
                 disabled={deleteLoading}
-                className="px-4 py-2 text-xs font-semibold rounded-lg text-foreground bg-accent hover:bg-accent/80 border border-border"
+                className="absolute top-4 right-4 text-muted-foreground hover:text-foreground p-1 rounded-md"
               >
-                Cancel
+                <FiX className="w-4 h-4" />
               </button>
 
-              <button
-                disabled={confirmText !== item.title || deleteLoading}
-                onClick={async () => {
-                  setDeleteLoading(true)
-                  const delItem = await deleteContent(item.id)
-                  if (delItem === 204) {
+              <div className="flex items-start gap-3">
+                <div className="p-2.5 rounded-full bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20">
+                  <FiAlertTriangle className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-base font-bold text-foreground">Delete Content Asset?</h3>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    Type <strong className="text-foreground font-semibold">"{item.title}"</strong> to permanently delete this content.
+                  </p>
+                </div>
+              </div>
+
+              <input
+                value={confirmText}
+                onChange={(e) => setConfirmText(e.target.value)}
+                placeholder="Type content title..."
+                className="w-full px-3.5 py-2 text-sm bg-background border border-input text-foreground rounded-xl outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary"
+              />
+
+              <div className="flex items-center justify-end gap-3 pt-2">
+                <button
+                  onClick={() => {
                     setDeleteOpen(false)
-                    fetchContent()
                     setConfirmText('')
-                    toast.success(`${item.title} Deleted ✔`)
-                  } else {
-                    toast.error('Error Occurred. Try Later :)')
-                  }
-                  setDeleteLoading(false)
-                }}
-                className="px-4 py-2 text-xs font-semibold rounded-lg text-white bg-rose-600 hover:bg-rose-700 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {deleteLoading ? 'Deleting...' : 'Delete'}
-              </button>
+                  }}
+                  disabled={deleteLoading}
+                  className="px-4 py-2 text-xs font-semibold rounded-lg text-foreground bg-accent hover:bg-accent/80 border border-border"
+                >
+                  Cancel
+                </button>
+
+                <button
+                  disabled={confirmText !== item.title || deleteLoading}
+                  onClick={async () => {
+                    setDeleteLoading(true)
+                    const delItem = await deleteContent(item.id)
+                    if (delItem === 204) {
+                      setDeleteOpen(false)
+                      fetchContent()
+                      setConfirmText('')
+                      toast.success(`${item.title} Deleted ✔`)
+                    } else {
+                      toast.error('Error Occurred. Try Later :)')
+                    }
+                    setDeleteLoading(false)
+                  }}
+                  className="px-4 py-2 text-xs font-semibold rounded-lg text-white bg-rose-600 hover:bg-rose-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {deleteLoading ? 'Deleting...' : 'Delete'}
+                </button>
+              </div>
             </div>
-          </div>
-        </div>
-      )}
+          </div>,
+          document.body
+        )}
+
 
       {/* UPLOAD TRAILER MODAL */}
       {trailerOpen && (
