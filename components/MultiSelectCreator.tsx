@@ -232,9 +232,9 @@ export default function MultiSelectCreator({
   }, [open])
 
   return (
-    <div className="relative w-full space-y-1.5">
+    <div className="relative w-full  ">
       <div className="flex items-center justify-between">
-        <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+        <label className="mb-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
           <FiUser className="w-3.5 h-3.5 text-primary" />
           {label}
         </label>
@@ -345,15 +345,15 @@ export default function MultiSelectCreator({
                       key={creatorId || creator.name}
                       onClick={(e) => toggleCreator(creatorId, e)}
                       className={`flex items-center justify-between px-3 py-2 text-xs rounded-lg cursor-pointer transition-colors ${isSelected
-                          ? 'bg-primary/10 text-primary font-medium'
-                          : 'hover:bg-accent text-foreground'
+                        ? 'bg-primary/10 text-primary font-medium'
+                        : 'hover:bg-accent text-foreground'
                         }`}
                     >
                       <div className="flex items-center gap-2 min-w-0">
                         <div
                           className={`w-4 h-4 rounded border flex items-center justify-center shrink-0 ${isSelected
-                              ? 'bg-primary border-primary text-primary-foreground'
-                              : 'border-muted-foreground/40 bg-background'
+                            ? 'bg-primary border-primary text-primary-foreground'
+                            : 'border-muted-foreground/40 bg-background'
                             }`}
                         >
                           {isSelected && <FiCheck className="w-3 h-3" />}

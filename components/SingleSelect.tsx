@@ -41,9 +41,9 @@ export default function SingleSelect({ label, options, value, onChange }: Single
       <div
         ref={buttonRef}
         onClick={toggle}
-        className="w-full px-4 py-2 bg-gray-700 text-white rounded-lg cursor-pointer border border-gray-600 flex justify-between items-center"
+        className="w-full px-4 py-2 bg-white dark:bg-gray-700 text-black dark:text-white rounded-lg cursor-pointer border border-gray-600 flex justify-between items-center"
       >
-        <span className={selected ? '' : 'text-gray-400'}>
+        <span className={selected ? '' : 'text-black dark:text-white'}>
           {selected ? selected.name : 'Select option...'}
         </span>
         <span className="text-gray-400">▾</span>
