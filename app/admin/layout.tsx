@@ -6,6 +6,8 @@ import MobileAdminNav from '@/components/AdminSidebar/MobileAdminNav'
 import AdminNavbar from '@/components/AdminNavbar/AdminNavbar'
 import { PlatformSettingsProvider } from '@/lib/platformSettings'
 import { ThemeProvider } from '@/components/theme/ThemeContext'
+import { NavigationLoadingProvider } from '@/components/Navigation/NavigationLoadingContext'
+import TopProgressBar from '@/components/Navigation/TopProgressBar'
 import { leagueSpartan } from '@/fonts/fonts'
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
@@ -21,7 +23,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   return (
     <PlatformSettingsProvider>
       <ThemeProvider>
-        {/* Synchronous script to prevent theme flash */}
+        <NavigationLoadingProvider>
+          <TopProgressBar />
+          {/* Synchronous script to prevent theme flash */}
         <script
           dangerouslySetInnerHTML={{
             __html: `
@@ -69,6 +73,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             </main>
           </div>
         </div>
+        </NavigationLoadingProvider>
       </ThemeProvider>
     </PlatformSettingsProvider>
   )

@@ -33,10 +33,10 @@ export const CreatorFilters: React.FC<CreatorFiltersProps> = ({
 
   const isFiltered = Boolean(
     filters.start_date ||
-      filters.end_date ||
-      filters.revenue ||
-      filters.creator_share_percentage ||
-      filters.currency
+    filters.end_date ||
+    filters.revenue ||
+    filters.creator_share_percentage ||
+    filters.currency
   )
 
   return (

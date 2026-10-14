@@ -4,6 +4,7 @@ import React, { useState, useEffect, useRef } from 'react'
 import { usePathname, useRouter } from 'next/navigation'
 import { useAuth } from '@/lib/useAuth'
 import { useTheme } from '@/components/theme/ThemeContext'
+import { useNavigationLoading } from '@/components/Navigation/NavigationLoadingContext'
 import {
   FiSun,
   FiMoon,
@@ -28,6 +29,7 @@ export default function AdminNavbar({ collapsed, setCollapsed, setOpenDrawer }: 
   const { theme, toggleTheme } = useTheme()
   const pathname = usePathname()
   const router = useRouter()
+  const { startNavigation } = useNavigationLoading()
   const [dropdownOpen, setDropdownOpen] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
 
@@ -86,9 +88,8 @@ export default function AdminNavbar({ collapsed, setCollapsed, setOpenDrawer }: 
 
   return (
     <header
-      className={`fixed top-0 right-0 z-30 h-16 bg-white/80 dark:bg-neutral-950/80 backdrop-blur-md border-b border-slate-200/80 dark:border-neutral-900/80 shadow-sm transition-all duration-300 ${
-        collapsed ? 'left-0 md:left-[46px]' : 'left-0 md:left-[240px]'
-      }`}
+      className={`fixed top-0 right-0 z-30 h-16 bg-white/80 dark:bg-neutral-950/80 backdrop-blur-md border-b border-slate-200/80 dark:border-neutral-900/80 shadow-sm transition-all duration-300 ${collapsed ? 'left-0 md:left-[46px]' : 'left-0 md:left-[240px]'
+        }`}
     >
       <div className="h-full px-6 flex items-center justify-between">
         {/* Left Side: Toggles & Titles */}
@@ -147,13 +148,13 @@ export default function AdminNavbar({ collapsed, setCollapsed, setOpenDrawer }: 
           </button>
 
           {/* Notifications button placeholder */}
-          <button
+          {/* <button
             className="p-2 text-slate-600 dark:text-neutral-400 hover:bg-slate-100 dark:hover:bg-neutral-900 rounded-lg transition relative"
             aria-label="Notifications"
           >
             <FiBell className="w-5 h-5" />
             <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-red-500" />
-          </button>
+          </button> */}
 
           {/* Vertical Divider */}
           <div className="h-6 w-px bg-slate-200 dark:bg-neutral-800" />
@@ -193,6 +194,7 @@ export default function AdminNavbar({ collapsed, setCollapsed, setOpenDrawer }: 
                 <button
                   onClick={() => {
                     setDropdownOpen(false)
+                    startNavigation('/admin/settings')
                     router.push('/admin/settings')
                   }}
                   className="w-full flex items-center space-x-2.5 px-4 py-2 text-sm text-slate-700 dark:text-neutral-300 hover:bg-slate-50 dark:hover:bg-neutral-900 text-left transition"

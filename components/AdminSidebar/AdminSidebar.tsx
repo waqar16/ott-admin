@@ -13,11 +13,13 @@ import {
   FiList,
   FiMessageSquare,
   FiUserCheck,
+  FiLoader,
 } from 'react-icons/fi'
 import { BiDollar, BiMovie, BiTv } from 'react-icons/bi'
 import { GrPlan } from 'react-icons/gr'
 import { usePlatformSettings } from '@/lib/platformSettings'
 import { leagueSpartan } from '@/fonts/fonts'
+import { useNavigationLoading } from '@/components/Navigation/NavigationLoadingContext'
 
 // Replacing Bs icon imports with standard react-icons ones to prevent import issues
 import {
@@ -37,6 +39,7 @@ interface AdminSidebarProps {
 export default function AdminSidebar({ collapsed, setCollapsed }: AdminSidebarProps) {
   const { settings } = usePlatformSettings()
   const pathname = usePathname()
+  const { isPending, startNavigation } = useNavigationLoading()
 
   // Dropdown states
   const [openUsers, setOpenUsers] = useState(false)
@@ -72,6 +75,17 @@ export default function AdminSidebar({ collapsed, setCollapsed }: AdminSidebarPr
     }
   }
 
+  const handleLinkClick = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
+    if (isActive(href)) {
+      return
+    }
+    if (isPending(href)) {
+      e.preventDefault()
+      return
+    }
+    startNavigation(href)
+  }
+
   const linkBase =
     'group relative w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm transition-all duration-200'
   const activeClass =
@@ -82,13 +96,44 @@ export default function AdminSidebar({ collapsed, setCollapsed }: AdminSidebarPr
     'flex items-center gap-3 px-4 py-2 rounded-lg text-xs transition-colors duration-150'
 
   return (
+
     <aside
-      className={`h-screen bg-white dark:bg-neutral-950 border-r border-slate-200/80 dark:border-neutral-900/80 text-slate-700 dark:text-neutral-300 transition-all duration-300 z-40 fixed left-0 top-0 flex flex-col justify-between select-none ${collapsed ? 'w-[76px]' : 'w-[260px]'
-        }`}
+      className={`fixed left-0 top-0 z-40 flex h-screen flex-col
+      overflow-hidden select-none
+      bg-white text-slate-700
+      dark:bg-neutral-950 dark:text-neutral-300
+      border-r border-slate-200/80 dark:border-neutral-900/80
+      transition-[width] duration-300
+      ${collapsed ? 'w-[76px]' : 'w-[260px]'}`}
     >
+      {/* FIXED HEADER — never scrolls or shrinks */}
+      <div
+        className="h-16 min-h-16 shrink-0 flex items-center justify-center
+        border-b border-slate-200/80 dark:border-neutral-900/80 px-4"
+      >
+        <div className="flex items-center gap-2.5">
+          <img
+            src="/mainLogo.webp"
+            alt="Logo"
+            className="w-8 h-auto shrink-0 object-contain
+            transition-transform hover:scale-105"
+          />
+
+          {!collapsed && (
+            <span
+              className={`whitespace-nowrap text-lg font-bold tracking-wider
+              text-slate-800 dark:text-white ${leagueSpartan.className}`}
+            >
+              Admin Panel
+            </span>
+          )}
+        </div>
+      </div>
+
+
       <div className="flex flex-col flex-1 overflow-y-auto minimal-scrollbar">
         {/* Header/Logo */}
-        <div className="h-16 flex items-center justify-center border-b border-slate-200/80 dark:border-neutral-900/80 px-4">
+        {/* <div className="h-16 flex items-center justify-center border-b border-slate-200/80 dark:border-neutral-900/80 px-4">
           <div className="flex items-center space-x-2.5">
             <img
               src="/mainLogo.webp"
@@ -103,7 +148,7 @@ export default function AdminSidebar({ collapsed, setCollapsed }: AdminSidebarPr
               </span>
             )}
           </div>
-        </div>
+        </div> */}
 
         {/* Navigation list */}
         <nav className="p-3 space-y-1.5 flex flex-col items-center">
@@ -111,10 +156,30 @@ export default function AdminSidebar({ collapsed, setCollapsed }: AdminSidebarPr
           <SidebarTooltip content="Overview" disabled={!collapsed}>
             <Link
               href="/admin"
-              className={`${linkBase} ${isActive('/admin') ? activeClass : inactiveClass}`}
+              onClick={(e) => handleLinkClick(e, '/admin')}
+              className={`${linkBase} ${isPending('/admin')
+                ? 'bg-blue-50/70 dark:bg-blue-950/40 text-[var(--main-color)] dark:text-blue-400 font-semibold ring-1 ring-[var(--main-color)]/30 shadow-xs'
+                : isActive('/admin')
+                  ? activeClass
+                  : inactiveClass
+                }`}
+              aria-current={isActive('/admin') ? 'page' : undefined}
             >
-              <FiHome className="w-[18px] h-[18px] flex-shrink-0" />
-              {!collapsed && <span className="truncate">Overview</span>}
+              {isPending('/admin') && collapsed ? (
+                <FiLoader className="w-[18px] h-[18px] flex-shrink-0 animate-spin text-[var(--main-color)] dark:text-blue-400" />
+              ) : (
+                <FiHome className={`w-[18px] h-[18px] flex-shrink-0 ${isPending('/admin') ? 'opacity-70' : ''}`} />
+              )}
+              {!collapsed && (
+                <>
+                  <span className="truncate">Overview</span>
+                  {isPending('/admin') && (
+                    <span className="ml-auto flex-shrink-0 flex items-center" aria-label="Loading">
+                      <FiLoader className="w-3.5 h-3.5 animate-spin text-[var(--main-color)] dark:text-blue-400" />
+                    </span>
+                  )}
+                </>
+              )}
             </Link>
           </SidebarTooltip>
 
@@ -122,10 +187,30 @@ export default function AdminSidebar({ collapsed, setCollapsed }: AdminSidebarPr
           <SidebarTooltip content="Analytics" disabled={!collapsed}>
             <Link
               href="/admin/analytics"
-              className={`${linkBase} ${isActive('/admin/analytics') ? activeClass : inactiveClass}`}
+              onClick={(e) => handleLinkClick(e, '/admin/analytics')}
+              className={`${linkBase} ${isPending('/admin/analytics')
+                ? 'bg-blue-50/70 dark:bg-blue-950/40 text-[var(--main-color)] dark:text-blue-400 font-semibold ring-1 ring-[var(--main-color)]/30 shadow-xs'
+                : isActive('/admin/analytics')
+                  ? activeClass
+                  : inactiveClass
+                }`}
+              aria-current={isActive('/admin/analytics') ? 'page' : undefined}
             >
-              <BsAnalyticsIcon className="w-[18px] h-[18px] flex-shrink-0" />
-              {!collapsed && <span className="truncate">Analytics</span>}
+              {isPending('/admin/analytics') && collapsed ? (
+                <FiLoader className="w-[18px] h-[18px] flex-shrink-0 animate-spin text-[var(--main-color)] dark:text-blue-400" />
+              ) : (
+                <BsAnalyticsIcon className={`w-[18px] h-[18px] flex-shrink-0 ${isPending('/admin/analytics') ? 'opacity-70' : ''}`} />
+              )}
+              {!collapsed && (
+                <>
+                  <span className="truncate">Analytics</span>
+                  {isPending('/admin/analytics') && (
+                    <span className="ml-auto flex-shrink-0 flex items-center" aria-label="Loading">
+                      <FiLoader className="w-3.5 h-3.5 animate-spin text-[var(--main-color)] dark:text-blue-400" />
+                    </span>
+                  )}
+                </>
+              )}
             </Link>
           </SidebarTooltip>
 
@@ -133,10 +218,30 @@ export default function AdminSidebar({ collapsed, setCollapsed }: AdminSidebarPr
           <SidebarTooltip content="Creators" disabled={!collapsed}>
             <Link
               href="/admin/creator"
-              className={`${linkBase} ${isActive('/admin/creator') ? activeClass : inactiveClass}`}
+              onClick={(e) => handleLinkClick(e, '/admin/creator')}
+              className={`${linkBase} ${isPending('/admin/creator')
+                ? 'bg-blue-50/70 dark:bg-blue-950/40 text-[var(--main-color)] dark:text-blue-400 font-semibold ring-1 ring-[var(--main-color)]/30 shadow-xs'
+                : isActive('/admin/creator')
+                  ? activeClass
+                  : inactiveClass
+                }`}
+              aria-current={isActive('/admin/creator') ? 'page' : undefined}
             >
-              <FiUsers className="w-[18px] h-[18px] flex-shrink-0" />
-              {!collapsed && <span className="truncate">Creators</span>}
+              {isPending('/admin/creator') && collapsed ? (
+                <FiLoader className="w-[18px] h-[18px] flex-shrink-0 animate-spin text-[var(--main-color)] dark:text-blue-400" />
+              ) : (
+                <FiUsers className={`w-[18px] h-[18px] flex-shrink-0 ${isPending('/admin/creator') ? 'opacity-70' : ''}`} />
+              )}
+              {!collapsed && (
+                <>
+                  <span className="truncate">Creators</span>
+                  {isPending('/admin/creator') && (
+                    <span className="ml-auto flex-shrink-0 flex items-center" aria-label="Loading">
+                      <FiLoader className="w-3.5 h-3.5 animate-spin text-[var(--main-color)] dark:text-blue-400" />
+                    </span>
+                  )}
+                </>
+              )}
             </Link>
           </SidebarTooltip>
 
@@ -144,10 +249,30 @@ export default function AdminSidebar({ collapsed, setCollapsed }: AdminSidebarPr
           <SidebarTooltip content="Revenue" disabled={!collapsed}>
             <Link
               href="/admin/revenue"
-              className={`${linkBase} ${isActive('/admin/revenue') ? activeClass : inactiveClass}`}
+              onClick={(e) => handleLinkClick(e, '/admin/revenue')}
+              className={`${linkBase} ${isPending('/admin/revenue')
+                ? 'bg-blue-50/70 dark:bg-blue-950/40 text-[var(--main-color)] dark:text-blue-400 font-semibold ring-1 ring-[var(--main-color)]/30 shadow-xs'
+                : isActive('/admin/revenue')
+                  ? activeClass
+                  : inactiveClass
+                }`}
+              aria-current={isActive('/admin/revenue') ? 'page' : undefined}
             >
-              <BiDollar className="w-[18px] h-[18px] flex-shrink-0" />
-              {!collapsed && <span className="truncate">Revenue</span>}
+              {isPending('/admin/revenue') && collapsed ? (
+                <FiLoader className="w-[18px] h-[18px] flex-shrink-0 animate-spin text-[var(--main-color)] dark:text-blue-400" />
+              ) : (
+                <BiDollar className={`w-[18px] h-[18px] flex-shrink-0 ${isPending('/admin/revenue') ? 'opacity-70' : ''}`} />
+              )}
+              {!collapsed && (
+                <>
+                  <span className="truncate">Revenue</span>
+                  {isPending('/admin/revenue') && (
+                    <span className="ml-auto flex-shrink-0 flex items-center" aria-label="Loading">
+                      <FiLoader className="w-3.5 h-3.5 animate-spin text-[var(--main-color)] dark:text-blue-400" />
+                    </span>
+                  )}
+                </>
+              )}
             </Link>
           </SidebarTooltip>
 
@@ -155,10 +280,11 @@ export default function AdminSidebar({ collapsed, setCollapsed }: AdminSidebarPr
           <div className="w-full">
             <SidebarTooltip content="Users" disabled={!collapsed}>
               <button
+                type="button"
                 onClick={() => handleDropdownClick(openUsers, setOpenUsers)}
                 className={`${linkBase} ${isSubActive(['/admin/users', '/admin/pre-signup']) && !collapsed
-                    ? 'text-[var(--main-color)] dark:text-blue-400 font-semibold'
-                    : inactiveClass
+                  ? 'text-[var(--main-color)] dark:text-blue-400 font-semibold'
+                  : inactiveClass
                   }`}
               >
                 <div className="flex items-center gap-3">
@@ -177,17 +303,41 @@ export default function AdminSidebar({ collapsed, setCollapsed }: AdminSidebarPr
               <div className="pl-6 mt-1 flex flex-col space-y-1 border-l border-slate-200 dark:border-neutral-900 ml-5">
                 <Link
                   href="/admin/users"
-                  className={`${subLinkClass} ${isActive('/admin/users') ? 'text-[var(--main-color)] dark:text-blue-400 font-semibold' : 'text-slate-500 dark:text-neutral-500 hover:text-slate-800 dark:hover:text-slate-200'}`}
+                  onClick={(e) => handleLinkClick(e, '/admin/users')}
+                  className={`${subLinkClass} ${isPending('/admin/users')
+                    ? 'bg-blue-50/70 dark:bg-blue-950/40 text-[var(--main-color)] dark:text-blue-400 font-semibold ring-1 ring-[var(--main-color)]/30 shadow-xs'
+                    : isActive('/admin/users')
+                      ? 'text-[var(--main-color)] dark:text-blue-400 font-semibold'
+                      : 'text-slate-500 dark:text-neutral-500 hover:text-slate-800 dark:hover:text-slate-200'
+                    }`}
+                  aria-current={isActive('/admin/users') ? 'page' : undefined}
                 >
-                  <FiList className="w-3.5 h-3.5" />
-                  <span>Manage Users</span>
+                  <FiList className="w-3.5 h-3.5 flex-shrink-0" />
+                  <span className="truncate">Manage Users</span>
+                  {isPending('/admin/users') && (
+                    <span className="ml-auto flex-shrink-0 flex items-center" aria-label="Loading">
+                      <FiLoader className="w-3 h-3 animate-spin text-[var(--main-color)] dark:text-blue-400" />
+                    </span>
+                  )}
                 </Link>
                 <Link
                   href="/admin/pre-signup"
-                  className={`${subLinkClass} ${isActive('/admin/pre-signup') ? 'text-[var(--main-color)] dark:text-blue-400 font-semibold' : 'text-slate-500 dark:text-neutral-500 hover:text-slate-800 dark:hover:text-slate-200'}`}
+                  onClick={(e) => handleLinkClick(e, '/admin/pre-signup')}
+                  className={`${subLinkClass} ${isPending('/admin/pre-signup')
+                    ? 'bg-blue-50/70 dark:bg-blue-950/40 text-[var(--main-color)] dark:text-blue-400 font-semibold ring-1 ring-[var(--main-color)]/30 shadow-xs'
+                    : isActive('/admin/pre-signup')
+                      ? 'text-[var(--main-color)] dark:text-blue-400 font-semibold'
+                      : 'text-slate-500 dark:text-neutral-500 hover:text-slate-800 dark:hover:text-slate-200'
+                    }`}
+                  aria-current={isActive('/admin/pre-signup') ? 'page' : undefined}
                 >
-                  <FiUserCheck className="w-3.5 h-3.5" />
-                  <span>Pre-Signup & Waitlist</span>
+                  <FiUserCheck className="w-3.5 h-3.5 flex-shrink-0" />
+                  <span className="truncate">Pre-Signup & Waitlist</span>
+                  {isPending('/admin/pre-signup') && (
+                    <span className="ml-auto flex-shrink-0 flex items-center" aria-label="Loading">
+                      <FiLoader className="w-3 h-3 animate-spin text-[var(--main-color)] dark:text-blue-400" />
+                    </span>
+                  )}
                 </Link>
               </div>
             )}
@@ -197,10 +347,11 @@ export default function AdminSidebar({ collapsed, setCollapsed }: AdminSidebarPr
           <div className="w-full">
             <SidebarTooltip content="FAQs" disabled={!collapsed}>
               <button
+                type="button"
                 onClick={() => handleDropdownClick(openFaqs, setOpenFaqs)}
                 className={`${linkBase} ${isSubActive(['/admin/faqs']) && !collapsed
-                    ? 'text-[var(--main-color)] dark:text-blue-400 font-semibold'
-                    : inactiveClass
+                  ? 'text-[var(--main-color)] dark:text-blue-400 font-semibold'
+                  : inactiveClass
                   }`}
               >
                 <div className="flex items-center gap-3">
@@ -219,10 +370,22 @@ export default function AdminSidebar({ collapsed, setCollapsed }: AdminSidebarPr
               <div className="pl-6 mt-1 flex flex-col space-y-1 border-l border-slate-200 dark:border-neutral-900 ml-5">
                 <Link
                   href="/admin/faqs"
-                  className={`${subLinkClass} ${isActive('/admin/faqs') ? 'text-[var(--main-color)] dark:text-blue-400 font-semibold' : 'text-slate-500 dark:text-neutral-500 hover:text-slate-800 dark:hover:text-slate-200'}`}
+                  onClick={(e) => handleLinkClick(e, '/admin/faqs')}
+                  className={`${subLinkClass} ${isPending('/admin/faqs')
+                    ? 'bg-blue-50/70 dark:bg-blue-950/40 text-[var(--main-color)] dark:text-blue-400 font-semibold ring-1 ring-[var(--main-color)]/30 shadow-xs'
+                    : isActive('/admin/faqs')
+                      ? 'text-[var(--main-color)] dark:text-blue-400 font-semibold'
+                      : 'text-slate-500 dark:text-neutral-500 hover:text-slate-800 dark:hover:text-slate-200'
+                    }`}
+                  aria-current={isActive('/admin/faqs') ? 'page' : undefined}
                 >
-                  <FiMessageSquare className="w-3.5 h-3.5" />
-                  <span>Manage FAQs</span>
+                  <FiMessageSquare className="w-3.5 h-3.5 flex-shrink-0" />
+                  <span className="truncate">Manage FAQs</span>
+                  {isPending('/admin/faqs') && (
+                    <span className="ml-auto flex-shrink-0 flex items-center" aria-label="Loading">
+                      <FiLoader className="w-3 h-3 animate-spin text-[var(--main-color)] dark:text-blue-400" />
+                    </span>
+                  )}
                 </Link>
               </div>
             )}
@@ -232,14 +395,15 @@ export default function AdminSidebar({ collapsed, setCollapsed }: AdminSidebarPr
           <div className="w-full">
             <SidebarTooltip content="Content" disabled={!collapsed}>
               <button
+                type="button"
                 onClick={() => handleDropdownClick(openContent, setOpenContent)}
                 className={`${linkBase} ${isSubActive([
                   '/admin/movie-management',
                   '/admin/series-management',
                   '/admin/trailer-management',
                 ]) && !collapsed
-                    ? 'text-[var(--main-color)] dark:text-blue-400 font-semibold'
-                    : inactiveClass
+                  ? 'text-[var(--main-color)] dark:text-blue-400 font-semibold'
+                  : inactiveClass
                   }`}
               >
                 <div className="flex items-center gap-3">
@@ -258,24 +422,60 @@ export default function AdminSidebar({ collapsed, setCollapsed }: AdminSidebarPr
               <div className="pl-6 mt-1 flex flex-col space-y-1 border-l border-slate-200 dark:border-neutral-900 ml-5">
                 <Link
                   href="/admin/movie-management"
-                  className={`${subLinkClass} ${isActive('/admin/movie-management') ? 'text-[var(--main-color)] dark:text-blue-400 font-semibold' : 'text-slate-500 dark:text-neutral-500 hover:text-slate-800 dark:hover:text-slate-200'}`}
+                  onClick={(e) => handleLinkClick(e, '/admin/movie-management')}
+                  className={`${subLinkClass} ${isPending('/admin/movie-management')
+                    ? 'bg-blue-50/70 dark:bg-blue-950/40 text-[var(--main-color)] dark:text-blue-400 font-semibold ring-1 ring-[var(--main-color)]/30 shadow-xs'
+                    : isActive('/admin/movie-management')
+                      ? 'text-[var(--main-color)] dark:text-blue-400 font-semibold'
+                      : 'text-slate-500 dark:text-neutral-500 hover:text-slate-800 dark:hover:text-slate-200'
+                    }`}
+                  aria-current={isActive('/admin/movie-management') ? 'page' : undefined}
                 >
-                  <BiMovie className="w-3.5 h-3.5" />
-                  <span>Movies</span>
+                  <BiMovie className="w-3.5 h-3.5 flex-shrink-0" />
+                  <span className="truncate">Movies</span>
+                  {isPending('/admin/movie-management') && (
+                    <span className="ml-auto flex-shrink-0 flex items-center" aria-label="Loading">
+                      <FiLoader className="w-3 h-3 animate-spin text-[var(--main-color)] dark:text-blue-400" />
+                    </span>
+                  )}
                 </Link>
                 <Link
                   href="/admin/series-management"
-                  className={`${subLinkClass} ${isActive('/admin/series-management') ? 'text-[var(--main-color)] dark:text-blue-400 font-semibold' : 'text-slate-500 dark:text-neutral-500 hover:text-slate-800 dark:hover:text-slate-200'}`}
+                  onClick={(e) => handleLinkClick(e, '/admin/series-management')}
+                  className={`${subLinkClass} ${isPending('/admin/series-management')
+                    ? 'bg-blue-50/70 dark:bg-blue-950/40 text-[var(--main-color)] dark:text-blue-400 font-semibold ring-1 ring-[var(--main-color)]/30 shadow-xs'
+                    : isActive('/admin/series-management')
+                      ? 'text-[var(--main-color)] dark:text-blue-400 font-semibold'
+                      : 'text-slate-500 dark:text-neutral-500 hover:text-slate-800 dark:hover:text-slate-200'
+                    }`}
+                  aria-current={isActive('/admin/series-management') ? 'page' : undefined}
                 >
-                  <BiTv className="w-3.5 h-3.5" />
-                  <span>Series</span>
+                  <BiTv className="w-3.5 h-3.5 flex-shrink-0" />
+                  <span className="truncate">Series</span>
+                  {isPending('/admin/series-management') && (
+                    <span className="ml-auto flex-shrink-0 flex items-center" aria-label="Loading">
+                      <FiLoader className="w-3 h-3 animate-spin text-[var(--main-color)] dark:text-blue-400" />
+                    </span>
+                  )}
                 </Link>
                 <Link
                   href="/admin/trailer-management"
-                  className={`${subLinkClass} ${isActive('/admin/trailer-management') ? 'text-[var(--main-color)] dark:text-blue-400 font-semibold' : 'text-slate-500 dark:text-neutral-500 hover:text-slate-800 dark:hover:text-slate-200'}`}
+                  onClick={(e) => handleLinkClick(e, '/admin/trailer-management')}
+                  className={`${subLinkClass} ${isPending('/admin/trailer-management')
+                    ? 'bg-blue-50/70 dark:bg-blue-950/40 text-[var(--main-color)] dark:text-blue-400 font-semibold ring-1 ring-[var(--main-color)]/30 shadow-xs'
+                    : isActive('/admin/trailer-management')
+                      ? 'text-[var(--main-color)] dark:text-blue-400 font-semibold'
+                      : 'text-slate-500 dark:text-neutral-500 hover:text-slate-800 dark:hover:text-slate-200'
+                    }`}
+                  aria-current={isActive('/admin/trailer-management') ? 'page' : undefined}
                 >
-                  <BiTv className="w-3.5 h-3.5" />
-                  <span>Trailers</span>
+                  <BiTv className="w-3.5 h-3.5 flex-shrink-0" />
+                  <span className="truncate">Trailers</span>
+                  {isPending('/admin/trailer-management') && (
+                    <span className="ml-auto flex-shrink-0 flex items-center" aria-label="Loading">
+                      <FiLoader className="w-3 h-3 animate-spin text-[var(--main-color)] dark:text-blue-400" />
+                    </span>
+                  )}
                 </Link>
               </div>
             )}
@@ -285,10 +485,11 @@ export default function AdminSidebar({ collapsed, setCollapsed }: AdminSidebarPr
           <div className="w-full">
             <SidebarTooltip content="Payment" disabled={!collapsed}>
               <button
+                type="button"
                 onClick={() => handleDropdownClick(openPayments, setOpenPayments)}
                 className={`${linkBase} ${isSubActive(['/admin/payment-plans', '/admin/subscriptions']) && !collapsed
-                    ? 'text-[var(--main-color)] dark:text-blue-400 font-semibold'
-                    : inactiveClass
+                  ? 'text-[var(--main-color)] dark:text-blue-400 font-semibold'
+                  : inactiveClass
                   }`}
               >
                 <div className="flex items-center gap-3">
@@ -307,17 +508,41 @@ export default function AdminSidebar({ collapsed, setCollapsed }: AdminSidebarPr
               <div className="pl-6 mt-1 flex flex-col space-y-1 border-l border-slate-200 dark:border-neutral-900 ml-5">
                 <Link
                   href="/admin/payment-plans"
-                  className={`${subLinkClass} ${isActive('/admin/payment-plans') ? 'text-[var(--main-color)] dark:text-blue-400 font-semibold' : 'text-slate-500 dark:text-neutral-500 hover:text-slate-800 dark:hover:text-slate-200'}`}
+                  onClick={(e) => handleLinkClick(e, '/admin/payment-plans')}
+                  className={`${subLinkClass} ${isPending('/admin/payment-plans')
+                    ? 'bg-blue-50/70 dark:bg-blue-950/40 text-[var(--main-color)] dark:text-blue-400 font-semibold ring-1 ring-[var(--main-color)]/30 shadow-xs'
+                    : isActive('/admin/payment-plans')
+                      ? 'text-[var(--main-color)] dark:text-blue-400 font-semibold'
+                      : 'text-slate-500 dark:text-neutral-500 hover:text-slate-800 dark:hover:text-slate-200'
+                    }`}
+                  aria-current={isActive('/admin/payment-plans') ? 'page' : undefined}
                 >
-                  <BsSubscriptIcon className="w-3.5 h-3.5" />
-                  <span>Payment Plans</span>
+                  <BsSubscriptIcon className="w-3.5 h-3.5 flex-shrink-0" />
+                  <span className="truncate">Payment Plans</span>
+                  {isPending('/admin/payment-plans') && (
+                    <span className="ml-auto flex-shrink-0 flex items-center" aria-label="Loading">
+                      <FiLoader className="w-3 h-3 animate-spin text-[var(--main-color)] dark:text-blue-400" />
+                    </span>
+                  )}
                 </Link>
                 <Link
                   href="/admin/subscriptions"
-                  className={`${subLinkClass} ${isActive('/admin/subscriptions') ? 'text-[var(--main-color)] dark:text-blue-400 font-semibold' : 'text-slate-500 dark:text-neutral-500 hover:text-slate-800 dark:hover:text-slate-200'}`}
+                  onClick={(e) => handleLinkClick(e, '/admin/subscriptions')}
+                  className={`${subLinkClass} ${isPending('/admin/subscriptions')
+                    ? 'bg-blue-50/70 dark:bg-blue-950/40 text-[var(--main-color)] dark:text-blue-400 font-semibold ring-1 ring-[var(--main-color)]/30 shadow-xs'
+                    : isActive('/admin/subscriptions')
+                      ? 'text-[var(--main-color)] dark:text-blue-400 font-semibold'
+                      : 'text-slate-500 dark:text-neutral-500 hover:text-slate-800 dark:hover:text-slate-200'
+                    }`}
+                  aria-current={isActive('/admin/subscriptions') ? 'page' : undefined}
                 >
-                  <GrPlan className="w-3.5 h-3.5" />
-                  <span>Subscriptions</span>
+                  <GrPlan className="w-3.5 h-3.5 flex-shrink-0" />
+                  <span className="truncate">Subscriptions</span>
+                  {isPending('/admin/subscriptions') && (
+                    <span className="ml-auto flex-shrink-0 flex items-center" aria-label="Loading">
+                      <FiLoader className="w-3 h-3 animate-spin text-[var(--main-color)] dark:text-blue-400" />
+                    </span>
+                  )}
                 </Link>
               </div>
             )}
@@ -327,17 +552,36 @@ export default function AdminSidebar({ collapsed, setCollapsed }: AdminSidebarPr
           <SidebarTooltip content="Settings" disabled={!collapsed}>
             <Link
               href="/admin/settings"
-              className={`${linkBase} ${isActive('/admin/settings') ? activeClass : inactiveClass}`}
+              onClick={(e) => handleLinkClick(e, '/admin/settings')}
+              className={`${linkBase} ${isPending('/admin/settings')
+                ? 'bg-blue-50/70 dark:bg-blue-950/40 text-[var(--main-color)] dark:text-blue-400 font-semibold ring-1 ring-[var(--main-color)]/30 shadow-xs'
+                : isActive('/admin/settings')
+                  ? activeClass
+                  : inactiveClass
+                }`}
+              aria-current={isActive('/admin/settings') ? 'page' : undefined}
             >
-              <FiSettings className="w-[18px] h-[18px] flex-shrink-0" />
-              {!collapsed && <span className="truncate">Settings</span>}
+              {isPending('/admin/settings') && collapsed ? (
+                <FiLoader className="w-[18px] h-[18px] flex-shrink-0 animate-spin text-[var(--main-color)] dark:text-blue-400" />
+              ) : (
+                <FiSettings className={`w-[18px] h-[18px] flex-shrink-0 ${isPending('/admin/settings') ? 'opacity-70' : ''}`} />
+              )}
+              {!collapsed && (
+                <>
+                  <span className="truncate">Settings</span>
+                  {isPending('/admin/settings') && (
+                    <span className="ml-auto flex-shrink-0 flex items-center" aria-label="Loading">
+                      <FiLoader className="w-3.5 h-3.5 animate-spin text-[var(--main-color)] dark:text-blue-400" />
+                    </span>
+                  )}
+                </>
+              )}
             </Link>
           </SidebarTooltip>
         </nav>
       </div>
 
       {/* Version/Build Footer */}
-
     </aside>
   )
 }

@@ -114,7 +114,7 @@ export default function AdminSettingsPage() {
       {/* Header */}
       <div className="flex items-center gap-3">
         <Settings className="w-7 h-7 text-blue-600" />
-        <h1 className="text-2xl font-semibold text-white">Admin Settings</h1>
+        <h1 className="text-2xl font-semibold dark:text-white">Admin Settings</h1>
       </div>
 
       {/* Tabs */}
@@ -142,7 +142,7 @@ export default function AdminSettingsPage() {
             >
               {/* LEFT – BRANDING */}
               <div className="bg-neutral-900 border border-neutral-800 rounded-xl p-5 space-y-5">
-                <h3 className="text-sm font-semibold text-white">Branding</h3>
+                <h3 className="text-sm font-semibold dark:text-white">Branding</h3>
 
                 {/* Logo */}
                 <SettingInput label="Platform Logo">
@@ -197,7 +197,7 @@ export default function AdminSettingsPage() {
 
               {/* RIGHT – APPEARANCE & SYSTEM */}
               <div className="bg-neutral-900 border border-neutral-800 rounded-xl p-5 space-y-5">
-                <h3 className="text-sm font-semibold text-white">Appearance & System</h3>
+                <h3 className="text-sm font-semibold dark:text-white">Appearance & System</h3>
 
                 {/* Color Preview */}
                 <div className="flex gap-4 flex-col items-start w-full">
