@@ -96,13 +96,44 @@ export default function AdminSidebar({ collapsed, setCollapsed }: AdminSidebarPr
     'flex items-center gap-3 px-4 py-2 rounded-lg text-xs transition-colors duration-150'
 
   return (
+
     <aside
-      className={`h-screen bg-white dark:bg-neutral-950 border-r border-slate-200/80 dark:border-neutral-900/80 text-slate-700 dark:text-neutral-300 transition-all duration-300 z-40 fixed left-0 top-0 flex flex-col justify-between select-none ${collapsed ? 'w-[76px]' : 'w-[260px]'
-        }`}
+      className={`fixed left-0 top-0 z-40 flex h-screen flex-col
+      overflow-hidden select-none
+      bg-white text-slate-700
+      dark:bg-neutral-950 dark:text-neutral-300
+      border-r border-slate-200/80 dark:border-neutral-900/80
+      transition-[width] duration-300
+      ${collapsed ? 'w-[76px]' : 'w-[260px]'}`}
     >
+      {/* FIXED HEADER — never scrolls or shrinks */}
+      <div
+        className="h-16 min-h-16 shrink-0 flex items-center justify-center
+        border-b border-slate-200/80 dark:border-neutral-900/80 px-4"
+      >
+        <div className="flex items-center gap-2.5">
+          <img
+            src="/mainLogo.webp"
+            alt="Logo"
+            className="w-8 h-auto shrink-0 object-contain
+            transition-transform hover:scale-105"
+          />
+
+          {!collapsed && (
+            <span
+              className={`whitespace-nowrap text-lg font-bold tracking-wider
+              text-slate-800 dark:text-white ${leagueSpartan.className}`}
+            >
+              Admin Panel
+            </span>
+          )}
+        </div>
+      </div>
+
+
       <div className="flex flex-col flex-1 overflow-y-auto minimal-scrollbar">
         {/* Header/Logo */}
-        <div className="h-16 flex items-center justify-center border-b border-slate-200/80 dark:border-neutral-900/80 px-4">
+        {/* <div className="h-16 flex items-center justify-center border-b border-slate-200/80 dark:border-neutral-900/80 px-4">
           <div className="flex items-center space-x-2.5">
             <img
               src="/mainLogo.webp"
@@ -117,7 +148,7 @@ export default function AdminSidebar({ collapsed, setCollapsed }: AdminSidebarPr
               </span>
             )}
           </div>
-        </div>
+        </div> */}
 
         {/* Navigation list */}
         <nav className="p-3 space-y-1.5 flex flex-col items-center">
@@ -127,10 +158,10 @@ export default function AdminSidebar({ collapsed, setCollapsed }: AdminSidebarPr
               href="/admin"
               onClick={(e) => handleLinkClick(e, '/admin')}
               className={`${linkBase} ${isPending('/admin')
-                  ? 'bg-blue-50/70 dark:bg-blue-950/40 text-[var(--main-color)] dark:text-blue-400 font-semibold ring-1 ring-[var(--main-color)]/30 shadow-xs'
-                  : isActive('/admin')
-                    ? activeClass
-                    : inactiveClass
+                ? 'bg-blue-50/70 dark:bg-blue-950/40 text-[var(--main-color)] dark:text-blue-400 font-semibold ring-1 ring-[var(--main-color)]/30 shadow-xs'
+                : isActive('/admin')
+                  ? activeClass
+                  : inactiveClass
                 }`}
               aria-current={isActive('/admin') ? 'page' : undefined}
             >
@@ -158,10 +189,10 @@ export default function AdminSidebar({ collapsed, setCollapsed }: AdminSidebarPr
               href="/admin/analytics"
               onClick={(e) => handleLinkClick(e, '/admin/analytics')}
               className={`${linkBase} ${isPending('/admin/analytics')
-                  ? 'bg-blue-50/70 dark:bg-blue-950/40 text-[var(--main-color)] dark:text-blue-400 font-semibold ring-1 ring-[var(--main-color)]/30 shadow-xs'
-                  : isActive('/admin/analytics')
-                    ? activeClass
-                    : inactiveClass
+                ? 'bg-blue-50/70 dark:bg-blue-950/40 text-[var(--main-color)] dark:text-blue-400 font-semibold ring-1 ring-[var(--main-color)]/30 shadow-xs'
+                : isActive('/admin/analytics')
+                  ? activeClass
+                  : inactiveClass
                 }`}
               aria-current={isActive('/admin/analytics') ? 'page' : undefined}
             >
@@ -189,10 +220,10 @@ export default function AdminSidebar({ collapsed, setCollapsed }: AdminSidebarPr
               href="/admin/creator"
               onClick={(e) => handleLinkClick(e, '/admin/creator')}
               className={`${linkBase} ${isPending('/admin/creator')
-                  ? 'bg-blue-50/70 dark:bg-blue-950/40 text-[var(--main-color)] dark:text-blue-400 font-semibold ring-1 ring-[var(--main-color)]/30 shadow-xs'
-                  : isActive('/admin/creator')
-                    ? activeClass
-                    : inactiveClass
+                ? 'bg-blue-50/70 dark:bg-blue-950/40 text-[var(--main-color)] dark:text-blue-400 font-semibold ring-1 ring-[var(--main-color)]/30 shadow-xs'
+                : isActive('/admin/creator')
+                  ? activeClass
+                  : inactiveClass
                 }`}
               aria-current={isActive('/admin/creator') ? 'page' : undefined}
             >
@@ -220,10 +251,10 @@ export default function AdminSidebar({ collapsed, setCollapsed }: AdminSidebarPr
               href="/admin/revenue"
               onClick={(e) => handleLinkClick(e, '/admin/revenue')}
               className={`${linkBase} ${isPending('/admin/revenue')
-                  ? 'bg-blue-50/70 dark:bg-blue-950/40 text-[var(--main-color)] dark:text-blue-400 font-semibold ring-1 ring-[var(--main-color)]/30 shadow-xs'
-                  : isActive('/admin/revenue')
-                    ? activeClass
-                    : inactiveClass
+                ? 'bg-blue-50/70 dark:bg-blue-950/40 text-[var(--main-color)] dark:text-blue-400 font-semibold ring-1 ring-[var(--main-color)]/30 shadow-xs'
+                : isActive('/admin/revenue')
+                  ? activeClass
+                  : inactiveClass
                 }`}
               aria-current={isActive('/admin/revenue') ? 'page' : undefined}
             >
@@ -252,8 +283,8 @@ export default function AdminSidebar({ collapsed, setCollapsed }: AdminSidebarPr
                 type="button"
                 onClick={() => handleDropdownClick(openUsers, setOpenUsers)}
                 className={`${linkBase} ${isSubActive(['/admin/users', '/admin/pre-signup']) && !collapsed
-                    ? 'text-[var(--main-color)] dark:text-blue-400 font-semibold'
-                    : inactiveClass
+                  ? 'text-[var(--main-color)] dark:text-blue-400 font-semibold'
+                  : inactiveClass
                   }`}
               >
                 <div className="flex items-center gap-3">
@@ -274,10 +305,10 @@ export default function AdminSidebar({ collapsed, setCollapsed }: AdminSidebarPr
                   href="/admin/users"
                   onClick={(e) => handleLinkClick(e, '/admin/users')}
                   className={`${subLinkClass} ${isPending('/admin/users')
-                      ? 'bg-blue-50/70 dark:bg-blue-950/40 text-[var(--main-color)] dark:text-blue-400 font-semibold ring-1 ring-[var(--main-color)]/30 shadow-xs'
-                      : isActive('/admin/users')
-                        ? 'text-[var(--main-color)] dark:text-blue-400 font-semibold'
-                        : 'text-slate-500 dark:text-neutral-500 hover:text-slate-800 dark:hover:text-slate-200'
+                    ? 'bg-blue-50/70 dark:bg-blue-950/40 text-[var(--main-color)] dark:text-blue-400 font-semibold ring-1 ring-[var(--main-color)]/30 shadow-xs'
+                    : isActive('/admin/users')
+                      ? 'text-[var(--main-color)] dark:text-blue-400 font-semibold'
+                      : 'text-slate-500 dark:text-neutral-500 hover:text-slate-800 dark:hover:text-slate-200'
                     }`}
                   aria-current={isActive('/admin/users') ? 'page' : undefined}
                 >
@@ -293,10 +324,10 @@ export default function AdminSidebar({ collapsed, setCollapsed }: AdminSidebarPr
                   href="/admin/pre-signup"
                   onClick={(e) => handleLinkClick(e, '/admin/pre-signup')}
                   className={`${subLinkClass} ${isPending('/admin/pre-signup')
-                      ? 'bg-blue-50/70 dark:bg-blue-950/40 text-[var(--main-color)] dark:text-blue-400 font-semibold ring-1 ring-[var(--main-color)]/30 shadow-xs'
-                      : isActive('/admin/pre-signup')
-                        ? 'text-[var(--main-color)] dark:text-blue-400 font-semibold'
-                        : 'text-slate-500 dark:text-neutral-500 hover:text-slate-800 dark:hover:text-slate-200'
+                    ? 'bg-blue-50/70 dark:bg-blue-950/40 text-[var(--main-color)] dark:text-blue-400 font-semibold ring-1 ring-[var(--main-color)]/30 shadow-xs'
+                    : isActive('/admin/pre-signup')
+                      ? 'text-[var(--main-color)] dark:text-blue-400 font-semibold'
+                      : 'text-slate-500 dark:text-neutral-500 hover:text-slate-800 dark:hover:text-slate-200'
                     }`}
                   aria-current={isActive('/admin/pre-signup') ? 'page' : undefined}
                 >
@@ -319,8 +350,8 @@ export default function AdminSidebar({ collapsed, setCollapsed }: AdminSidebarPr
                 type="button"
                 onClick={() => handleDropdownClick(openFaqs, setOpenFaqs)}
                 className={`${linkBase} ${isSubActive(['/admin/faqs']) && !collapsed
-                    ? 'text-[var(--main-color)] dark:text-blue-400 font-semibold'
-                    : inactiveClass
+                  ? 'text-[var(--main-color)] dark:text-blue-400 font-semibold'
+                  : inactiveClass
                   }`}
               >
                 <div className="flex items-center gap-3">
@@ -341,10 +372,10 @@ export default function AdminSidebar({ collapsed, setCollapsed }: AdminSidebarPr
                   href="/admin/faqs"
                   onClick={(e) => handleLinkClick(e, '/admin/faqs')}
                   className={`${subLinkClass} ${isPending('/admin/faqs')
-                      ? 'bg-blue-50/70 dark:bg-blue-950/40 text-[var(--main-color)] dark:text-blue-400 font-semibold ring-1 ring-[var(--main-color)]/30 shadow-xs'
-                      : isActive('/admin/faqs')
-                        ? 'text-[var(--main-color)] dark:text-blue-400 font-semibold'
-                        : 'text-slate-500 dark:text-neutral-500 hover:text-slate-800 dark:hover:text-slate-200'
+                    ? 'bg-blue-50/70 dark:bg-blue-950/40 text-[var(--main-color)] dark:text-blue-400 font-semibold ring-1 ring-[var(--main-color)]/30 shadow-xs'
+                    : isActive('/admin/faqs')
+                      ? 'text-[var(--main-color)] dark:text-blue-400 font-semibold'
+                      : 'text-slate-500 dark:text-neutral-500 hover:text-slate-800 dark:hover:text-slate-200'
                     }`}
                   aria-current={isActive('/admin/faqs') ? 'page' : undefined}
                 >
@@ -371,8 +402,8 @@ export default function AdminSidebar({ collapsed, setCollapsed }: AdminSidebarPr
                   '/admin/series-management',
                   '/admin/trailer-management',
                 ]) && !collapsed
-                    ? 'text-[var(--main-color)] dark:text-blue-400 font-semibold'
-                    : inactiveClass
+                  ? 'text-[var(--main-color)] dark:text-blue-400 font-semibold'
+                  : inactiveClass
                   }`}
               >
                 <div className="flex items-center gap-3">
@@ -393,10 +424,10 @@ export default function AdminSidebar({ collapsed, setCollapsed }: AdminSidebarPr
                   href="/admin/movie-management"
                   onClick={(e) => handleLinkClick(e, '/admin/movie-management')}
                   className={`${subLinkClass} ${isPending('/admin/movie-management')
-                      ? 'bg-blue-50/70 dark:bg-blue-950/40 text-[var(--main-color)] dark:text-blue-400 font-semibold ring-1 ring-[var(--main-color)]/30 shadow-xs'
-                      : isActive('/admin/movie-management')
-                        ? 'text-[var(--main-color)] dark:text-blue-400 font-semibold'
-                        : 'text-slate-500 dark:text-neutral-500 hover:text-slate-800 dark:hover:text-slate-200'
+                    ? 'bg-blue-50/70 dark:bg-blue-950/40 text-[var(--main-color)] dark:text-blue-400 font-semibold ring-1 ring-[var(--main-color)]/30 shadow-xs'
+                    : isActive('/admin/movie-management')
+                      ? 'text-[var(--main-color)] dark:text-blue-400 font-semibold'
+                      : 'text-slate-500 dark:text-neutral-500 hover:text-slate-800 dark:hover:text-slate-200'
                     }`}
                   aria-current={isActive('/admin/movie-management') ? 'page' : undefined}
                 >
@@ -412,10 +443,10 @@ export default function AdminSidebar({ collapsed, setCollapsed }: AdminSidebarPr
                   href="/admin/series-management"
                   onClick={(e) => handleLinkClick(e, '/admin/series-management')}
                   className={`${subLinkClass} ${isPending('/admin/series-management')
-                      ? 'bg-blue-50/70 dark:bg-blue-950/40 text-[var(--main-color)] dark:text-blue-400 font-semibold ring-1 ring-[var(--main-color)]/30 shadow-xs'
-                      : isActive('/admin/series-management')
-                        ? 'text-[var(--main-color)] dark:text-blue-400 font-semibold'
-                        : 'text-slate-500 dark:text-neutral-500 hover:text-slate-800 dark:hover:text-slate-200'
+                    ? 'bg-blue-50/70 dark:bg-blue-950/40 text-[var(--main-color)] dark:text-blue-400 font-semibold ring-1 ring-[var(--main-color)]/30 shadow-xs'
+                    : isActive('/admin/series-management')
+                      ? 'text-[var(--main-color)] dark:text-blue-400 font-semibold'
+                      : 'text-slate-500 dark:text-neutral-500 hover:text-slate-800 dark:hover:text-slate-200'
                     }`}
                   aria-current={isActive('/admin/series-management') ? 'page' : undefined}
                 >
@@ -431,10 +462,10 @@ export default function AdminSidebar({ collapsed, setCollapsed }: AdminSidebarPr
                   href="/admin/trailer-management"
                   onClick={(e) => handleLinkClick(e, '/admin/trailer-management')}
                   className={`${subLinkClass} ${isPending('/admin/trailer-management')
-                      ? 'bg-blue-50/70 dark:bg-blue-950/40 text-[var(--main-color)] dark:text-blue-400 font-semibold ring-1 ring-[var(--main-color)]/30 shadow-xs'
-                      : isActive('/admin/trailer-management')
-                        ? 'text-[var(--main-color)] dark:text-blue-400 font-semibold'
-                        : 'text-slate-500 dark:text-neutral-500 hover:text-slate-800 dark:hover:text-slate-200'
+                    ? 'bg-blue-50/70 dark:bg-blue-950/40 text-[var(--main-color)] dark:text-blue-400 font-semibold ring-1 ring-[var(--main-color)]/30 shadow-xs'
+                    : isActive('/admin/trailer-management')
+                      ? 'text-[var(--main-color)] dark:text-blue-400 font-semibold'
+                      : 'text-slate-500 dark:text-neutral-500 hover:text-slate-800 dark:hover:text-slate-200'
                     }`}
                   aria-current={isActive('/admin/trailer-management') ? 'page' : undefined}
                 >
@@ -457,8 +488,8 @@ export default function AdminSidebar({ collapsed, setCollapsed }: AdminSidebarPr
                 type="button"
                 onClick={() => handleDropdownClick(openPayments, setOpenPayments)}
                 className={`${linkBase} ${isSubActive(['/admin/payment-plans', '/admin/subscriptions']) && !collapsed
-                    ? 'text-[var(--main-color)] dark:text-blue-400 font-semibold'
-                    : inactiveClass
+                  ? 'text-[var(--main-color)] dark:text-blue-400 font-semibold'
+                  : inactiveClass
                   }`}
               >
                 <div className="flex items-center gap-3">
@@ -479,10 +510,10 @@ export default function AdminSidebar({ collapsed, setCollapsed }: AdminSidebarPr
                   href="/admin/payment-plans"
                   onClick={(e) => handleLinkClick(e, '/admin/payment-plans')}
                   className={`${subLinkClass} ${isPending('/admin/payment-plans')
-                      ? 'bg-blue-50/70 dark:bg-blue-950/40 text-[var(--main-color)] dark:text-blue-400 font-semibold ring-1 ring-[var(--main-color)]/30 shadow-xs'
-                      : isActive('/admin/payment-plans')
-                        ? 'text-[var(--main-color)] dark:text-blue-400 font-semibold'
-                        : 'text-slate-500 dark:text-neutral-500 hover:text-slate-800 dark:hover:text-slate-200'
+                    ? 'bg-blue-50/70 dark:bg-blue-950/40 text-[var(--main-color)] dark:text-blue-400 font-semibold ring-1 ring-[var(--main-color)]/30 shadow-xs'
+                    : isActive('/admin/payment-plans')
+                      ? 'text-[var(--main-color)] dark:text-blue-400 font-semibold'
+                      : 'text-slate-500 dark:text-neutral-500 hover:text-slate-800 dark:hover:text-slate-200'
                     }`}
                   aria-current={isActive('/admin/payment-plans') ? 'page' : undefined}
                 >
@@ -498,10 +529,10 @@ export default function AdminSidebar({ collapsed, setCollapsed }: AdminSidebarPr
                   href="/admin/subscriptions"
                   onClick={(e) => handleLinkClick(e, '/admin/subscriptions')}
                   className={`${subLinkClass} ${isPending('/admin/subscriptions')
-                      ? 'bg-blue-50/70 dark:bg-blue-950/40 text-[var(--main-color)] dark:text-blue-400 font-semibold ring-1 ring-[var(--main-color)]/30 shadow-xs'
-                      : isActive('/admin/subscriptions')
-                        ? 'text-[var(--main-color)] dark:text-blue-400 font-semibold'
-                        : 'text-slate-500 dark:text-neutral-500 hover:text-slate-800 dark:hover:text-slate-200'
+                    ? 'bg-blue-50/70 dark:bg-blue-950/40 text-[var(--main-color)] dark:text-blue-400 font-semibold ring-1 ring-[var(--main-color)]/30 shadow-xs'
+                    : isActive('/admin/subscriptions')
+                      ? 'text-[var(--main-color)] dark:text-blue-400 font-semibold'
+                      : 'text-slate-500 dark:text-neutral-500 hover:text-slate-800 dark:hover:text-slate-200'
                     }`}
                   aria-current={isActive('/admin/subscriptions') ? 'page' : undefined}
                 >
@@ -523,10 +554,10 @@ export default function AdminSidebar({ collapsed, setCollapsed }: AdminSidebarPr
               href="/admin/settings"
               onClick={(e) => handleLinkClick(e, '/admin/settings')}
               className={`${linkBase} ${isPending('/admin/settings')
-                  ? 'bg-blue-50/70 dark:bg-blue-950/40 text-[var(--main-color)] dark:text-blue-400 font-semibold ring-1 ring-[var(--main-color)]/30 shadow-xs'
-                  : isActive('/admin/settings')
-                    ? activeClass
-                    : inactiveClass
+                ? 'bg-blue-50/70 dark:bg-blue-950/40 text-[var(--main-color)] dark:text-blue-400 font-semibold ring-1 ring-[var(--main-color)]/30 shadow-xs'
+                : isActive('/admin/settings')
+                  ? activeClass
+                  : inactiveClass
                 }`}
               aria-current={isActive('/admin/settings') ? 'page' : undefined}
             >

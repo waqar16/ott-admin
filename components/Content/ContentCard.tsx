@@ -332,144 +332,136 @@ export const ContentCard: React.FC<ContentCardProps> = ({
       </div>
 
       {/* CONFIRM ARCHIVE MODAL */}
-      {archiveOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="bg-card border border-border rounded-2xl p-6 w-full max-w-md shadow-2xl space-y-4 relative">
-            <button
-              onClick={() => {
-                setArchiveOpen(false)
-                setConfirmText('')
-              }}
-              disabled={archiveLoading}
-              className="absolute top-4 right-4 text-muted-foreground hover:text-foreground p-1 rounded-md"
-            >
-              <FiX className="w-4 h-4" />
-            </button>
-
-            <div className="flex items-start gap-3">
-              <div className="p-2.5 rounded-full bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20">
-                <FiAlertTriangle className="w-5 h-5" />
-              </div>
-              <div>
-                <h3 className="text-base font-bold text-foreground">Confirm Archive Action</h3>
-                <p className="text-xs text-muted-foreground mt-0.5">
-                  Type <strong className="text-foreground font-semibold">"{item.title}"</strong> to confirm archiving this content.
-                </p>
-              </div>
-            </div>
-
-            <input
-              value={confirmText}
-              onChange={(e) => setConfirmText(e.target.value)}
-              placeholder="Type content title..."
-              className="w-full px-3.5 py-2 text-sm bg-background border border-input text-foreground rounded-xl outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary"
-            />
-
-            <div className="flex items-center justify-end gap-3 pt-2">
+      {archiveOpen && mounted &&
+        createPortal(
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-in fade-in duration-200">
+            <div className="bg-card border border-border rounded-2xl p-6 w-full max-w-md shadow-2xl space-y-4 relative">
               <button
                 onClick={() => {
                   setArchiveOpen(false)
                   setConfirmText('')
                 }}
                 disabled={archiveLoading}
-                className="px-4 py-2 text-xs font-semibold rounded-lg text-foreground bg-accent hover:bg-accent/80 border border-border"
+                className="absolute top-4 right-4 text-muted-foreground hover:text-foreground p-1 rounded-md"
               >
-                Cancel
+                <FiX className="w-4 h-4" />
               </button>
 
-              <button
-                disabled={confirmText !== item.title || archiveLoading}
-                onClick={async () => {
-                  setArchiveLoading(true)
-                  const res = await publishContent(item.id, 'archived')
-                  if (res.status === 'archived') {
-                    toast.success(`Archived ${item.title}`)
+              <div className="flex items-start gap-3">
+                <div className="p-2.5 rounded-full bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20">
+                  <FiAlertTriangle className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-base font-bold text-foreground">Confirm Archive Action</h3>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    Are you sure you want to archive this content <strong className="text-foreground font-semibold">"{item.title}"</strong>.
+                  </p>
+                </div>
+              </div>
+
+
+              <div className="flex items-center justify-end gap-3 pt-2">
+                <button
+                  onClick={() => {
                     setArchiveOpen(false)
-                    fetchContent()
-                  } else {
-                    toast.error('Archiving failed')
-                  }
-                  setConfirmText('')
-                  setArchiveLoading(false)
-                }}
-                className="px-4 py-2 text-xs font-semibold rounded-lg text-white bg-amber-600 hover:bg-amber-700 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {archiveLoading ? 'Archiving...' : 'Archive'}
-              </button>
+                    setConfirmText('')
+                  }}
+                  disabled={archiveLoading}
+                  className="px-4 py-2 text-xs font-semibold rounded-lg text-foreground bg-accent hover:bg-accent/80 border border-border"
+                >
+                  Cancel
+                </button>
+
+                <button
+                  disabled={archiveLoading}
+                  onClick={async () => {
+                    setArchiveLoading(true)
+                    const res = await publishContent(item.id, 'archived')
+                    if (res.status === 'archived') {
+                      toast.success(`Archived ${item.title}`)
+                      setArchiveOpen(false)
+                      fetchContent()
+                    } else {
+                      toast.error('Archiving failed')
+                    }
+                    setConfirmText('')
+                    setArchiveLoading(false)
+                  }}
+                  className="px-4 py-2 text-xs font-semibold rounded-lg text-white bg-amber-600 hover:bg-amber-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {archiveLoading ? 'Archiving...' : 'Archive'}
+                </button>
+              </div>
             </div>
-          </div>
-        </div>
-      )}
+          </div>,
+          document.body
+        )}
 
       {/* CONFIRM PUBLISH MODAL */}
-      {publishOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="bg-card border border-border rounded-2xl p-6 w-full max-w-md shadow-2xl space-y-4 relative">
-            <button
-              onClick={() => {
-                setPublishOpen(false)
-                setConfirmText('')
-              }}
-              disabled={publishLoading}
-              className="absolute top-4 right-4 text-muted-foreground hover:text-foreground p-1 rounded-md"
-            >
-              <FiX className="w-4 h-4" />
-            </button>
-
-            <div className="flex items-start gap-3">
-              <div className="p-2.5 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
-                <FiCheckCircle className="w-5 h-5" />
-              </div>
-              <div>
-                <h3 className="text-base font-bold text-foreground">Confirm Publish Action</h3>
-                <p className="text-xs text-muted-foreground mt-0.5">
-                  Type <strong className="text-foreground font-semibold">"{item.title}"</strong> to publish and make live.
-                </p>
-              </div>
-            </div>
-
-            <input
-              value={confirmText}
-              onChange={(e) => setConfirmText(e.target.value)}
-              placeholder="Type content title..."
-              className="w-full px-3.5 py-2 text-sm bg-background border border-input text-foreground rounded-xl outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary"
-            />
-
-            <div className="flex items-center justify-end gap-3 pt-2">
+      {publishOpen &&
+        mounted &&
+        createPortal(
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-in fade-in duration-200">
+            <div className="bg-card border border-border rounded-2xl p-6 w-full max-w-md shadow-2xl space-y-4 relative">
               <button
                 onClick={() => {
                   setPublishOpen(false)
                   setConfirmText('')
                 }}
                 disabled={publishLoading}
-                className="px-4 py-2 text-xs font-semibold rounded-lg text-foreground bg-accent hover:bg-accent/80 border border-border"
+                className="absolute top-4 right-4 text-muted-foreground hover:text-foreground p-1 rounded-md"
               >
-                Cancel
+                <FiX className="w-4 h-4" />
               </button>
 
-              <button
-                disabled={confirmText !== item.title || publishLoading}
-                onClick={async () => {
-                  setPublishLoading(true)
-                  const res = await publishContent(item.id)
-                  if (res.status === 'published') {
-                    toast.success(`Published ${item.title}`)
+              <div className="flex items-start gap-3">
+                <div className="p-2.5 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
+                  <FiCheckCircle className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-base font-bold text-foreground">Confirm Publish Action</h3>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    Are you sure you want to publish this content <strong className="text-foreground font-semibold">"{item.title}"</strong>.
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-center justify-end gap-3 pt-2">
+                <button
+                  onClick={() => {
                     setPublishOpen(false)
-                    fetchContent()
-                  } else {
-                    toast.error('Publishing failed')
-                  }
-                  setConfirmText('')
-                  setPublishLoading(false)
-                }}
-                className="px-4 py-2 text-xs font-semibold rounded-lg text-white bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {publishLoading ? 'Publishing...' : 'Publish'}
-              </button>
+                    setConfirmText('')
+                  }}
+                  disabled={publishLoading}
+                  className="px-4 py-2 text-xs font-semibold rounded-lg text-foreground bg-accent hover:bg-accent/80 border border-border"
+                >
+                  Cancel
+                </button>
+
+                <button
+                  disabled={publishLoading}
+                  onClick={async () => {
+                    setPublishLoading(true)
+                    const res = await publishContent(item.id)
+                    if (res.status === 'published') {
+                      toast.success(`Published ${item.title}`)
+                      setPublishOpen(false)
+                      fetchContent()
+                    } else {
+                      toast.error('Publishing failed')
+                    }
+                    setConfirmText('')
+                    setPublishLoading(false)
+                  }}
+                  className="px-4 py-2 text-xs font-semibold rounded-lg text-white bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {publishLoading ? 'Publishing...' : 'Publish'}
+                </button>
+              </div>
             </div>
-          </div>
-        </div>
-      )}
+          </div>,
+          document.body
+        )}
 
       {/* CONFIRM DELETE MODAL */}
       {deleteOpen &&
