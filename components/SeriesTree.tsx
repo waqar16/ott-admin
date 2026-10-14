@@ -166,15 +166,15 @@ export function SeriesItem({
     }
   }
   return (
-    <div className="bg-neutral-800 rounded-lg p-4 shadow-md border border-neutral-700">
+    <div className="bg-neutral-300 dark:bg-neutral-800 rounded-lg p-4 shadow-md border border-neutral-700">
       {/* Series Header */}
       <div
-        className="flex justify-between items-center cursor-pointer hover:bg-neutral-700 rounded-md p-2 transition-colors"
+        className="flex justify-between items-center cursor-pointer dark:hover:bg-neutral-700 rounded-md p-2 transition-colors"
         onClick={() => setOpen(!open)}
       >
         <h2 className="text-xl font-bold flex items-center gap-3 text-white">
-          <span className="text-blue-400 text-lg">{open ? '▼' : '▶'}</span>
-          <span className="truncate">{series.title}</span>
+          <span className="text-gray-700 dark:text-blue-400 text-lg">{open ? '▼' : '▶'}</span>
+          <span className="truncate dark:text-white text-neutral-700">{series.title}</span>
           <span
             className={`text-xs px-2 py-1 rounded-full ${series.status === 'published' ? 'bg-green-600 text-white' : 'bg-yellow-600 text-black'}`}
           >
@@ -196,7 +196,7 @@ export function SeriesItem({
                 setOpenSeriesMenuId(series.id)
               }
             }}
-            className="p-2 rounded-full hover:bg-neutral-600 transition-colors"
+            className="p-2 rounded-full dark:hover:bg-neutral-600 transition-colors"
             title="More options"
           >
             <FiMoreVertical className="w-5 h-5 text-gray-300" />
@@ -206,9 +206,8 @@ export function SeriesItem({
             <div
               onClick={(e) => e.stopPropagation()}
               className={`absolute right-0 
-            ${
-              menuPosition === 'top' ? 'bottom-full mb-2' : 'mt-2'
-            }   w-40 bg-neutral-700 border border-gray-600 rounded-md shadow-lg z-50`}
+            ${menuPosition === 'top' ? 'bottom-full mb-2' : 'mt-2'
+                }   w-40 bg-neutral-700 border border-gray-600 rounded-md shadow-lg z-50`}
             >
               <button
                 onClick={(e) => {
@@ -219,7 +218,7 @@ export function SeriesItem({
                     setSelectedContent(series)
                   }
                 }}
-                className="flex items-center gap-2 w-full px-3 py-2 text-sm hover:bg-neutral-600 transition-colors"
+                className="flex items-center gap-2 w-full px-3 py-2 text-sm hover:bg-gray-300 dark:hover:bg-neutral-600 transition-colors"
               >
                 <BiPencil className="w-4 h-4" />
                 Edit Series
@@ -236,7 +235,7 @@ export function SeriesItem({
                       toast.error(`Error publishing ${series.title}`)
                     }
                   }}
-                  className="flex items-center gap-2 w-full px-3 py-2 text-sm text-yellow-400 hover:bg-neutral-600 transition-colors"
+                  className="flex items-center gap-2 w-full px-3 py-2 text-sm text-yellow-400 hover:bg-gray-300 dark:hover:bg-neutral-600 transition-colors"
                 >
                   <BiCheck className="w-4 h-4" />
                   Publish
@@ -248,7 +247,7 @@ export function SeriesItem({
                   setOpenSeriesMenuId(null)
                   handleViewDetails(series)
                 }}
-                className="flex items-center gap-2 w-full px-3 py-2 text-sm hover:bg-neutral-600 transition-colors"
+                className="flex items-center gap-2 w-full px-3 py-2 text-sm hover:bg-gray-300 dark:hover:bg-neutral-600 transition-colors"
               >
                 <BiInfoCircle className="w-4 h-4" />
                 View Details
@@ -259,7 +258,7 @@ export function SeriesItem({
                   setOpenSeriesMenuId(null)
                   setTrailerOpen(true)
                 }}
-                className="flex items-center gap-2 w-full px-3 py-2 text-sm hover:bg-neutral-600 transition-colors"
+                className="flex items-center gap-2 w-full px-3 py-2 text-sm hover:bg-gray-300 dark:hover:bg-neutral-600 transition-colors"
               >
                 <BiLink className="w-4 h-4" />
                 Manage Trailer
@@ -270,7 +269,7 @@ export function SeriesItem({
                   setOpenSeriesMenuId(null)
                   setSeriesToDelete(series)
                 }}
-                className="flex items-center gap-2 w-full px-3 py-2 text-sm text-red-400 hover:bg-neutral-600 transition-colors"
+                className="flex items-center gap-2 w-full px-3 py-2 text-sm text-red-400 hover:bg-gray-300 dark:hover:bg-neutral-600 transition-colors"
               >
                 <BsTrash2 className="w-4 h-4" />
                 Delete Series
@@ -456,12 +455,12 @@ export function SeasonItem({
         <div className="border-l-2 border-blue-500 pl-4 bg-neutral-700 rounded-lg p-4 shadow-sm">
           {/* Season Header */}
           <div
-            className="cursor-pointer flex items-center justify-between hover:bg-neutral-600 rounded-md p-2 transition-colors"
+            className="cursor-pointer flex items-center justify-between dark:hover:bg-neutral-600 rounded-md p-2 transition-colors"
             onClick={() => setOpen(!open)}
           >
             <div className="flex items-center gap-3">
               <span className="text-blue-400 text-lg">{open ? '▼' : '▶'}</span>
-              <span className="font-semibold text-lg text-white">
+              <span className="font-semibold text-lg dark:text-white">
                 Season {season.season_number}
               </span>
               <span className="text-sm text-gray-300">- {season.title}</span>
@@ -472,7 +471,7 @@ export function SeasonItem({
                   e.stopPropagation()
                   refreshSeason(season.id, series.id)
                 }}
-                className="p-2 rounded-full hover:bg-neutral-500 transition-colors"
+                className="p-2 rounded-full dark:hover:bg-neutral-500 transition-colors"
               >
                 {loadingSeasonId === season.id ? (
                   <span className="animate-spin">⏳</span>
@@ -485,7 +484,7 @@ export function SeasonItem({
                   e.stopPropagation()
                   setOpenSeasonMenuId((prev) => (prev === season.id ? null : season.id))
                 }}
-                className="p-2 rounded-full hover:bg-neutral-500 transition-colors"
+                className="p-2 rounded-full dark:hover:bg-neutral-500 transition-colors"
                 title="Season options"
               >
                 <FiMoreVertical className="w-5 h-5 text-gray-300" />
@@ -499,7 +498,7 @@ export function SeasonItem({
                       setOpenSeasonMenuId(null)
                       setEditSeason(season)
                     }}
-                    className="flex items-center gap-2 w-full px-3 py-2 text-sm hover:bg-neutral-500 transition-colors"
+                    className="flex items-center gap-2 w-full px-3 py-2 text-sm hover:bg-gray-400 dark:hover:bg-neutral-500 transition-colors"
                   >
                     <BiPencil className="w-4 h-4" />
                     Edit Season
@@ -510,7 +509,7 @@ export function SeasonItem({
                       setOpenSeasonMenuId(null)
                       setSeasonToDelete(season)
                     }}
-                    className="flex items-center gap-2 w-full px-3 py-2 text-sm text-red-400 hover:bg-neutral-500 transition-colors"
+                    className="flex items-center gap-2 w-full px-3 py-2 text-sm text-red-400 hover:bg-gray-400 dark:hover:bg-neutral-500 transition-colors"
                   >
                     <BsTrash2 className="w-4 h-4" />
                     Delete Season
@@ -524,9 +523,9 @@ export function SeasonItem({
           {open && (
             <div className="mt-4 ml-6">
               <div className="bg-neutral-600 rounded-lg p-4">
-                <div className="flex flex-row items-start w-full justify-between mb-4">
+                <div className="flex flex-row items-start w-full justify-between  ">
                   <div className="w-full flex flex-row items-center">
-                    <span className="font-bold text-lg capitalize text-white">{season.title}</span>
+                    <span className="font-bold text-lg capitalize dark:text-white">{season.title}</span>
                   </div>
                 </div>
                 <span className="font-medium text-gray-400 text-sm block mb-4">
@@ -542,11 +541,11 @@ export function SeasonItem({
                         <div
                           key={ep.id}
                           className={`group relative bg-neutral-700   shadow-md hover:shadow-lg transition-shadow ${ep.ingest_status === 'ready' ? 'cursor-pointer' : ''}`}
-                          // onClick={() => {
-                          //   if (ep.ingest_status === 'ready') {
-                          //     setPlayingEpisode(ep);
-                          //   }
-                          // }}
+                        // onClick={() => {
+                        //   if (ep.ingest_status === 'ready') {
+                        //     setPlayingEpisode(ep);
+                        //   }
+                        // }}
                         >
                           <div
                             onClick={(e) => {
@@ -575,11 +574,10 @@ export function SeasonItem({
                               {/* Play Button Overlay */}
                               <div
                                 className={`absolute inset-0 flex items-center justify-center bg-black/30 transition-opacity
-  ${
-    ep.ingest_status === 'processing'
-      ? 'opacity-100' // always visible when processing
-      : 'opacity-0 group-hover:opacity-100' // hover-only for ready
-  }`}
+  ${ep.ingest_status === 'processing'
+                                    ? 'opacity-100' // always visible when processing
+                                    : 'opacity-0 group-hover:opacity-100' // hover-only for ready
+                                  }`}
                               >
                                 {ep.ingest_status === 'processing' ? (
                                   <div className="text-xs flex flex-col items-center text-white w-28">
@@ -619,11 +617,10 @@ export function SeasonItem({
                                   </span>
                                 ) : (
                                   <span
-                                    className={`text-xs rounded-full px-2 py-1 ${
-                                      ep.status === 'published'
-                                        ? 'bg-green-600 text-white'
-                                        : 'bg-yellow-600 text-black'
-                                    }`}
+                                    className={`text-xs rounded-full px-2 py-1 ${ep.status === 'published'
+                                      ? 'bg-green-600 text-white'
+                                      : 'bg-yellow-600 text-black'
+                                      }`}
                                   >
                                     {ep.status === 'published' ? 'Published' : 'Ready'}
                                   </span>
@@ -636,7 +633,7 @@ export function SeasonItem({
                           <div className="p-3">
                             <div className="flex justify-between items-start">
                               <div className="flex-1 min-w-0">
-                                <p className="text-sm font-medium text-white line-clamp-2 mb-1">
+                                <p className="text-sm font-medium dark:text-white line-clamp-2 mb-1">
                                   {ep.title}
                                 </p>
                                 <p className="text-xs text-gray-400">
@@ -649,7 +646,7 @@ export function SeasonItem({
                                     e.stopPropagation()
                                     setOpenMenuId((prev) => (prev === ep.id ? null : ep.id))
                                   }}
-                                  className="p-1 rounded hover:bg-neutral-500 transition-colors"
+                                  className="p-1 rounded dark:hover:bg-neutral-500 transition-colors"
                                   title="Episode options"
                                 >
                                   <FiMoreVertical className="w-4 h-4 text-gray-300" />
@@ -663,7 +660,7 @@ export function SeasonItem({
                                         setOpenMenuId(null)
                                         setEditEpisode(ep)
                                       }}
-                                      className="flex items-center gap-2 w-full px-3 py-2 text-sm hover:bg-neutral-500 transition-colors"
+                                      className="flex items-center gap-2 w-full px-3 py-2 text-sm hover:bg-gray-400 dark:hover:bg-neutral-500 transition-colors"
                                     >
                                       <BiPencil className="w-4 h-4" />
                                       Edit Episode
@@ -674,7 +671,7 @@ export function SeasonItem({
                                         setOpenMenuId(null)
                                         setEpisodeToDelete(ep)
                                       }}
-                                      className="flex items-center gap-2 w-full px-3 py-2 text-sm text-red-400 hover:bg-neutral-500 transition-colors"
+                                      className="flex items-center gap-2 w-full px-3 py-2 text-sm text-red-400 hover:bg-gray-400 dark:hover:bg-neutral-500 transition-colors"
                                     >
                                       <BsTrash2 className="w-4 h-4" />
                                       Delete Episode
@@ -797,11 +794,11 @@ export function SeasonItem({
                             children: series.children?.map((s: Content) =>
                               s.id === season.id
                                 ? {
-                                    ...season,
-                                    children: (s.children || []).filter(
-                                      (child: Content) => child.id !== episodeToDelete.id
-                                    ),
-                                  }
+                                  ...season,
+                                  children: (s.children || []).filter(
+                                    (child: Content) => child.id !== episodeToDelete.id
+                                  ),
+                                }
                                 : season
                             ),
                           }))
@@ -846,11 +843,11 @@ export function SeasonItem({
                           prev.map((s) =>
                             s.id == series.id
                               ? {
-                                  ...s,
-                                  children: (s.children || []).filter(
-                                    (child: Content) => child.id !== seasonToDelete.id
-                                  ),
-                                }
+                                ...s,
+                                children: (s.children || []).filter(
+                                  (child: Content) => child.id !== seasonToDelete.id
+                                ),
+                              }
                               : s
                           )
                         )

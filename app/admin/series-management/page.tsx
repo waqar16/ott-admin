@@ -133,14 +133,14 @@ export default function SeriesPage() {
               children: season.children?.map((ep: any) =>
                 ep.id === contentId
                   ? {
-                      ...ep,
-                      ingest_status:
-                        data.status === 'COMPLETE'
-                          ? 'ready'
-                          : data.status === 'FAILED'
-                            ? 'failed'
-                            : 'processing',
-                    }
+                    ...ep,
+                    ingest_status:
+                      data.status === 'COMPLETE'
+                        ? 'ready'
+                        : data.status === 'FAILED'
+                          ? 'failed'
+                          : 'processing',
+                  }
                   : ep
               ),
             })),
@@ -203,34 +203,118 @@ export default function SeriesPage() {
     }
   }, [])
   return (
-    <div className="min-h-screen   text-white p-2 md:p-6 mt-16 md:mt-0">
-      {/* Top Section */}
-      <div className="flex justify-between items-center md:mb-6 mb-2">
-        <input
-          type="text"
-          placeholder="Search Series"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="bg-neutral-800 px-4 py-2 rounded-lg md:w-1/3 w-7/12 outline-none md:text-lg text-sm"
-        />
+    <div className="relative min-h-screen mt-16 md:mt-0 p-3 md:p-6
+  bg-gradient-to-br from-slate-50 via-white to-slate-100
+  dark:from-[#09090b] dark:via-[#111318] dark:to-[#171923]
+  text-slate-900 dark:text-white transition-colors duration-300">
+
+      {/* Subtle background accents */}
+      <div className="pointer-events-none absolute top-0 right-0 w-72 h-72
+    bg-[var(--main-color)]/10 dark:bg-[var(--main-color)]/15
+    blur-3xl rounded-full opacity-70" />
+
+      {/* Header */}
+      <div className="relative flex flex-col sm:flex-row sm:items-center
+    justify-between gap-4 mb-6">
+
+        <div className="space-y-1">
+          <h1 className="text-2xl md:text-3xl font-bold tracking-tight
+        bg-gradient-to-r from-slate-900 to-slate-500
+        dark:from-white dark:to-slate-400 bg-clip-text text-transparent">
+            Series Library
+          </h1>
+
+          <p className="text-sm text-slate-500 dark:text-slate-400">
+            Manage, organize, and discover your series collection.
+          </p>
+        </div>
 
         <button
-          className="px-5 py-2 bg-[var(--main-color)] rounded-lg hover:bg-neutral-900 md:text-lg text-sm "
           onClick={openAddSeriesModal}
-        >
-          Add New Series
+          className="group relative inline-flex items-center justify-center gap-2
+        overflow-hidden rounded-xl px-5 py-3 font-semibold text-white
+        bg-[var(--main-color)]
+        shadow-lg shadow-[var(--main-color)]/20
+        transition-all duration-300
+        hover:-translate-y-0.5 hover:shadow-xl hover:shadow-[var(--main-color)]/30
+        active:translate-y-0 active:scale-[0.98]
+        focus-visible:outline-none focus-visible:ring-2
+        focus-visible:ring-[var(--main-color)] focus-visible:ring-offset-2
+        dark:focus-visible:ring-offset-[#111318]">
+
+          <span className="absolute inset-0 translate-x-[-120%] bg-white/15
+        skew-x-[-20deg] transition-transform duration-700
+        group-hover:translate-x-[120%]" />
+
+          <span className="relative text-xl transition-transform duration-300
+        group-hover:rotate-90">
+            +
+          </span>
+          <span className="relative">Add New Series</span>
         </button>
       </div>
-      <div className="flex flex-row items-center w-full justify-end p-2">
+
+      {/* Search and actions */}
+      <div className="mb-4 relative flex flex-col sm:flex-row gap-3
+    sm:items-center sm:justify-between">
+
+        {/* Search */}
+        <div className="group relative w-full sm:max-w-md">
+          <svg
+            className="absolute left-4 top-1/2 -translate-y-1/2
+          h-5 w-5 text-slate-400 transition-colors
+          group-focus-within:text-[var(--main-color)]"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+            aria-hidden="true"
+          >
+            <circle cx="11" cy="11" r="7" strokeWidth="1.8" />
+            <path d="m16 16 4 4" strokeWidth="1.8" strokeLinecap="round" />
+          </svg>
+
+          <input
+            type="text"
+            placeholder="Search series by name..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            aria-label="Search series"
+            className="w-full rounded-xl border border-slate-200
+          bg-white/80 py-3 pl-12 pr-4 text-sm md:text-base
+          text-slate-900 placeholder:text-slate-400
+          shadow-sm backdrop-blur-md outline-none
+          transition-all duration-300
+          hover:border-slate-300
+          focus:border-[var(--main-color)]
+          focus:ring-0 focus:ring-none
+          dark:border-white/10 dark:bg-white/[0.04]
+          dark:text-white dark:placeholder:text-slate-500
+          dark:hover:border-white/20"
+          />
+        </div>
+
+        {/* Refresh */}
         <button
-          className="p-2 rounded-md bg-neutral-800 flex flex-row items-center"
-          onClick={() => {
-            fetchSeries()
-          }}
+          onClick={() => fetchSeries()}
+          className="group inline-flex items-center justify-center gap-2
+        rounded-xl border border-slate-200 bg-white/80
+        px-4 py-3 text-sm font-medium text-slate-700
+        shadow-sm backdrop-blur-md transition-all duration-300
+        hover:-translate-y-0.5 hover:border-[var(--main-color)]/40
+        hover:bg-slate-50 hover:shadow-md
+        active:translate-y-0 active:scale-[0.98]
+        dark:border-white/10 dark:bg-white/[0.04]
+        dark:text-slate-200 dark:hover:bg-white/[0.08]
+        dark:hover:border-white/20"
         >
-          Refresh <BiRefresh className="ml-1" />{' '}
+          <BiRefresh
+            className="text-lg transition-transform duration-500
+          group-hover:rotate-180"
+          />
+          Refresh
         </button>
       </div>
+
       <AdminContentHelpPanel />
       {/* Loading Skeleton */}
       {loading ? (

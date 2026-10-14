@@ -14,6 +14,7 @@ import {
   FiList,
   FiMessageSquare,
   FiUserCheck,
+  FiLoader,
 } from 'react-icons/fi'
 import {
   BsSubscript as BsSubscriptIcon,
@@ -24,6 +25,7 @@ import {
 import { BiMovie, BiTv, BiDollar } from 'react-icons/bi'
 import { GrPlan } from 'react-icons/gr'
 import { leagueSpartan } from '@/fonts/fonts'
+import { useNavigationLoading } from '@/components/Navigation/NavigationLoadingContext'
 
 interface MobileAdminNavProps {
   openDrawer: boolean
@@ -32,6 +34,7 @@ interface MobileAdminNavProps {
 
 export default function MobileAdminNav({ openDrawer, setOpenDrawer }: MobileAdminNavProps) {
   const pathname = usePathname()
+  const { isPending, startNavigation } = useNavigationLoading()
 
   // Sub-dropdown states
   const [openUsers, setOpenUsers] = useState(false)
@@ -52,6 +55,18 @@ export default function MobileAdminNav({ openDrawer, setOpenDrawer }: MobileAdmi
       document.body.style.overflow = 'auto'
     }
   }, [openDrawer])
+
+  const handleLinkClick = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
+    setOpenDrawer(false)
+    if (isActive(href)) {
+      return
+    }
+    if (isPending(href)) {
+      e.preventDefault()
+      return
+    }
+    startNavigation(href)
+  }
 
   const linkBase =
     'flex items-center gap-3 px-4 py-3 rounded-xl text-sm transition-all duration-200'
@@ -102,46 +117,91 @@ export default function MobileAdminNav({ openDrawer, setOpenDrawer }: MobileAdmi
             {/* Overview */}
             <Link
               href="/admin"
-              onClick={() => setOpenDrawer(false)}
-              className={`${linkBase} ${isActive('/admin') ? activeClass : inactiveClass}`}
+              onClick={(e) => handleLinkClick(e, '/admin')}
+              className={`${linkBase} ${
+                isPending('/admin')
+                  ? 'bg-blue-50/70 dark:bg-blue-950/40 text-[var(--main-color)] dark:text-blue-400 font-semibold ring-1 ring-[var(--main-color)]/30'
+                  : isActive('/admin')
+                    ? activeClass
+                    : inactiveClass
+              }`}
             >
               <FiHome size={18} />
               <span>Overview</span>
+              {isPending('/admin') && (
+                <span className="ml-auto flex items-center">
+                  <FiLoader className="w-3.5 h-3.5 animate-spin text-[var(--main-color)] dark:text-blue-400" />
+                </span>
+              )}
             </Link>
 
             {/* Analytics */}
             <Link
               href="/admin/analytics"
-              onClick={() => setOpenDrawer(false)}
-              className={`${linkBase} ${isActive('/admin/analytics') ? activeClass : inactiveClass}`}
+              onClick={(e) => handleLinkClick(e, '/admin/analytics')}
+              className={`${linkBase} ${
+                isPending('/admin/analytics')
+                  ? 'bg-blue-50/70 dark:bg-blue-950/40 text-[var(--main-color)] dark:text-blue-400 font-semibold ring-1 ring-[var(--main-color)]/30'
+                  : isActive('/admin/analytics')
+                    ? activeClass
+                    : inactiveClass
+              }`}
             >
               <BsAnalyticsIcon size={18} />
               <span>Analytics</span>
+              {isPending('/admin/analytics') && (
+                <span className="ml-auto flex items-center">
+                  <FiLoader className="w-3.5 h-3.5 animate-spin text-[var(--main-color)] dark:text-blue-400" />
+                </span>
+              )}
             </Link>
 
             {/* Creators */}
             <Link
               href="/admin/creator"
-              onClick={() => setOpenDrawer(false)}
-              className={`${linkBase} ${isActive('/admin/creator') ? activeClass : inactiveClass}`}
+              onClick={(e) => handleLinkClick(e, '/admin/creator')}
+              className={`${linkBase} ${
+                isPending('/admin/creator')
+                  ? 'bg-blue-50/70 dark:bg-blue-950/40 text-[var(--main-color)] dark:text-blue-400 font-semibold ring-1 ring-[var(--main-color)]/30'
+                  : isActive('/admin/creator')
+                    ? activeClass
+                    : inactiveClass
+              }`}
             >
               <FiUsers size={18} />
               <span>Creators</span>
+              {isPending('/admin/creator') && (
+                <span className="ml-auto flex items-center">
+                  <FiLoader className="w-3.5 h-3.5 animate-spin text-[var(--main-color)] dark:text-blue-400" />
+                </span>
+              )}
             </Link>
 
             {/* Revenue */}
             <Link
               href="/admin/revenue"
-              onClick={() => setOpenDrawer(false)}
-              className={`${linkBase} ${isActive('/admin/revenue') ? activeClass : inactiveClass}`}
+              onClick={(e) => handleLinkClick(e, '/admin/revenue')}
+              className={`${linkBase} ${
+                isPending('/admin/revenue')
+                  ? 'bg-blue-50/70 dark:bg-blue-950/40 text-[var(--main-color)] dark:text-blue-400 font-semibold ring-1 ring-[var(--main-color)]/30'
+                  : isActive('/admin/revenue')
+                    ? activeClass
+                    : inactiveClass
+              }`}
             >
               <BiDollar size={18} />
               <span>Revenue</span>
+              {isPending('/admin/revenue') && (
+                <span className="ml-auto flex items-center">
+                  <FiLoader className="w-3.5 h-3.5 animate-spin text-[var(--main-color)] dark:text-blue-400" />
+                </span>
+              )}
             </Link>
 
             {/* Users Dropdown */}
             <div>
               <button
+                type="button"
                 onClick={() => {
                   setOpenUsers(!openUsers)
                   setOpenContent(false)
@@ -164,19 +224,41 @@ export default function MobileAdminNav({ openDrawer, setOpenDrawer }: MobileAdmi
                 <div className="pl-6 mt-1 flex flex-col space-y-1 border-l border-slate-200 dark:border-neutral-900 ml-5">
                   <Link
                     href="/admin/users"
-                    onClick={() => setOpenDrawer(false)}
-                    className={`${subLinkClass} ${isActive('/admin/users') ? 'text-[var(--main-color)] dark:text-blue-400 font-semibold' : 'text-slate-500 dark:text-neutral-500 hover:text-slate-800 dark:hover:text-slate-200'}`}
+                    onClick={(e) => handleLinkClick(e, '/admin/users')}
+                    className={`${subLinkClass} ${
+                      isPending('/admin/users')
+                        ? 'bg-blue-50/70 dark:bg-blue-950/40 text-[var(--main-color)] dark:text-blue-400 font-semibold ring-1 ring-[var(--main-color)]/30'
+                        : isActive('/admin/users')
+                          ? 'text-[var(--main-color)] dark:text-blue-400 font-semibold'
+                          : 'text-slate-500 dark:text-neutral-500 hover:text-slate-800 dark:hover:text-slate-200'
+                    }`}
                   >
                     <FiList size={14} />
                     <span>Manage Users</span>
+                    {isPending('/admin/users') && (
+                      <span className="ml-auto flex items-center">
+                        <FiLoader className="w-3 h-3 animate-spin text-[var(--main-color)] dark:text-blue-400" />
+                      </span>
+                    )}
                   </Link>
                   <Link
                     href="/admin/pre-signup"
-                    onClick={() => setOpenDrawer(false)}
-                    className={`${subLinkClass} ${isActive('/admin/pre-signup') ? 'text-[var(--main-color)] dark:text-blue-400 font-semibold' : 'text-slate-500 dark:text-neutral-500 hover:text-slate-800 dark:hover:text-slate-200'}`}
+                    onClick={(e) => handleLinkClick(e, '/admin/pre-signup')}
+                    className={`${subLinkClass} ${
+                      isPending('/admin/pre-signup')
+                        ? 'bg-blue-50/70 dark:bg-blue-950/40 text-[var(--main-color)] dark:text-blue-400 font-semibold ring-1 ring-[var(--main-color)]/30'
+                        : isActive('/admin/pre-signup')
+                          ? 'text-[var(--main-color)] dark:text-blue-400 font-semibold'
+                          : 'text-slate-500 dark:text-neutral-500 hover:text-slate-800 dark:hover:text-slate-200'
+                    }`}
                   >
                     <FiUserCheck size={14} />
                     <span>Pre-Signup & Waitlist</span>
+                    {isPending('/admin/pre-signup') && (
+                      <span className="ml-auto flex items-center">
+                        <FiLoader className="w-3 h-3 animate-spin text-[var(--main-color)] dark:text-blue-400" />
+                      </span>
+                    )}
                   </Link>
                 </div>
               )}
@@ -185,6 +267,7 @@ export default function MobileAdminNav({ openDrawer, setOpenDrawer }: MobileAdmi
             {/* FAQs Dropdown */}
             <div>
               <button
+                type="button"
                 onClick={() => {
                   setOpenFaqs(!openFaqs)
                   setOpenUsers(false)
@@ -207,11 +290,22 @@ export default function MobileAdminNav({ openDrawer, setOpenDrawer }: MobileAdmi
                 <div className="pl-6 mt-1 flex flex-col space-y-1 border-l border-slate-200 dark:border-neutral-900 ml-5">
                   <Link
                     href="/admin/faqs"
-                    onClick={() => setOpenDrawer(false)}
-                    className={`${subLinkClass} ${isActive('/admin/faqs') ? 'text-[var(--main-color)] dark:text-blue-400 font-semibold' : 'text-slate-500 dark:text-neutral-500 hover:text-slate-800 dark:hover:text-slate-200'}`}
+                    onClick={(e) => handleLinkClick(e, '/admin/faqs')}
+                    className={`${subLinkClass} ${
+                      isPending('/admin/faqs')
+                        ? 'bg-blue-50/70 dark:bg-blue-950/40 text-[var(--main-color)] dark:text-blue-400 font-semibold ring-1 ring-[var(--main-color)]/30'
+                        : isActive('/admin/faqs')
+                          ? 'text-[var(--main-color)] dark:text-blue-400 font-semibold'
+                          : 'text-slate-500 dark:text-neutral-500 hover:text-slate-800 dark:hover:text-slate-200'
+                    }`}
                   >
                     <FiMessageSquare size={14} />
                     <span>Manage FAQs</span>
+                    {isPending('/admin/faqs') && (
+                      <span className="ml-auto flex items-center">
+                        <FiLoader className="w-3 h-3 animate-spin text-[var(--main-color)] dark:text-blue-400" />
+                      </span>
+                    )}
                   </Link>
                 </div>
               )}
@@ -220,6 +314,7 @@ export default function MobileAdminNav({ openDrawer, setOpenDrawer }: MobileAdmi
             {/* Content Dropdown */}
             <div>
               <button
+                type="button"
                 onClick={() => {
                   setOpenContent(!openContent)
                   setOpenUsers(false)
@@ -244,27 +339,60 @@ export default function MobileAdminNav({ openDrawer, setOpenDrawer }: MobileAdmi
                 <div className="pl-6 mt-1 flex flex-col space-y-1 border-l border-slate-200 dark:border-neutral-900 ml-5">
                   <Link
                     href="/admin/movie-management"
-                    onClick={() => setOpenDrawer(false)}
-                    className={`${subLinkClass} ${isActive('/admin/movie-management') ? 'text-[var(--main-color)] dark:text-blue-400 font-semibold' : 'text-slate-500 dark:text-neutral-500 hover:text-slate-800 dark:hover:text-slate-200'}`}
+                    onClick={(e) => handleLinkClick(e, '/admin/movie-management')}
+                    className={`${subLinkClass} ${
+                      isPending('/admin/movie-management')
+                        ? 'bg-blue-50/70 dark:bg-blue-950/40 text-[var(--main-color)] dark:text-blue-400 font-semibold ring-1 ring-[var(--main-color)]/30'
+                        : isActive('/admin/movie-management')
+                          ? 'text-[var(--main-color)] dark:text-blue-400 font-semibold'
+                          : 'text-slate-500 dark:text-neutral-500 hover:text-slate-800 dark:hover:text-slate-200'
+                    }`}
                   >
                     <BiMovie size={14} />
                     <span>Movies</span>
+                    {isPending('/admin/movie-management') && (
+                      <span className="ml-auto flex items-center">
+                        <FiLoader className="w-3 h-3 animate-spin text-[var(--main-color)] dark:text-blue-400" />
+                      </span>
+                    )}
                   </Link>
                   <Link
                     href="/admin/series-management"
-                    onClick={() => setOpenDrawer(false)}
-                    className={`${subLinkClass} ${isActive('/admin/series-management') ? 'text-[var(--main-color)] dark:text-blue-400 font-semibold' : 'text-slate-500 dark:text-neutral-500 hover:text-slate-800 dark:hover:text-slate-200'}`}
+                    onClick={(e) => handleLinkClick(e, '/admin/series-management')}
+                    className={`${subLinkClass} ${
+                      isPending('/admin/series-management')
+                        ? 'bg-blue-50/70 dark:bg-blue-950/40 text-[var(--main-color)] dark:text-blue-400 font-semibold ring-1 ring-[var(--main-color)]/30'
+                        : isActive('/admin/series-management')
+                          ? 'text-[var(--main-color)] dark:text-blue-400 font-semibold'
+                          : 'text-slate-500 dark:text-neutral-500 hover:text-slate-800 dark:hover:text-slate-200'
+                    }`}
                   >
                     <BiTv size={14} />
                     <span>Series</span>
+                    {isPending('/admin/series-management') && (
+                      <span className="ml-auto flex items-center">
+                        <FiLoader className="w-3 h-3 animate-spin text-[var(--main-color)] dark:text-blue-400" />
+                      </span>
+                    )}
                   </Link>
                   <Link
                     href="/admin/trailer-management"
-                    onClick={() => setOpenDrawer(false)}
-                    className={`${subLinkClass} ${isActive('/admin/trailer-management') ? 'text-[var(--main-color)] dark:text-blue-400 font-semibold' : 'text-slate-500 dark:text-neutral-500 hover:text-slate-800 dark:hover:text-slate-200'}`}
+                    onClick={(e) => handleLinkClick(e, '/admin/trailer-management')}
+                    className={`${subLinkClass} ${
+                      isPending('/admin/trailer-management')
+                        ? 'bg-blue-50/70 dark:bg-blue-950/40 text-[var(--main-color)] dark:text-blue-400 font-semibold ring-1 ring-[var(--main-color)]/30'
+                        : isActive('/admin/trailer-management')
+                          ? 'text-[var(--main-color)] dark:text-blue-400 font-semibold'
+                          : 'text-slate-500 dark:text-neutral-500 hover:text-slate-800 dark:hover:text-slate-200'
+                    }`}
                   >
                     <BiTv size={14} />
                     <span>Trailers</span>
+                    {isPending('/admin/trailer-management') && (
+                      <span className="ml-auto flex items-center">
+                        <FiLoader className="w-3 h-3 animate-spin text-[var(--main-color)] dark:text-blue-400" />
+                      </span>
+                    )}
                   </Link>
                 </div>
               )}
@@ -273,6 +401,7 @@ export default function MobileAdminNav({ openDrawer, setOpenDrawer }: MobileAdmi
             {/* Payments Dropdown */}
             <div>
               <button
+                type="button"
                 onClick={() => {
                   setOpenPayments(!openPayments)
                   setOpenUsers(false)
@@ -296,19 +425,41 @@ export default function MobileAdminNav({ openDrawer, setOpenDrawer }: MobileAdmi
                 <div className="pl-6 mt-1 flex flex-col space-y-1 border-l border-slate-200 dark:border-neutral-900 ml-5">
                   <Link
                     href="/admin/payment-plans"
-                    onClick={() => setOpenDrawer(false)}
-                    className={`${subLinkClass} ${isActive('/admin/payment-plans') ? 'text-[var(--main-color)] dark:text-blue-400 font-semibold' : 'text-slate-500 dark:text-neutral-500 hover:text-slate-800 dark:hover:text-slate-200'}`}
+                    onClick={(e) => handleLinkClick(e, '/admin/payment-plans')}
+                    className={`${subLinkClass} ${
+                      isPending('/admin/payment-plans')
+                        ? 'bg-blue-50/70 dark:bg-blue-950/40 text-[var(--main-color)] dark:text-blue-400 font-semibold ring-1 ring-[var(--main-color)]/30'
+                        : isActive('/admin/payment-plans')
+                          ? 'text-[var(--main-color)] dark:text-blue-400 font-semibold'
+                          : 'text-slate-500 dark:text-neutral-500 hover:text-slate-800 dark:hover:text-slate-200'
+                    }`}
                   >
                     <BsSubscriptIcon size={14} />
                     <span>Payment Plans</span>
+                    {isPending('/admin/payment-plans') && (
+                      <span className="ml-auto flex items-center">
+                        <FiLoader className="w-3 h-3 animate-spin text-[var(--main-color)] dark:text-blue-400" />
+                      </span>
+                    )}
                   </Link>
                   <Link
                     href="/admin/subscriptions"
-                    onClick={() => setOpenDrawer(false)}
-                    className={`${subLinkClass} ${isActive('/admin/subscriptions') ? 'text-[var(--main-color)] dark:text-blue-400 font-semibold' : 'text-slate-500 dark:text-neutral-500 hover:text-slate-800 dark:hover:text-slate-200'}`}
+                    onClick={(e) => handleLinkClick(e, '/admin/subscriptions')}
+                    className={`${subLinkClass} ${
+                      isPending('/admin/subscriptions')
+                        ? 'bg-blue-50/70 dark:bg-blue-950/40 text-[var(--main-color)] dark:text-blue-400 font-semibold ring-1 ring-[var(--main-color)]/30'
+                        : isActive('/admin/subscriptions')
+                          ? 'text-[var(--main-color)] dark:text-blue-400 font-semibold'
+                          : 'text-slate-500 dark:text-neutral-500 hover:text-slate-800 dark:hover:text-slate-200'
+                    }`}
                   >
                     <GrPlan size={14} />
                     <span>Subscriptions</span>
+                    {isPending('/admin/subscriptions') && (
+                      <span className="ml-auto flex items-center">
+                        <FiLoader className="w-3 h-3 animate-spin text-[var(--main-color)] dark:text-blue-400" />
+                      </span>
+                    )}
                   </Link>
                 </div>
               )}
@@ -317,11 +468,22 @@ export default function MobileAdminNav({ openDrawer, setOpenDrawer }: MobileAdmi
             {/* Settings */}
             <Link
               href="/admin/settings"
-              onClick={() => setOpenDrawer(false)}
-              className={`${linkBase} ${isActive('/admin/settings') ? activeClass : inactiveClass}`}
+              onClick={(e) => handleLinkClick(e, '/admin/settings')}
+              className={`${linkBase} ${
+                isPending('/admin/settings')
+                  ? 'bg-blue-50/70 dark:bg-blue-950/40 text-[var(--main-color)] dark:text-blue-400 font-semibold ring-1 ring-[var(--main-color)]/30'
+                  : isActive('/admin/settings')
+                    ? activeClass
+                    : inactiveClass
+              }`}
             >
               <FiSettings size={18} />
               <span>Settings</span>
+              {isPending('/admin/settings') && (
+                <span className="ml-auto flex items-center">
+                  <FiLoader className="w-3.5 h-3.5 animate-spin text-[var(--main-color)] dark:text-blue-400" />
+                </span>
+              )}
             </Link>
           </nav>
         </div>

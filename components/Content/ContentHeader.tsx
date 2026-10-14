@@ -28,7 +28,7 @@ const ContentHeaderComponent: React.FC<ContentHeaderProps> = ({
             : 'Content'
 
   return (
-    <div className="sticky top-0 z-10 bg-card/80 backdrop-blur-md border-b border-border/80 shadow-sm transition-colors">
+    <div className="sticky top-0 z-10 bg-none dark:bg-card/80 dark:backdrop-blur-md border-b border-border/80 dark:shadow-sm transition-colors">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8 pb-3.5">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="space-y-1">

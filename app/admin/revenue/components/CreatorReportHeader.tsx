@@ -17,13 +17,13 @@ export const CreatorReportHeader: React.FC<CreatorReportHeaderProps> = ({
   refreshLoading,
 }) => {
   return (
-    <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between pb-2 border-b border-border/60">
-      <div>
-        <div className="flex items-center gap-2">
+    <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between pb-2 border-b border-border/60">
+      <div className='sm:w-8/12'>
+        <div className="flex items-center gap-2  ">
           <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground">
             Creator Revenue & Payout Management
           </h1>
-          <span className="hidden sm:inline-flex items-center gap-1 text-xs font-medium px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
+          <span className="hidden sm:inline-flex min-w-[150px] items-center gap-1 text-xs font-medium px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
             <FiTrendingUp className="w-3 h-3" /> Live Payout Engine
           </span>
         </div>
@@ -32,7 +32,7 @@ export const CreatorReportHeader: React.FC<CreatorReportHeaderProps> = ({
         </p>
       </div>
 
-      <div className="flex items-center gap-2.5">
+      <div className="flex items-center gap-x-2  sm:mt-2">
         <button
           onClick={onRefresh}
           disabled={refreshLoading || downloadLoading}

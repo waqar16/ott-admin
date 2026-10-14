@@ -1007,7 +1007,7 @@ export default function ContentEditor(props: ContentEditorProps) {
         {loading && !uploading && <FullScreenLoader />}
         <div className="bg-neutral-900 sm:rounded-lg max-w-6xl w-full h-[100vh]  md:max-h-[95vh] md:h-auto">
           <div className="md:mt-0 mt-8 flex items-center justify-between p-6 border-b border-gray-700 h-[10vh]">
-            <h2 className="text-2xl font-bold text-white capitalize">
+            <h2 className="text-2xl font-bold dark:text-white capitalize">
               {isEditing ? 'Edit Content' : `Create ${contentType}`}
             </h2>
             <button onClick={onClose} className="text-gray-400 hover:text-white transition">
@@ -1094,9 +1094,11 @@ export default function ContentEditor(props: ContentEditorProps) {
                             type="text"
                             value={formData.title}
                             onChange={(e) => handleChange('title', e.target.value)}
-                            className="w-full px-4 py-2 bg-gray-700 text-white rounded-lg  outline-none ring-0 
-           focus:outline-none focus:ring-0 
-           focus-visible:outline-none focus-visible:ring-0"
+                            className="w-full px-4 py-2 bg-white dark:bg-gray-700
+    text-gray-900 dark:text-white
+    border border-gray-300 dark:border-gray-600
+    rounded-lg outline-none
+    focus:outline-none focus:ring-0"
                             placeholder="Enter content title"
                             required
                           />
@@ -1112,10 +1114,11 @@ export default function ContentEditor(props: ContentEditorProps) {
                             onChange={(e) => handleChange('episode_number', Number(e.target.value))}
                             placeholder="Enter Ep number"
                             required
-                            className="w-full px-4 py-2 bg-gray-700 text-white rounded-lg outline-none
-               ring-0 focus:outline-none focus:ring-0 focus-visible:outline-none focus-visible:ring-0
-               appearance-none [&::-webkit-outer-spin-button]:appearance-none 
-               [&::-webkit-inner-spin-button]:appearance-none"
+                            className="w-full px-4 py-2 bg-white dark:bg-gray-700
+    text-gray-900 dark:text-white
+    border border-gray-300 dark:border-gray-600
+    rounded-lg outline-none
+    focus:outline-none focus:ring-0"
                           />
                         </div>
                       </div>
@@ -1170,7 +1173,9 @@ export default function ContentEditor(props: ContentEditorProps) {
                         onChange={(e) => handleChange('season_number', e.target.value)}
                         placeholder="Enter season number"
                         required
-                        className="w-full px-4 py-2 bg-gray-700 text-white rounded-lg outline-none
+                        className="w-full px-4 py-2 bg-gray-700 text-white rounded-lg outline-none ring-0 
+           focus:outline-none focus:ring-0 
+           focus-visible:outline-none focus-visible:ring-0
                ring-0 focus:outline-none focus:ring-0 focus-visible:outline-none focus-visible:ring-0
                appearance-none [&::-webkit-outer-spin-button]:appearance-none 
                [&::-webkit-inner-spin-button]:appearance-none"
@@ -1211,13 +1216,13 @@ export default function ContentEditor(props: ContentEditorProps) {
                         {((formData.content_type || contentType) == 'series' ||
                           (formData.content_type || contentType) == 'movie' ||
                           (formData.content_type || contentType) == 'documentary') && (
-                          <MultiSelectCreator
-                            allCreators={allcreators}
-                            formData={formData}
-                            setFormData={setFormData}
-                            isLoading={creatorsLoading}
-                          />
-                        )}
+                            <MultiSelectCreator
+                              allCreators={allcreators}
+                              formData={formData}
+                              setFormData={setFormData}
+                              isLoading={creatorsLoading}
+                            />
+                          )}
                         <SingleSelect
                           label="Media Type"
                           options={MEDIA_TYPES}

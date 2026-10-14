@@ -61,7 +61,7 @@ const ContentDetailsModal: React.FC<ContentDetailsModalProps> = ({
       <div className="bg-neutral-800 rounded-lg   w-full my-8">
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-gray-700">
-          <h2 className="text-2xl font-bold text-white">Content Details</h2>
+          <h2 className="text-2xl font-bold text-neutral-900 dark:text-white">Content Details</h2>
           <button onClick={onClose} className="text-gray-400 hover:text-white transition-colors">
             ✕
           </button>
@@ -71,11 +71,11 @@ const ContentDetailsModal: React.FC<ContentDetailsModalProps> = ({
         <div className=" p-6 max-h-[calc(100vh-100px)] overflow-y-auto minimal-scrollbar space-y-6">
           {/* Basic Info */}
           <div>
-            <h3 className="text-xl font-bold mb-4 text-white">{detailContent.title}</h3>
+            <h3 className="text-xl font-bold mb-4 text-neutral-800 dark:text-white">{detailContent.title}</h3>
             <p className="text-gray-300">{detailContent.description}</p>
             {detailContent.content_metadata && (
               <div className="  rounded-lg space-y-4 mt-4">
-                <h3 className="text-lg font-semibold text-white">Content Metadata</h3>
+                <h3 className="text-lg font-semibold text-neutral-800 dark:text-white">Content Metadata</h3>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <MetaRow label="Directors" value={detailContent.content_metadata.directors} />
@@ -118,7 +118,7 @@ const ContentDetailsModal: React.FC<ContentDetailsModalProps> = ({
                   className="rounded-lg col-span-2 w-auto h-[70vh] object-cover"
                 />
               ) : (
-                <div className="h-full col-span-2 w-full flex flex-col items-center justify-center bg-neutral-950 rounded-lg ">
+                <div className="h-full col-span-2 w-full flex flex-col items-center justify-center bg-gray-300 dark:bg-neutral-950 rounded-lg dark:text-white text-black">
                   No Poster Uploaded Yet
                 </div>
               )}
@@ -129,7 +129,7 @@ const ContentDetailsModal: React.FC<ContentDetailsModalProps> = ({
                   className="rounded-lg col-span-5 w-full h-[70vh] object-cover "
                 />
               ) : (
-                <div className="h-full col-span-5 w-full flex flex-col items-center justify-center bg-neutral-950 rounded-lg">
+                <div className="h-full col-span-5 w-full flex flex-col items-center justify-center bg-gray-300 dark:bg-neutral-950 rounded-lg dark:text-white text-black">
                   No Banner Uploaded Yet
                 </div>
               )}
@@ -227,11 +227,10 @@ const ContentDetailsModal: React.FC<ContentDetailsModalProps> = ({
                   setPublishLoading(false)
                 }}
                 className={`px-4 py-2 rounded-md font-semibold transition
-            ${
-              confirmText === detailContent.title
-                ? 'bg-yellow-600 hover:bg-yellow-700 text-white'
-                : 'bg-neutral-700 text-gray-400 cursor-not-allowed'
-            }`}
+            ${confirmText === detailContent.title
+                    ? 'bg-yellow-600 hover:bg-yellow-700 text-white'
+                    : 'bg-neutral-700 text-gray-400 cursor-not-allowed'
+                  }`}
               >
                 {publishLoading ? 'Publishing...' : 'Publish'}
               </button>
